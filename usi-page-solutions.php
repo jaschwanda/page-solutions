@@ -17,7 +17,7 @@ require_once('usi-settings.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '0.0.2 (2018-01-04)';
 
    const NAME       = 'Page-Solutions';
    const PREFIX     = 'usi-page';
@@ -191,12 +191,17 @@ final class USI_Page_Solutions {
 
    static function init() {
       if (empty(USI_Settings::$options[self::PREFIX])) {
-         $defaults['cache']['debug-meta-data'] = false;
-         $defaults['cache']['debug-sql'] = false;
-         $defaults['preferences']['enable-cache'] = false;
-         $defaults['preferences']['enable-enhanced-areas'] = false;
+         $defaults['cache']['config-location'] =
+         $defaults['cache']['root-location']   =
+         $defaults['cache']['root-status']     =
+         $defaults['cache']['debug-ip']        = '';
+         $defaults['cache']['track-times']     =
+         $defaults['cache']['debug-meta-data'] = 
+         $defaults['cache']['debug-sql']       = 
+         $defaults['preferences']['enable-cache'] = 
+         $defaults['preferences']['enable-enhanced-areas'] = 
          $defaults['preferences']['enable-layout'] = false;
-         $defaults['preferences']['page-mru-max'] = 4;
+         $defaults['preferences']['page-mru-max'] = 
          $defaults['preferences']['post-mru-max'] = 4;
          USI_Settings::$options[self::PREFIX] = get_option(self::PREFIX . '-options', $defaults);
          if (!is_admin()) {
