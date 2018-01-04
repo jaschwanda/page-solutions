@@ -19,7 +19,8 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
       global $wpdb;
 
       $good = __('Good', USI_Page_Solutions::TEXTDOMAIN);
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-status'] == $good) {
+      $root_status = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-status']) ? USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-status'] : null;
+      if ($root_status == $good) {
          $pages = get_pages(array('sort_column' => 'ID', 'number' => 1, 'post_type' => 'page', 'post_status' => 'publish'));
          if (!empty($pages)) {
             $url = get_home_url(null, $pages[0]->post_name . '/?' . USI_Page_Cache::TEST_DATA);
@@ -37,7 +38,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
             }
          }
       } else if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
-         $root = USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location'];
+         $root = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location']) ? USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location'] : null;
          if (empty($root)) {
             self::$cache_config_status  = __('Unknown', USI_Page_Solutions::TEXTDOMAIN);
             self::$cache_config_warning = __('The <b>index.php</b> file location is unknown. Access any WordPress page in the site from another browser that is not running in administrator mode, then go to the <a href="' . get_bloginfo('wpurl') . '/wp-admin/options-general.php?page=usi-page-settings&tab=cache">Cache Options</a> tab on the Page-Solutions Settings page and click the <b>Save Cache Options</b> button.', USI_Page_Solutions::TEXTDOMAIN);
@@ -208,7 +209,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 
    } // __construct();
 
-   function action_admin_notices() {
+   static function action_admin_notices() {
       echo '<div class="notice notice-warning"><p>' . self::$cache_config_warning . '</p></div>';
    } // action_admin_notices();
 
