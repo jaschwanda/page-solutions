@@ -2,6 +2,9 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 0.0.3 (2018-01-04) ##
+* Changed name of edit virtuallist permission.
+
 ## 0.0.2 (2018-01-04) ##
 * Simplified some PHP statements for assignments done in "empty()" function.
 
