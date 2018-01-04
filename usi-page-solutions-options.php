@@ -1,0 +1,85 @@
+<?php // ------------------------------------------------------------------------------------------------------------------------ //
+
+defined('ABSPATH') or die('Accesss not allowed.');
+
+class USI_Page_Solutions_Options {
+
+   const VERSION = '0.0.1 (2018-01-03)';
+
+   function __construct() {
+      add_action('add_meta_boxes', array($this, 'add_meta_box'));
+      add_action('admin_head', array($this, 'add_help'));
+      add_action('save_post', array($this, 'save_meta_box'));
+   } // __construct();
+
+   function add_help() {
+
+      $screen = get_current_screen();
+
+      if (('page' != $screen->id) || ('page' != $screen->post_type)) return;
+
+      $screen->add_help_tab(array(
+         'title' => __('Page-Solutions Options', USI_Page_Solutions::TEXTDOMAIN),
+         'id' => 'usi-page-solutions-options',
+         'content'  => 
+'<p>' . __('The Page-Solutions plugin adds the following page options:', USI_Page_Solutions::TEXTDOMAIN) . '</p>'.
+'<ul>' .
+'<li><b>' . __('Accepts arguments', USI_Page_Solutions::TEXTDOMAIN) . '</b> - ' . __('The page can be called with an argument string that follows the page URL. This argument string can be used to pass information into widgets that have been designed to use this feature. This option is disabled if this page is a parent page.', USI_Page_Solutions::TEXTDOMAIN) . '</li>' .
+'</ul>' .
+'<p>' . __('The Page-Solutions plugin options are configured on a page by page basis.', USI_Page_Solutions::TEXTDOMAIN) . '</p>'
+      ));
+
+   } // add_help();
+
+
+   function add_meta_box() {
+      add_meta_box(
+         'usi-page-solutions-options-meta-box', // Meta box id;
+         __('Page-Solutions Options', USI_Page_Solutions::TEXTDOMAIN), // Title;
+         array($this, 'render_meta_box'), // Render meta box callback;
+         'page', // Screen type;
+         'side', // Location on page;
+         'low' // Priority;
+      );
+   } // add_meta_box();
+
+   function render_meta_box($post) {
+
+      wp_nonce_field(basename(__FILE__), 'usi-page-solutions-options-nonce');
+
+      $arguments = USI_Page_Solutions::$post_meta['options']['arguments'];
+
+      $disabled = USI_Page_Solutions::number_of_offspring($post->ID) ? ' disabled' : null;
+
+?>
+<p>
+  <input id="usi-page-solutions-options-arguments"<?php checked($arguments, true); echo $disabled; ?> name="usi-page-solutions-options-arguments" type="checkbox" value="true" />
+  <label for="usi-page-solutions-options-arguments"><?php _e('Accepts arguments', USI_Page_Solutions::TEXTDOMAIN); ?></label>
+</p>
+<?php
+
+   } // render_meta_box();
+
+   function save_meta_box($page_id) {
+      if (!current_user_can('edit_page', $page_id)) {      
+      } else if (wp_is_post_autosave($page_id)) {
+      } else if (wp_is_post_revision($page_id)) {
+      } else if (empty($_POST['usi-page-solutions-options-nonce'])) {
+      } else if (!wp_verify_nonce($_POST['usi-page-solutions-options-nonce'], basename(__FILE__))) {
+      } else {
+         $new_arguments = isset($_POST['usi-page-solutions-options-arguments']) && $_POST['usi-page-solutions-options-arguments'];
+         USI_Page_Solutions::post_meta_get();
+         if (USI_Page_Solutions::$post_meta['options']['arguments'] != $new_arguments) {
+            delete_post_meta($page_id, USI_Page_Solutions::$post_meta['key']); 
+            USI_Page_Solutions::$post_meta['key'][19] = ($new_arguments ? '*' : '!');
+            USI_Page_Solutions::$post_meta['options']['arguments'] = $new_arguments;
+         }
+         USI_Page_Solutions::post_meta_update();
+      }
+   } // save_meta_box();
+      
+} // USI_Page_Solutions_Options;
+
+new USI_Page_Solutions_Options();
+
+// --------------------------------------------------------------------------------------------------------------------------- // ?>
