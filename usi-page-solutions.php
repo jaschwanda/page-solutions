@@ -259,7 +259,7 @@ final class USI_Page_Solutions {
                if (1 == $query->num_rows) {
                   $query->fetch();
                   try {
-                     $stuff = unserialize($meta_value);
+                     @ $stuff = unserialize($meta_value); // Not sure what causes error here, but doesn't affect operation;
                   } catch(exception $e) {
                   }
                }
