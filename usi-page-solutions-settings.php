@@ -39,7 +39,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
          }
       } else if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
          $root = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location']) ? USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location'] : null;
-         if (empty($root)) {
+         if (!$root) {
             self::$cache_config_status  = __('Unknown', USI_Page_Solutions::TEXTDOMAIN);
             self::$cache_config_warning = __('The <b>index.php</b> file location is unknown. Access any WordPress page in the site from another browser that is not running in administrator mode, then go to the <a href="' . get_bloginfo('wpurl') . '/wp-admin/options-general.php?page=usi-page-settings&tab=cache">Cache Options</a> tab on the Page-Solutions Settings page and click the <b>Save Cache Options</b> button.', USI_Page_Solutions::TEXTDOMAIN);
             add_action('admin_notices', array(__CLASS__, 'action_admin_notices'));
@@ -114,7 +114,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 
       );
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache']) {
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
 
          $this->sections['cache'] = array(
             'header_callback' => array($this, 'config_section_header_cache'),
@@ -320,10 +320,9 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 
    function fields_sanitize($input) {
       $input = parent::fields_sanitize($input);
-
       if ('preferences' == $this->active_tab) {
-         if (!$input['preferences']['enable-cache']) {
-            if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache']) {
+         if (!empty($input['preferences']['enable-cache'])) {
+            if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
                self::index_file_restore();
                self::cache_file_generate();
             }
@@ -388,8 +387,8 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
    } // index_file_modify();
 
    static function index_file_restore() {
-      $root = USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location'];
-      if (!empty($root)) {
+      $root = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location']) ? USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location'] : null;
+      if ($root) {
          if (is_file($root)) {
             if ($root_stream = fopen($root, 'r')) {
                $root_content = fread($root_stream, filesize($root));

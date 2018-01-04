@@ -260,7 +260,6 @@ final class USI_Page_Solutions {
                   $stuff = unserialize($meta_value);
                } else {
                   $stuff = array();
-                  $meta_key = USI_Page_Cache::POST_META . '!' . $path;
                }
                $query = null; // Close query;
             } catch(USI_Dbs_Exception $e) {
@@ -292,7 +291,7 @@ final class USI_Page_Solutions {
 
             $url = rtrim(get_permalink($id), '/') . '/';
             $path = str_replace(array($_SERVER['SERVER_NAME'], 'https://', 'http://'), '', $url);
-            $meta_key = USI_Page_Cache::POST_META . ($safe_stuff['options']['arguments'] ? '*' : '!') . $path;
+            $meta_key = USI_Page_Cache::POST_META . ($SAFE_options['arguments'] ? '*' : '!') . $path;
 
             self::$post_meta = array('key' => $meta_key, 'post_id' => $id, 'cache' => $SAFE_cache, 
                'layout' => $SAFE_layout, 'options' => $SAFE_options, 'widgets' => $SAFE_widgets);
@@ -318,7 +317,7 @@ if (is_admin() && !defined('WP_UNINSTALL_PLUGIN')) {
    require_once('usi-page-solutions-settings.php');
    require_once('usi-page-solutions-virtual.php');
    require_once('usi-page-solutions-virtual-list.php');
-   if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache']) {
+   if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
       require_once('usi-page-solutions-cache.php');
       require_once('usi-page-solutions-options.php');
    }
