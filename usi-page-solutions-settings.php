@@ -8,7 +8,7 @@ require_once('usi-settings-versions.php');
 
 class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 
-   const VERSION = '0.0.2 (2018-01-04)';
+   const VERSION = '0.0.3 (2018-01-04)';
 
    protected $is_tabbed = true;
 
@@ -411,7 +411,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
       if ('collections' == $this->active_tab) {
          if (USI_Page_Solutions_Admin::$virtual_add) $extra_buttons =
             ' <a href="options-general.php?page=usi-page-solutions-virtual&action=add" class="page-title-action">' . 
-            __('Add New', 'usi-page-solutions') . '</a>';
+            __('Add New', USI_Page_Solutions::TEXTDOMAIN) . '</a>';
       }
       parent::page_render($extra_buttons);
    } // page_render();

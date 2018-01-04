@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Virtual {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '0.0.3 (2018-01-04)';
 
    private $options = null;
    private $option_name = null;
@@ -147,7 +147,7 @@ class USI_Page_Solutions_Virtual {
       add_options_page(
          __('Page-Solutions | Add Virtual Widget Collection', USI_Page_Solutions::TEXTDOMAIN), // Page <title/> text;
          '<span id="usi-page-solutions-virtual-remove"></span>', // Sidebar menu text; 
-         'usi-page-solutions-virtual-add', // Capability required to enable page;
+         USI_Page_Solutions::NAME .'-Virtual-Add', // Capability required to enable page;
          $this->page_slug, // Settings page menu slug;
          array($this, 'settings_page_render') // Render page callback;
       );
