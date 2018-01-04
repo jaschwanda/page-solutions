@@ -6,7 +6,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Cache {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '0.0.2 (2018-01-04)';
 
    private static $current_time = null;
    private static $valid_until = USI_Page_Cache::DATE_OMEGA;
@@ -214,25 +214,25 @@ class USI_Page_Solutions_Cache {
    <table style="width:100%;">
      <tr>
        <td>
-         <input<?php checked($cache['inherit-parent'], true); echo $post->post_parent ? '' : ' disabled'; ?> id="usi-page-solutions-cache-inherit-parent" name="usi-page-solutions-cache-inherit-parent" type="checkbox" value="true">
+         <input<?php checked(!empty($cache['inherit-parent']), true); echo $post->post_parent ? '' : ' disabled'; ?> id="usi-page-solutions-cache-inherit-parent" name="usi-page-solutions-cache-inherit-parent" type="checkbox" value="true">
        </td>
        <td><label for="usi-page-solutions-cache-inherit-parent"><?php _e('Inherit parent page cache settings', USI_Page_Solutions::TEXTDOMAIN); ?></label></td>
      </tr>
      <tr>
        <td>
-         <input<?php checked($cache['allow-clear'], true); echo $disabled; ?> id="usi-page-solutions-cache-allow-clear" name="usi-page-solutions-cache-allow-clear" type="checkbox" value="true">
+         <input<?php checked(!empty($cache['allow-clear']), true); echo $disabled; ?> id="usi-page-solutions-cache-allow-clear" name="usi-page-solutions-cache-allow-clear" type="checkbox" value="true">
        </td>
        <td><label for="usi-page-solutions-cache-allow-clear"><?php _e('Allow widgets to clear cache', USI_Page_Solutions::TEXTDOMAIN); ?></label></td>
      </tr>
      <tr>
        <td>
-         <input<?php checked($cache['clear-next-publish'], true); ?> id="usi-page-solutions-cache-clear-next-publish" name="usi-page-solutions-cache-clear-next-publish" type="checkbox" value="true">
+         <input<?php checked(!empty($cache['clear-next-publish']), true); ?> id="usi-page-solutions-cache-clear-next-publish" name="usi-page-solutions-cache-clear-next-publish" type="checkbox" value="true">
        </td>
        <td><label for="usi-page-solutions-cache-clear-next-publish"><?php _e('Clear cache on next update', USI_Page_Solutions::TEXTDOMAIN); ?></label></td>
      </tr>
      <tr>
        <td>
-         <input<?php checked($cache['clear-every-publish'], true); ?> id="usi-page-solutions-cache-clear-every-publish" name="usi-page-solutions-cache-clear-every-publish" type="checkbox" value="true">
+         <input<?php checked(!empty($cache['clear-every-publish']), true); ?> id="usi-page-solutions-cache-clear-every-publish" name="usi-page-solutions-cache-clear-every-publish" type="checkbox" value="true">
        </td>
        <td><label for="usi-page-solutions-cache-clear-every-publish"><?php _e('Clear cache on every update', USI_Page_Solutions::TEXTDOMAIN); ?></label></td>
      </tr>
