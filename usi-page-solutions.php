@@ -255,11 +255,13 @@ final class USI_Page_Solutions {
                   array('i', & $id), // Input parameters;
                   array(& $meta_key, & $meta_value) // Output variables;
                );
+               $stuff = array();
                if (1 == $query->num_rows) {
                   $query->fetch();
-                  $stuff = unserialize($meta_value);
-               } else {
-                  $stuff = array();
+                  try {
+                     $stuff = unserialize($meta_value);
+                  } catch(exception $e) {
+                  }
                }
                $query = null; // Close query;
             } catch(USI_Dbs_Exception $e) {
