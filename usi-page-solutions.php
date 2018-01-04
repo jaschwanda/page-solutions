@@ -218,7 +218,7 @@ final class USI_Page_Solutions {
       add_action('wp_footer', array(__CLASS__, 'action_wp_footer'), 9999);
       add_action('wp_head', array(__CLASS__, 'action_wp_head'), 100);
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas']) {
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
          add_filter('dynamic_sidebar_params', array(__CLASS__, 'filter_dynamic_sidebar_params'));
          add_filter('sidebars_widgets', array(__CLASS__, 'filter_sidebars_widgets'));
          add_filter('widget_display_callback', array(__CLASS__, 'filter_widget_display_callback'), 10, 3);

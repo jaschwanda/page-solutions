@@ -170,7 +170,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 
       }
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas']) {
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
 
          $this->sections['widgets'] = array(
             'header_callback' => array($this, 'config_section_header_widgets'),
@@ -214,7 +214,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
    } // action_admin_notices();
 
    function action_admin_init() {
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas']) {
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
          global $wp_registered_sidebars;
          $disabled = USI_Page_Solutions_Admin::$enhanced_edit ? null : 'disabled';
          foreach ($wp_registered_sidebars as $id => $sidebar) {

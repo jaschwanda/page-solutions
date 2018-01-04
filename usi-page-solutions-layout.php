@@ -4,15 +4,15 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '0.0.2 (2018-01-04)';
 
    private $options = null;
    private $page_slug = 'usi-page-solutions-layout';
    private $section_id = null;
 
    function __construct() {
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'] 
-         || USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas']) 
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
+         || !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) 
          add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
       add_action('admin_head', array($this, 'action_admin_head'));
       add_action('admin_init', array($this, 'action_admin_init'));
@@ -46,7 +46,7 @@ class USI_Page_Solutions_Layout {
             '</style>' . PHP_EOL;
       }
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'] ) {
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'])) {
 
          $screen = get_current_screen();
 
