@@ -4,21 +4,26 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout {
 
-   const VERSION = '0.0.2 (2018-01-04)';
+   const VERSION = '0.0.3 (2018-01-05)';
 
    private $options = null;
+   private $page_id = 0;
    private $page_slug = 'usi-page-solutions-layout';
    private $section_id = null;
 
    function __construct() {
+
+      $this->page_id = !empty($_GET['page_id']) ? (int)$_GET['page_id'] : 0;
+
       if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
          || !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) 
          add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
       add_action('admin_head', array($this, 'action_admin_head'));
-      add_action('admin_init', array($this, 'action_admin_init'));
+      if ($this->page_id) add_action('admin_init', array($this, 'action_admin_init'));
       add_action('admin_menu', array($this, 'action_admin_menu'));
       add_action('save_post', array($this, 'action_save_post'));
       add_action('widgets_init', array($this, 'action_widgets_init'), USI_Page_Solutions::WIDGETS_INIT_PRIORITY);
+
    } // __construct();
 
    function action_add_meta_boxes() {
@@ -72,7 +77,9 @@ class USI_Page_Solutions_Layout {
          null, // Render section callback;
          $this->page_slug // Settings page menu slug;
       );
-      USI_Page_Solutions::post_meta_get(!empty($_GET['page_id']) ? (int)$_GET['page_id'] : 0);
+
+      $page_id = !empty($_GET['page_id']) ? (int)$_GET['page_id'] : 0;
+      $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
 
       switch ($page = !empty($_GET['page']) ? $_GET['page'] : 'usi-page-solutions-layout-css-edit') {
       default:
@@ -88,9 +95,9 @@ class USI_Page_Solutions_Layout {
       case 'usi-page-solutions-layout-links-edit':
          $key = 'styles';
          $section = 'styles_parent';
-         if (USI_Page_Solutions::$post_meta['options'][$key . '_inherit']) {
-            if (!empty(USI_Page_Solutions::$post_meta['layout'][$section])) {
-               $styles = USI_Page_Solutions::$post_meta['layout'][$section];
+         if ($meta_value['options'][$key . '_inherit']) {
+            if (!empty($meta_value['layout'][$section])) {
+               $styles = $meta_value['layout'][$section];
                foreach ($styles as $style_value) {
                   $tokens = explode(' ', $style_value);
                   $style_id = $field_title = $tokens[0];
@@ -107,7 +114,7 @@ class USI_Page_Solutions_Layout {
             }
          }
          $section = 'styles';
-         $styles = USI_Page_Solutions::$post_meta['layout'][$key];
+         $styles = $meta_value['layout'][$key];
          $styles['new-style'] = 'new-style';
          foreach ($styles as $style_value) {
             $tokens = explode(' ', $style_value);
@@ -129,9 +136,9 @@ class USI_Page_Solutions_Layout {
 
          $key = 'scripts';
          $section = 'scripts_parent';
-         if (USI_Page_Solutions::$post_meta['options'][$key . '_inherit']) {
-            if (!empty(USI_Page_Solutions::$post_meta['layout'][$section])) {
-               $scripts = USI_Page_Solutions::$post_meta['layout'][$section];
+         if ($meta_value['options'][$key . '_inherit']) {
+            if (!empty($meta_value['layout'][$section])) {
+               $scripts = $meta_value['layout'][$section];
                foreach ($scripts as $script_value) {
                   $tokens = explode(' ', $script_value);
                   $script_id = $field_title = $tokens[0];
@@ -148,7 +155,7 @@ class USI_Page_Solutions_Layout {
             }
          }
          $section = 'scripts';
-         $scripts = USI_Page_Solutions::$post_meta['layout'][$key];
+         $scripts = $meta_value['layout'][$key];
          $scripts['new-script'] = 'new-script';
          foreach ($scripts as $script_value) {
             $tokens = explode(' ', $script_value);
@@ -171,7 +178,7 @@ class USI_Page_Solutions_Layout {
       }
 
       if ('usi-page-solutions-layout-links-edit' != $page) {
-         if (USI_Page_Solutions::$post_meta['options'][$key . '_inherit']) {
+         if ($meta_value['options'][$key . '_inherit']) {
             add_settings_field(
                $this->option_name . '[' . ($id = $key . '_parent') . ']', // Option name;
                $label_parent, // Field title;
@@ -195,7 +202,7 @@ class USI_Page_Solutions_Layout {
             $key = 'codes_foot';
             $label_parent = __('Parent Footer Code', USI_Page_Solutions::TEXTDOMAIN);
             $label = __('Footer Code', USI_Page_Solutions::TEXTDOMAIN);
-            if (USI_Page_Solutions::$post_meta['options'][$key . '_inherit']) {
+            if ($meta_value['options'][$key . '_inherit']) {
                add_settings_field(
                   $this->option_name . '[' . ($id = $key . '_parent') . ']', // Option name;
                   $label_parent, // Field title;
@@ -265,7 +272,7 @@ class USI_Page_Solutions_Layout {
       } else if (empty($_POST['usi-page-solutions-layout-nonce'])) {
       } else if (!wp_verify_nonce($_POST['usi-page-solutions-layout-nonce'], basename(__FILE__))) {
       } else {
-         USI_Page_Solutions::post_meta_get();
+         $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
          $collection_count = (int)(isset($_POST['usi-page-solutions-layout-enhanced-count']) ? $_POST['usi-page-solutions-layout-enhanced-count'] : 0);
          $options_widgets = array();
          for ($ith = 1; $ith <= $collection_count; $ith++) {
@@ -277,19 +284,18 @@ class USI_Page_Solutions_Layout {
             for ($jth = 1; $jth <= $widget_count; $jth++) {
                $name = 'usi-page-solutions-layout-enhanced-' . $ith . '-id-' . $jth;
                $virtual_id = (isset($_POST[$name]) ? $_POST[$name] : null);
-               if ('0' != $virtual_id)
-               $sidebar_widgets[] = $virtual_id;
+               if ('0' != $virtual_id) $sidebar_widgets[] = $virtual_id;
             }
             $options_widgets[$sidebar_id] = $sidebar_widgets;
          }
-         USI_Page_Solutions::$post_meta['options']['codes_head_inherit'] = !empty($_POST['usi-page-solutions-layout-codes-head-inherit']);
-         USI_Page_Solutions::$post_meta['options']['codes_foot_inherit'] = !empty($_POST['usi-page-solutions-layout-codes-foot-inherit']);
-         USI_Page_Solutions::$post_meta['options']['css_inherit']        = !empty($_POST['usi-page-solutions-layout-css-inherit']);
-         USI_Page_Solutions::$post_meta['options']['scripts_inherit']    = !empty($_POST['usi-page-solutions-layout-scripts-inherit']);
-         USI_Page_Solutions::$post_meta['options']['styles_inherit']     = !empty($_POST['usi-page-solutions-layout-styles-inherit']);
-         USI_Page_Solutions::$post_meta['options']['widgets_inherit']    = !empty($_POST['usi-page-solutions-layout-widgets-inherit']);
-         USI_Page_Solutions::$post_meta['widgets'] = $options_widgets;
-         USI_Page_Solutions::post_meta_update();
+         $meta_value['options']['codes_head_inherit'] = !empty($_POST['usi-page-solutions-layout-codes-head-inherit']);
+         $meta_value['options']['codes_foot_inherit'] = !empty($_POST['usi-page-solutions-layout-codes-foot-inherit']);
+         $meta_value['options']['css_inherit']        = !empty($_POST['usi-page-solutions-layout-css-inherit']);
+         $meta_value['options']['scripts_inherit']    = !empty($_POST['usi-page-solutions-layout-scripts-inherit']);
+         $meta_value['options']['styles_inherit']     = !empty($_POST['usi-page-solutions-layout-styles-inherit']);
+         $meta_value['options']['widgets_inherit']    = !empty($_POST['usi-page-solutions-layout-widgets-inherit']);
+         $meta_value['widgets'] = $options_widgets;
+         USI_Page_Solutions::meta_value_put($meta_value, __METHOD__);
 
          //$this->settings_fields_update_recursive(1, $page_id, 'codes_foot');
          //$this->settings_fields_update_recursive(1, $page_id, 'codes_head');
@@ -297,7 +303,6 @@ class USI_Page_Solutions_Layout {
          //$this->settings_fields_update_recursive(1, $page_id, 'scripts');
          //$this->settings_fields_update_recursive(1, $page_id, 'styles');
       }
-
    } // action_save_post();
 
    function action_widgets_init() {
@@ -313,30 +318,30 @@ class USI_Page_Solutions_Layout {
 
       $disabled = ($post->post_parent ? null : ' disabled');
 
-      $html = USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'] ?
+      $html = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) ?
          '<p>' .
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-codes-edit&page_id=' . $post->ID . '">Code</a> &nbsp; ' .
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-css-edit&page_id=' . $post->ID . '">CSS</a> &nbsp; ' .
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-links-edit&page_id=' . $post->ID . '">Links</a> &nbsp; ' .
          '</p>' : '';
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas']) {
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
 
-         USI_Page_Solutions::post_meta_get();
+         $meta_value = USI_Page_Solutions::meta_value_get($post->ID, __METHOD__);
 
          $collection_index = 0;
 
          $options_enhanced   = get_option(USI_Page_Solutions::$option_name_base . '-enhanced');
          $options_virtual    = USI_Page_Solutions::$options_virtual;
 
-         $codes_foot_inherit = USI_Page_Solutions::$post_meta['options']['codes_foot_inherit'];
-         $codes_head_inherit = USI_Page_Solutions::$post_meta['options']['codes_head_inherit'];
-         $css_inherit        = USI_Page_Solutions::$post_meta['options']['css_inherit'];
-         $scripts_inherit    = USI_Page_Solutions::$post_meta['options']['scripts_inherit'];
-         $styles_inherit     = USI_Page_Solutions::$post_meta['options']['styles_inherit'];
-         $widgets_inherit    = USI_Page_Solutions::$post_meta['options']['widgets_inherit'];
+         $codes_foot_inherit = $meta_value['options']['codes_foot_inherit'];
+         $codes_head_inherit = $meta_value['options']['codes_head_inherit'];
+         $css_inherit        = $meta_value['options']['css_inherit'];
+         $scripts_inherit    = $meta_value['options']['scripts_inherit'];
+         $styles_inherit     = $meta_value['options']['styles_inherit'];
+         $widgets_inherit    = $meta_value['options']['widgets_inherit'];
 
-         $options_widgets    = USI_Page_Solutions::$post_meta['widgets'];
+         $options_widgets    = $meta_value['widgets'];
 
          foreach ($wp_registered_sidebars as $id => $sidebar) {
 
@@ -376,10 +381,10 @@ class USI_Page_Solutions_Layout {
 
       echo $html;
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'] 
-         || USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas']) echo '<p>';
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
+         || !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) echo '<p>';
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) {
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'])) {
 ?>
   <input id="usi-page-solutions-layout-codes-head-inherit"<?php checked($codes_head_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-codes-head-inherit" type="checkbox" value="true" />
   <label for="usi-page-solutions-layout-codes-head-inherit"><?php _e('Inherit header code from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
@@ -398,18 +403,18 @@ class USI_Page_Solutions_Layout {
 <?php
       }
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'] 
-         && USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas']) echo '<br />';
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
+         && !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) echo '<br />';
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas']) {
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
 ?>
   <input id="usi-page-solutions-layout-widgets-inherit"<?php checked($widgets_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-widgets-inherit" type="checkbox" value="true" />
   <label for="usi-page-solutions-layout-widgets-inherit"><?php _e('Inherit widgets from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
 <?php
       }
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'] 
-         || USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas']) echo '</p>';
+      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
+         || !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) echo '</p>';
 
    } // render_meta_box();
 
@@ -437,9 +442,9 @@ class USI_Page_Solutions_Layout {
          case 'codes': $key = 'codes_head';
          case 'css': 
             do {
-               USI_Page_Solutions::post_meta_get($page_id);
-               USI_Page_Solutions::$post_meta['layout'][$key] = $input[$key];
-               USI_Page_Solutions::post_meta_update();
+               $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
+               $meta_value['layout'][$key] = $input[$key];
+               USI_Page_Solutions::meta_value_put($meta_value, __METHOD__);
                $this->settings_fields_update_recursive(1, $page_id, $key);
                $key = ('codes_head' == $key) ? 'codes_foot' : null;
             } while ($key);
@@ -447,7 +452,7 @@ class USI_Page_Solutions_Layout {
             break;
          case 'links': 
             $key = 'scripts';
-            USI_Page_Solutions::post_meta_get($page_id);
+            $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
             $scripts = $input['scripts'];
             $new_scripts = array();
             foreach($scripts as $dummy => $value) {
@@ -458,12 +463,12 @@ class USI_Page_Solutions_Layout {
                }
             }
             unset($new_scripts['new-script']);
-            USI_Page_Solutions::$post_meta['layout'][$key] = $input[$key] = $new_scripts;;
-            USI_Page_Solutions::post_meta_update();
+            $meta_value['layout'][$key] = $input[$key] = $new_scripts;;
+            USI_Page_Solutions::meta_value_put($meta_value, __METHOD__);
             $this->settings_fields_update_recursive(1, $page_id, $key);
 
             $key = 'styles';
-            USI_Page_Solutions::post_meta_get($page_id);
+            $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
             $styles = $input['styles'];
             $new_styles = array();
             foreach($styles as $dummy => $value) {
@@ -474,8 +479,8 @@ class USI_Page_Solutions_Layout {
                }
             }
             unset($new_styles['new-style']);
-            USI_Page_Solutions::$post_meta['layout'][$key] = $input[$key] = $new_styles;;
-            USI_Page_Solutions::post_meta_update();
+            $meta_value['layout'][$key] = $input[$key] = $new_styles;;
+            USI_Page_Solutions::meta_value_put($meta_value, __METHOD__);
             $this->settings_fields_update_recursive(1, $page_id, $key);
             $error = null;
             break;
@@ -505,19 +510,19 @@ class USI_Page_Solutions_Layout {
       }
 
       // May be redundant, but get post meta for this page;
-      USI_Page_Solutions::post_meta_get($page_id);
+      $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
 
       // Clear parent's value if this page doesn't inherit;
-      if (empty(USI_Page_Solutions::$post_meta['options'][$key . '_inherit'])) $parent_value = null;
+      if (empty($meta_value['options'][$key . '_inherit'])) $parent_value = null;
 
       // Load parent's value or null if not inherited or this page has no parent;
-      USI_Page_Solutions::$post_meta['layout'][$key . '_parent'] = $parent_value;
+      $meta_value['layout'][$key . '_parent'] = $parent_value;
 
       // Update this page's post meta data;
-      USI_Page_Solutions::post_meta_update();
+      USI_Page_Solutions::meta_value_put($meta_value, __METHOD__);
 
       // Use this page's value as children's parent value;
-      $childrens_parent_value = USI_Page_Solutions::$post_meta['layout'][$key];
+      $childrens_parent_value = $meta_value['layout'][$key];
 
       // Get array of children, if any;
       global $wpdb;
@@ -525,7 +530,7 @@ class USI_Page_Solutions_Layout {
       $children = $wpdb->get_results(
          $wpdb->prepare("SELECT `ID` FROM `$SAFE_table_name` WHERE (`post_parent` = %d) AND (`post_type` = 'page')", $page_id), ARRAY_A
       );
-      // USI_Page_Cache::log(__METHOD__.':'.__LINE__.':children=' . print_r($children, true));
+      // USI_Debug::print_r(__METHOD__.':'.__LINE__.':children=', print_r($children, true));
 
       // Load this page's value into children and propagate down to all descendants;
       for ($ith = 0; $ith < count($children); $ith++) {
@@ -537,31 +542,34 @@ class USI_Page_Solutions_Layout {
    function settings_page_render() {
 
       if (!current_user_can('manage_options')) wp_die(__('You do not have sufficient permissions to access this page.'));
+
+      $page_id = (int)(isset($_GET['page_id']) ? $_GET['page_id'] : 0);
+      $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
+
       switch ($page = isset($_GET['page']) ? $_GET['page'] : 'usi-page-solutions-layout-css-edit') {
       default:
          $key = 'css';
          $header = __('Edit Page CSS', USI_Page_Solutions::TEXTDOMAIN);
-         $this->options['css'] = USI_Page_Solutions::$post_meta['layout']['css'];
-         $this->options['css_parent'] = USI_Page_Solutions::$post_meta['layout']['css_parent'];
+         $this->options['css'] = $meta_value['layout']['css'];
+         $this->options['css_parent'] = $meta_value['layout']['css_parent'];
          break;
       case 'usi-page-solutions-layout-codes-edit':
          $key = 'codes';
          $header = __('Edit Page Code', USI_Page_Solutions::TEXTDOMAIN);
-         $this->options['codes_head'] = USI_Page_Solutions::$post_meta['layout']['codes_head'];
-         $this->options['codes_head_parent'] = USI_Page_Solutions::$post_meta['layout']['codes_head_parent'];
-         $this->options['codes_foot'] = USI_Page_Solutions::$post_meta['layout']['codes_foot'];
-         $this->options['codes_foot_parent'] = USI_Page_Solutions::$post_meta['layout']['codes_foot_parent'];
+         $this->options['codes_head'] = $meta_value['layout']['codes_head'];
+         $this->options['codes_head_parent'] = $meta_value['layout']['codes_head_parent'];
+         $this->options['codes_foot'] = $meta_value['layout']['codes_foot'];
+         $this->options['codes_foot_parent'] = $meta_value['layout']['codes_foot_parent'];
          break;
       case 'usi-page-solutions-layout-links-edit':
          $key = 'links';
          $header = __('Edit Links', USI_Page_Solutions::TEXTDOMAIN);
-         $this->options['scripts'] = USI_Page_Solutions::$post_meta['layout']['scripts'];
-         $this->options['scripts_parent'] = USI_Page_Solutions::$post_meta['layout']['scripts_parent'];
-         $this->options['styles'] = USI_Page_Solutions::$post_meta['layout']['styles'];
-         $this->options['styles_parent'] = USI_Page_Solutions::$post_meta['layout']['styles_parent'];
+         $this->options['scripts'] = $meta_value['layout']['scripts'];
+         $this->options['scripts_parent'] = $meta_value['layout']['scripts_parent'];
+         $this->options['styles'] = $meta_value['layout']['styles'];
+         $this->options['styles_parent'] = $meta_value['layout']['styles_parent'];
       }
 
-      $page_id = (int)(isset($_GET['page_id']) ? $_GET['page_id'] : 0);
       $title = get_the_title($page_id);
 ?>
 <div class="wrap">

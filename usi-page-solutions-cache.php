@@ -6,7 +6,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Cache {
 
-   const VERSION = '0.0.2 (2018-01-04)';
+   const VERSION = '0.0.3 (2018-01-05)';
 
    private static $current_time = null;
    private static $valid_until = USI_Page_Cache::DATE_OMEGA;
@@ -59,64 +59,49 @@ class USI_Page_Solutions_Cache {
    } // action_admin_head();
 
    function action_save_post($page_id) {
+
       if (!current_user_can('edit_page', $page_id)) {
       } else if (wp_is_post_autosave($page_id)) {
       } else if (wp_is_post_revision($page_id)) {
       } else if (empty($_POST['usi-page-solutions-cache-nonce'])) {
       } else if (!wp_verify_nonce($_POST['usi-page-solutions-cache-nonce'], basename(__FILE__))) {
       } else {
-         // Save options recusively;
-         $this->action_save_post_recursive($page_id, 1);
-         // Get this page's options in case recursion picked up child options;
-         USI_Page_Solutions::post_meta_get($page_id);
+         $this->action_save_post_recursive($page_id);
       }
+
    } // action_save_post();
 
-   private function action_save_post_recursive($page_id, $level) {
+   private function action_save_post_recursive($page_id, $parent_meta_value = null) {
 
-      USI_Page_Solutions::post_meta_get($page_id);
+      $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
 
-      $old_inherit_parent = USI_Page_Solutions::$post_meta['cache']['inherit-parent'];
+      if ($parent_meta_value) { // IF copying parent parameters to this page;
 
-      if (!$old_inherit_parent && (1 < $level)) return;
-      
-      $inherit_parent = !empty($_POST['usi-page-solutions-cache-inherit-parent']);
-      USI_Page_Solutions::$post_meta['cache']['inherit-parent'] = $inherit_parent;
-      
-      if ($inherit_parent || $old_inherit_parent) {
+         $clear_cache = false;
 
-         // Get parent's cache paramters;
-         $post = get_post($page_id);
-         USI_Page_Solutions::post_meta_get($post->post_parent);
-         $cache = USI_Page_Solutions::$post_meta['cache'];
+         $meta_value['cache']['allow-clear']         = $parent_meta_value['cache']['allow-clear'];
+         $meta_value['cache']['clear-every-publish'] = $parent_meta_value['cache']['clear-every-publish'];
+         $meta_value['cache']['mode']                = $parent_meta_value['cache']['mode'];
+         $meta_value['cache']['period']              = $parent_meta_value['cache']['period'];
+         $meta_value['cache']['schedule']            = $parent_meta_value['cache']['schedule'];
 
-         // Get back this page's meta values;
-         USI_Page_Solutions::post_meta_get($page_id);
+      } else { // ELSE not copying parent parameters to this page;
 
-         // Load parent's cache parameters;
-         USI_Page_Solutions::$post_meta['cache'] = $cache;
-         USI_Page_Solutions::$post_meta['cache']['inherit-parent'] = (1 < $level) ? $old_inherit_parent : $inherit_parent;
-         $this->clear_cache($page_id);
+         $meta_value['cache']['allow-clear'] = !empty($_POST['usi-page-solutions-cache-allow-clear']);
 
-      } else {
-
-         USI_Page_Solutions::$post_meta['cache']['allow-clear'] = !empty($_POST['usi-page-solutions-cache-allow-clear']);
-         USI_Page_Solutions::$post_meta['cache']['clear-every-publish'] = !empty($_POST['usi-page-solutions-cache-clear-every-publish']);
+         $clear_cache = $meta_value['cache']['clear-every-publish'] = !empty($_POST['usi-page-solutions-cache-clear-every-publish']);
          
          switch ($mode = isset($_POST['usi-page-solutions-cache-mode']) ? $_POST['usi-page-solutions-cache-mode'] : 'disable') {
          default: $mode = 'disable'; case 'manual': case 'period': case 'schedule': break;
          }
-         USI_Page_Solutions::$post_meta['cache']['mode'] = $mode;
-
-         if (('disable' == $mode) || !empty($_POST['usi-page-solutions-cache-clear-next-publish']) ||
-            USI_Page_Solutions::$post_meta['cache']['clear-every-publish']) $this->clear_cache($page_id);     
+         $meta_value['cache']['mode'] = $mode;
 
          switch ($period = (int)(isset($_POST['usi-page-solutions-cache-period']) ? $_POST['usi-page-solutions-cache-period'] : 86400)) {
          default: $period = 86400;
          case 300:   case 600:   case 900:   case 1200:  case 1800:  case 3600:  case 7200:  
          case 10800: case 14400: case 21600: case 28800: case 43200: break;
          }
-         USI_Page_Solutions::$post_meta['cache']['period'] = $period;
+         $meta_value['cache']['period'] = $period;
          
          if ('period' == $mode) {
             // Address WordPress bug and set time zone to proper value;
@@ -125,22 +110,22 @@ class USI_Page_Solutions_Cache {
             
             $date = strtotime(substr(USI_Page_Solutions_Cache::$current_time, 0, 10));
             $time = strtotime(USI_Page_Solutions_Cache::$current_time);
-            USI_Page_Solutions::$post_meta['cache']['valid_until'] = date('Y-m-d H:i:s', $date + $period * (((int)(($time - $date) / $period)) + 1));
+            $meta_value['cache']['valid_until'] = date('Y-m-d H:i:s', $date + $period * (((int)(($time - $date) / $period)) + 1));
             
             // Address WordPress bug and set time zone back to bug value;
             date_default_timezone_set($WordPress_BUG_current_timezone);
          }
       
          $schedule_items = (int)(isset($_POST['usi-page-solutions-cache-schedule-count']) ? $_POST['usi-page-solutions-cache-schedule-count'] : '0');
-         $safe_schedule = array();
+         $SAFE_schedule = array();
          for ($ith = 0; $ith < $schedule_items; $ith++) {
             $name = 'usi-page-solutions-cache-schedule-' . $ith;
             if (isset($_POST[$name])) {
-               if (preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $_POST[$name])) $safe_schedule[] = $_POST[$name];
+               if (preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $_POST[$name])) $SAFE_schedule[] = $_POST[$name];
             }
          }
-         if (empty($safe_schedule)) { $safe_schedule = array('00:00:00'); } else { sort($safe_schedule); }
-         USI_Page_Solutions::$post_meta['cache']['schedule'] = $safe_schedule;
+         if (empty($SAFE_schedule)) { $SAFE_schedule = array('00:00:00'); } else { sort($SAFE_schedule); }
+         $meta_value['cache']['schedule'] = $SAFE_schedule;
          
          if ('schedule' == $mode) {
             // Address WordPress bug and set time zone to proper value;
@@ -149,28 +134,51 @@ class USI_Page_Solutions_Cache {
       
             $current_time = substr(USI_Page_Solutions_Cache::$current_time, 11);
             $target = null;
-            foreach ($safe_schedule as $time) {
+            foreach ($SAFE_schedule as $time) {
                if ($time > $current_time) {
                   $target = $time;
                   break;
                }
             }
             if ($target) {
-               USI_Page_Solutions::$post_meta['cache']['valid_until'] = substr(USI_Page_Solutions_Cache::$current_time, 0, 10) . ' ' . $target;
+               $meta_value['cache']['valid_until'] = substr(USI_Page_Solutions_Cache::$current_time, 0, 10) . ' ' . $target;
             } else {
                $date = strtotime(substr(USI_Page_Solutions_Cache::$current_time, 0, 10)) + 86400;
-               USI_Page_Solutions::$post_meta['cache']['valid_until'] = date('Y-m-d ', $date) . $safe_schedule[0];
+               $meta_value['cache']['valid_until'] = date('Y-m-d ', $date) . $SAFE_schedule[0];
             }
             
             // Address WordPress bug and set time zone back to bug value;
             date_default_timezone_set($WordPress_BUG_current_timezone);
          }
-      
-         // Save this page's parameters;
-         USI_Page_Solutions::post_meta_update();
-      
+
+         // Clear cache in case there was a cache before and now it is disabled;
+         if ('disable' == $mode) $clear_cache = true;
+
+         // Clear cache if clear on next publish;
+         if (!empty($_POST['usi-page-solutions-cache-clear-next-publish'])) $clear_cache = true;
+
+      } // ENDIF not copying parent parameters to this page;
+
+      if ($clear_cache) {
+         $meta_value['cache']['updated'] = 
+         $meta_value['cache']['valid_until'] = USI_Page_Cache::DATE_ALPHA;
+         $meta_value['cache']['html'] = '';
+         $meta_value['cache']['size'] = 0;
       }
-      
+
+      // Save this page's parameters;
+      USI_Page_Solutions::meta_value_put($meta_value, __METHOD__);
+
+      if ($clear_cache) {
+         // Since index.php does the updates, just call curl and discard the data.
+         $ch = curl_init(); 
+         curl_setopt($ch, CURLOPT_URL, rtrim(get_permalink($page_id), '/') . '/');
+         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+         curl_exec($ch);
+         curl_close($ch);
+      }
+
       // Propagate this page's parameters down to all pages that inherit from this page;
       global $wpdb;
       $SAFE_table_name = $wpdb->prefix . 'posts';
@@ -179,34 +187,18 @@ class USI_Page_Solutions_Cache {
       );
 
       for ($ith = 0; $ith < count($children); $ith++) {
-         $this->action_save_post_recursive($children[$ith]['ID'], $level + 1);
+         $this->action_save_post_recursive($children[$ith]['ID'], $meta_value);
       }
 
    } // action_save_post_recursive();
 
-   private function clear_cache($page_id) {
-      // Clear cache info to force curl page load below;         
-      USI_Page_Solutions::$post_meta['cache']['updated'] = 
-      USI_Page_Solutions::$post_meta['cache']['valid_until'] = USI_Page_Cache::DATE_ALPHA;
-      USI_Page_Solutions::$post_meta['cache']['html'] = '';
-      USI_Page_Solutions::$post_meta['cache']['size'] = 0;
-      USI_Page_Solutions::post_meta_update();
-      
-      // Since index needs to do the updates completely, just call curl and discard the data.
-      $ch = curl_init(); 
-      curl_setopt($ch, CURLOPT_URL, rtrim(get_permalink($page_id), '/') . '/');
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-      curl_exec($ch);
-      curl_close($ch);
-   } // clear_cache();
-
    function render_meta_box($post) {
+
       wp_nonce_field(basename(__FILE__), 'usi-page-solutions-cache-nonce');
 
-      USI_Page_Solutions::post_meta_get($post->ID);
+      $meta_value = USI_Page_Solutions::meta_value_get($post->ID, __METHOD__);
 
-      $cache = USI_Page_Solutions::$post_meta['cache'];
+      $cache = $meta_value['cache'];
 
       $disabled = (($post->post_parent && $cache['inherit-parent']) ? ' disabled' : '');
 
@@ -285,14 +277,14 @@ class USI_Page_Solutions_Cache {
        <td></td>
        <td>
 <?php
-$ith = 0;
-$schedule = $cache['schedule'];
-$schedule[] = '';
-foreach ($schedule as $time) {
-   echo '         <input' . $disabled . ' id="usi-page-solutions-cache-schedule-' . $ith . 
-      '" name="usi-page-solutions-cache-schedule-' . $ith . '" style="width:100%;" type="text" value="' . $time . '" />' . PHP_EOL;
-   $ith++;
-}
+      $ith = 0;
+      $schedule = $cache['schedule'];
+      $schedule[] = '';
+      foreach ($schedule as $time) {
+         echo '         <input' . $disabled . ' id="usi-page-solutions-cache-schedule-' . $ith . 
+            '" name="usi-page-solutions-cache-schedule-' . $ith . '" style="width:100%;" type="text" value="' . $time . '" />' . PHP_EOL;
+         $ith++;
+      }
 ?>
          <input id="usi-page-solutions-cache-schedule-count" name="usi-page-solutions-cache-schedule-count" type="hidden" value="<?php echo $ith; ?>">
        </td>
@@ -301,7 +293,7 @@ foreach ($schedule as $time) {
    <p><label><?php _e('Cache created', USI_Page_Solutions::TEXTDOMAIN); ?> :</label><input readonly style="width:100%;" type="text" value="<?php echo $cache['updated']; ?>" /></p>
    <p><label><?php _e('Cache valid until', USI_Page_Solutions::TEXTDOMAIN); ?> :</label><input readonly style="width:100%;" type="text" value="<?php echo $cache['valid_until']; ?>" /></p>
 <?php
-      // usi_log(USI_Debug::get_message());
+
    } // render_meta_box();
       
 } // USI_Page_Solutions_Cache;

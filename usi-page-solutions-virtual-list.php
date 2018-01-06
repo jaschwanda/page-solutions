@@ -8,7 +8,7 @@ if (!class_exists('WP_List_Table')) {
 
 class USI_Page_Solutions_Virtual_List extends WP_List_Table {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '0.0.3 (2018-01-05)';
 
    private $delete_virtual = false;
    private $edit_virtual = false;

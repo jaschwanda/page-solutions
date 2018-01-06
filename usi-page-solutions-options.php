@@ -4,15 +4,26 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Options {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '0.0.3 (2018-01-05)';
 
    function __construct() {
-      add_action('add_meta_boxes', array($this, 'add_meta_box'));
-      add_action('admin_head', array($this, 'add_help'));
-      add_action('save_post', array($this, 'save_meta_box'));
+      add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
+      add_action('admin_head', array($this, 'action_admin_head'));
+      add_action('save_post', array($this, 'action_save_post'));
    } // __construct();
 
-   function add_help() {
+   function action_add_meta_boxes() {
+      add_meta_box(
+         'usi-page-solutions-options-meta-box', // Meta box id;
+         __('Page-Solutions Options', USI_Page_Solutions::TEXTDOMAIN), // Title;
+         array($this, 'render_meta_box'), // Render meta box callback;
+         'page', // Screen type;
+         'side', // Location on page;
+         'low' // Priority;
+      );
+   } // action_add_meta_boxes();
+
+   function action_admin_head() {
 
       $screen = get_current_screen();
 
@@ -29,25 +40,36 @@ class USI_Page_Solutions_Options {
 '<p>' . __('The Page-Solutions plugin options are configured on a page by page basis.', USI_Page_Solutions::TEXTDOMAIN) . '</p>'
       ));
 
-   } // add_help();
+   } // action_admin_head();
 
+   function action_save_post($page_id) {
 
-   function add_meta_box() {
-      add_meta_box(
-         'usi-page-solutions-options-meta-box', // Meta box id;
-         __('Page-Solutions Options', USI_Page_Solutions::TEXTDOMAIN), // Title;
-         array($this, 'render_meta_box'), // Render meta box callback;
-         'page', // Screen type;
-         'side', // Location on page;
-         'low' // Priority;
-      );
-   } // add_meta_box();
+      if (!current_user_can('edit_page', $page_id)) {      
+      } else if (wp_is_post_autosave($page_id)) {
+      } else if (wp_is_post_revision($page_id)) {
+      } else if (empty($_POST['usi-page-solutions-options-nonce'])) {
+      } else if (!wp_verify_nonce($_POST['usi-page-solutions-options-nonce'], basename(__FILE__))) {
+      } else {
+         $new_arguments = !empty($_POST['usi-page-solutions-options-arguments']);
+         $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
+         if ($meta_value['options']['arguments'] != $new_arguments) {
+            delete_post_meta($page_id, $meta_value['key']); 
+            $offset = strlen(USI_Page_cache::POST_META);
+            $meta_value['key'][$offset] = ($new_arguments ? '*' : '!');
+            $meta_value['options']['arguments'] = $new_arguments;
+         }
+         USI_Page_Solutions::meta_value_put($meta_value, __METHOD__);
+      }
+
+   } // action_save_post();
 
    function render_meta_box($post) {
 
       wp_nonce_field(basename(__FILE__), 'usi-page-solutions-options-nonce');
 
-      $arguments = USI_Page_Solutions::$post_meta['options']['arguments'];
+      $meta_value = USI_Page_Solutions::meta_value_get($post->ID, __METHOD__);
+
+      $arguments = $meta_value['options']['arguments'];
 
       $disabled = USI_Page_Solutions::number_of_offspring($post->ID) ? ' disabled' : null;
 
@@ -59,24 +81,6 @@ class USI_Page_Solutions_Options {
 <?php
 
    } // render_meta_box();
-
-   function save_meta_box($page_id) {
-      if (!current_user_can('edit_page', $page_id)) {      
-      } else if (wp_is_post_autosave($page_id)) {
-      } else if (wp_is_post_revision($page_id)) {
-      } else if (empty($_POST['usi-page-solutions-options-nonce'])) {
-      } else if (!wp_verify_nonce($_POST['usi-page-solutions-options-nonce'], basename(__FILE__))) {
-      } else {
-         $new_arguments = isset($_POST['usi-page-solutions-options-arguments']) && $_POST['usi-page-solutions-options-arguments'];
-         USI_Page_Solutions::post_meta_get();
-         if (USI_Page_Solutions::$post_meta['options']['arguments'] != $new_arguments) {
-            delete_post_meta($page_id, USI_Page_Solutions::$post_meta['key']); 
-            USI_Page_Solutions::$post_meta['key'][19] = ($new_arguments ? '*' : '!');
-            USI_Page_Solutions::$post_meta['options']['arguments'] = $new_arguments;
-         }
-         USI_Page_Solutions::post_meta_update();
-      }
-   } // save_meta_box();
       
 } // USI_Page_Solutions_Options;
 

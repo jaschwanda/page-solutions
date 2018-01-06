@@ -6,7 +6,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 Plugin Name: Page-Solutions
 Plugin URI: https://github.com/jaschwanda/page-solutions
 Description: The Page-Solutions plugin extends the WordPress widget system by enabling the creation of virtual widget collections that can be displayed in enhanced widget areas on a page by page basis. It also provides page caching functionality. The Page-Solutions plugin is developed and maintained by Universal Solutions. 
-Version: 0.0.1 (2018-01-03)
+Version: 0.0.3 (2018-01-05)
 Author: Jim Schwanda
 Author URI: http://www.usi2solve.com/leader
 Text Domain: usi-page-solutions
@@ -17,7 +17,10 @@ require_once('usi-settings.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '0.0.2 (2018-01-04)';
+   const VERSION = '0.0.3 (2018-01-05)';
+
+   const DEBUG_HTML  = 0x01;
+   const DEBUG_VALUE = 0x02;
 
    const NAME       = 'Page-Solutions';
    const PREFIX     = 'usi-page';
@@ -33,12 +36,13 @@ final class USI_Page_Solutions {
       'Settings-View'  => 'View settings page',
    );
 
-   private static $info = null;
+   private static $debug = self::DEBUG_VALUE;
+   private static $info  = null;
 
+   public static $meta_value = null; // Page/post postmeta data;
    public static $option_name_base = null;
    public static $option_name_virtual = null;
    public static $options_virtual = null; // Virtual widget array for current theme;
-   public static $post_meta = null; // Page/post postmeta data;
    public static $theme_name = null; // Slugified name of current theme;
    public static $virtual_source = null; // Virtual source widget to map in enhanced widget area;
 
@@ -59,17 +63,24 @@ final class USI_Page_Solutions {
    } // action_widgets_init();
 
    static function action_wp_enqueue_scripts() {
-      self::post_meta_get();
+
+      global $post;
+
+      $post_id = (int)(!empty($post->ID) ? $post->ID : 0);
+
+      self::$meta_value = self::meta_value_get($post_id, __METHOD__);
+
       $what2do = array(
          array('key' => 'styles_parent',  'inherit' => 'styles_inherit',  'funtction' => 'wp_enqueue_style',  'default' => null),
          array('key' => 'styles',         'inherit' => false,             'funtction' => 'wp_enqueue_style',  'default' => null),
          array('key' => 'scripts_parent', 'inherit' => 'scripts_inherit', 'funtction' => 'wp_enqueue_script', 'default' => false),
          array('key' => 'scripts',        'inherit' => false,             'funtction' => 'wp_enqueue_script', 'default' => false),
       );
+
       foreach ($what2do as $do) {
-         if (!$do['inherit'] || !empty(self::$post_meta['options'][$do['inherit']])) {
-            if (!empty(self::$post_meta['layout'][$do['key']])) {
-               $link = self::$post_meta['layout'][$do['key']];
+         if (!$do['inherit'] || !empty(self::$meta_value['options'][$do['inherit']])) {
+            if (!empty(self::$meta_value['layout'][$do['key']])) {
+               $link = self::$meta_value['layout'][$do['key']];
                foreach ($link as $key => $value) {
                   if (!empty($value)) {
                      $tokens = explode(' ', $value);
@@ -85,21 +96,22 @@ final class USI_Page_Solutions {
             }
          }
       }
+
    } // action_wp_enqueue_scripts();
 
    static function action_wp_footer() {
-      if (!empty(self::$post_meta['layout']['codes_foot_parent'])) echo self::$post_meta['layout']['codes_foot_parent'];
-      if (!empty(self::$post_meta['layout']['codes_foot'])) echo self::$post_meta['layout']['codes_foot'];
+      if (!empty(self::$meta_value['layout']['codes_foot_parent'])) echo self::$meta_value['layout']['codes_foot_parent'];
+      if (!empty(self::$meta_value['layout']['codes_foot'])) echo self::$meta_value['layout']['codes_foot'];
    } // action_wp_footer();
 
    static function action_wp_head() {
-      if (self::$post_meta['options']['css_inherit'] && !empty(self::$post_meta['layout']['css_parent'])) echo self::$post_meta['layout']['css_parent'];
-      if (!empty(self::$post_meta['layout']['css'])) echo self::$post_meta['layout']['css'];
-      if (!empty(self::$post_meta['layout']['codes_head_parent'])) echo self::$post_meta['layout']['codes_head_parent'];
-      if (!empty(self::$post_meta['layout']['codes_head'])) echo self::$post_meta['layout']['codes_head'];
+      if (self::$meta_value['options']['css_inherit'] && !empty(self::$meta_value['layout']['css_parent'])) echo self::$meta_value['layout']['css_parent'];
+      if (!empty(self::$meta_value['layout']['css'])) echo self::$meta_value['layout']['css'];
+      if (!empty(self::$meta_value['layout']['codes_head_parent'])) echo self::$meta_value['layout']['codes_head_parent'];
+      if (!empty(self::$meta_value['layout']['codes_head'])) echo self::$meta_value['layout']['codes_head'];
    } // action_wp_head();
 
-   function callback() {
+   static function callback() {
     
       global $wp_registered_widgets;
 
@@ -146,7 +158,7 @@ final class USI_Page_Solutions {
       
       // This filter intercepts the widget() calls so that the widget output can be buffered and
       // the dynamics can be saved, not required when caching is disabled as everything must run;
-      if (is_admin() || ('disable' == self::$post_meta['cache']['mode'])) return($sidebar_params);
+      if (is_admin() || ('disable' == self::$meta_value['cache']['mode'])) return($sidebar_params);
 
       global $wp_registered_widgets;
 
@@ -166,8 +178,8 @@ final class USI_Page_Solutions {
    
          if ($mapped_widgets) return($mapped_widgets);
 
-         if (!empty(self::$post_meta['widgets'])) {
-            foreach (self::$post_meta['widgets'] as $target_id => $options_enhanced) {
+         if (!empty(self::$meta_value['widgets'])) {
+            foreach (self::$meta_value['widgets'] as $target_id => $options_enhanced) {
                $jth = 0;
                foreach ($options_enhanced as $source_id) {
                   for ($ith = 0; $ith < count($sidebars_widgets[$source_id]); $ith++, $jth++) {
@@ -190,6 +202,7 @@ final class USI_Page_Solutions {
    } // filter_widget_display_callback();
 
    static function init() {
+
       if (empty(USI_Settings::$options[self::PREFIX])) {
          $defaults['cache']['config-location'] =
          $defaults['cache']['root-location']   =
@@ -224,7 +237,110 @@ final class USI_Page_Solutions {
          add_filter('widget_display_callback', array(__CLASS__, 'filter_widget_display_callback'), 10, 3);
       }
 
+      register_shutdown_function(array(__CLASS__, 'shutdown'));
+
    } // init();
+
+   static function meta_value_get($post_id, $method) {
+
+      try {
+         global $wpdb;
+         $dbs = new USI_Dbs(array('hash' => DB_PASSWORD, 'host' => DB_HOST, 'name' => DB_NAME, 'user' => DB_USER));
+         $query = $dbs->prepare_x(
+            'SELECT `meta_key`, `meta_value` FROM `' . $wpdb->prefix . 'postmeta` ' .
+            "WHERE (`post_id` = ?) AND (`meta_key` LIKE '" . USI_Page_Cache::POST_META . "%') " .
+            'LIMIT 1', // SQL;
+            array('i', & $post_id), // Input parameters;
+            array(& $meta_key, & $meta_value) // Output variables;
+         );
+         $data = array();
+         if (1 == $query->num_rows) {
+            $query->fetch();
+            try {
+               $data = unserialize(base64_decode($meta_value));
+            } catch(exception $e) {
+            }
+         }
+         $query = null; // Close query;
+      } catch(USI_Dbs_Exception $e) {
+         USI_Debug::exception($e);
+      }
+
+      $cache = USI_Page_Cache::validate(!empty($data['cache']) ? $data['cache'] : null);
+
+      $layout['codes_foot']          = !empty($data['layout']['codes_foot'])        ? $data['layout']['codes_foot']        : null;
+      $layout['codes_foot_parent']   = !empty($data['layout']['codes_foot_parent']) ? $data['layout']['codes_foot_parent'] : null;
+      $layout['codes_head']          = !empty($data['layout']['codes_head'])        ? $data['layout']['codes_head']        : null;
+      $layout['codes_head_parent']   = !empty($data['layout']['codes_head_parent']) ? $data['layout']['codes_head_parent'] : null;
+      $layout['css']                 = !empty($data['layout']['css'])               ? $data['layout']['css']               : null;
+      $layout['css_parent']          = !empty($data['layout']['css_parent'])        ? $data['layout']['css_parent']        : null;
+      $layout['scripts']             = !empty($data['layout']['scripts'])           ? $data['layout']['scripts']           : null;
+      $layout['scripts_parent']      = !empty($data['layout']['scripts_parent'])    ? $data['layout']['scripts_parent']    : null;
+      $layout['styles']              = !empty($data['layout']['styles'])            ? $data['layout']['styles']            : null;
+      $layout['styles_parent']       = !empty($data['layout']['styles_parent'])     ? $data['layout']['styles_parent']     : null;
+
+      $options['arguments']          = !empty($data['options']['arguments']);
+      $options['codes_foot_inherit'] = !empty($data['options']['codes_foot_inherit']);
+      $options['codes_head_inherit'] = !empty($data['options']['codes_head_inherit']);
+      $options['css_inherit']        = !empty($data['options']['css_inherit']);
+      $options['scripts_inherit']    = !empty($data['options']['scripts_inherit']);
+      $options['styles_inherit']     = !empty($data['options']['styles_inherit']);
+      $options['widgets_inherit']    = !empty($data['options']['widgets_inherit']);
+
+      $widgets = !empty($data['widgets']) ? $data['widgets'] : null;
+
+      $url      = rtrim(get_permalink($post_id), '/') . '/';
+      $path     = str_replace(array($_SERVER['SERVER_NAME'], 'https://', 'http://'), '', $url);
+      $meta_key = USI_Page_Cache::POST_META . ($options['arguments'] ? '*' : '!') . $path;
+
+      $value = array(
+         'key'     => $meta_key, 
+         'post_id' => $post_id, 
+         'cache'   => $cache, 
+         'layout'  => $layout, 
+         'options' => $options, 
+         'widgets' => $widgets
+      );
+
+      if (self::$debug) {
+
+         if (!(self::$debug & self::DEBUG_HTML)) { 
+            $html = $value['cache']['html']; 
+            $value['cache']['html'] = '~~~'; 
+         }
+
+         USI_Debug::print_r($method . '>' . __METHOD__ . ':meta_value=', $value);
+
+         if (!(self::$debug & self::DEBUG_HTML)) {
+            $value['cache']['html'] = $html;
+         }
+
+      }
+
+      return($value);
+
+   } // meta_value_get();
+
+   static function meta_value_put($value, $method) {
+
+      if (self::$debug) {
+
+         if (!(self::$debug & self::DEBUG_HTML)) { 
+            $html = $value['cache']['html']; 
+            $value['cache']['html'] = '~~~'; 
+         }
+
+         USI_Debug::print_r($method . '>' . __METHOD__ . ':meta_value=', $value);
+
+         if (!(self::$debug & self::DEBUG_HTML)) {
+            $value['cache']['html'] = $html;
+         }
+
+      }
+
+      update_post_meta($value['post_id'], $value['key'], base64_encode(serialize($value)));
+
+   } // meta_value_put();
 
    public static function number_of_offspring($page_id) {
       global $wpdb;
@@ -235,78 +351,9 @@ final class USI_Page_Solutions {
       return($children);
    } // number_of_offspring
 
-   static function post_meta_get($post_id = 0) {
-
-      if (!self::$post_meta || $post_id) {
-
-         global $post;
-
-         $id = (int)($post_id ? $post_id : (!empty($post->ID) ? $post->ID : 0));
-
-         if ($id) {
-
-            try {
-               global $wpdb;
-               $dbs = new USI_Dbs(array('hash' => DB_PASSWORD, 'host' => DB_HOST, 'name' => DB_NAME, 'user' => DB_USER));
-               $query = $dbs->prepare_x(
-                  'SELECT `meta_key`, `meta_value` FROM `' . $wpdb->prefix . 'postmeta` ' .
-                  "WHERE (`post_id` = ?) AND (`meta_key` LIKE '" . USI_Page_Cache::POST_META . "%') " .
-                  'LIMIT 1', // SQL;
-                  array('i', & $id), // Input parameters;
-                  array(& $meta_key, & $meta_value) // Output variables;
-               );
-               $stuff = array();
-               if (1 == $query->num_rows) {
-                  $query->fetch();
-                  try {
-                     @ $stuff = unserialize($meta_value); // Not sure what causes error here, but doesn't affect operation;
-                  } catch(exception $e) {
-                  }
-               }
-               $query = null; // Close query;
-            } catch(USI_Dbs_Exception $e) {
-               USI_Debug::exception($e);
-            }
-
-            $SAFE_cache = USI_Page_Cache::validate(!empty($stuff['cache']) ? $stuff['cache'] : null);
-
-            $SAFE_layout['codes_foot']          = !empty($stuff['layout']['codes_foot'])        ? $stuff['layout']['codes_foot']        : null;
-            $SAFE_layout['codes_foot_parent']   = !empty($stuff['layout']['codes_foot_parent']) ? $stuff['layout']['codes_foot_parent'] : null;
-            $SAFE_layout['codes_head']          = !empty($stuff['layout']['codes_head'])        ? $stuff['layout']['codes_head']        : null;
-            $SAFE_layout['codes_head_parent']   = !empty($stuff['layout']['codes_head_parent']) ? $stuff['layout']['codes_head_parent'] : null;
-            $SAFE_layout['css']                 = !empty($stuff['layout']['css'])               ? $stuff['layout']['css']               : null;
-            $SAFE_layout['css_parent']          = !empty($stuff['layout']['css_parent'])        ? $stuff['layout']['css_parent']        : null;
-            $SAFE_layout['scripts']             = !empty($stuff['layout']['scripts'])           ? $stuff['layout']['scripts']           : null;
-            $SAFE_layout['scripts_parent']      = !empty($stuff['layout']['scripts_parent'])    ? $stuff['layout']['scripts_parent']    : null;
-            $SAFE_layout['styles']              = !empty($stuff['layout']['styles'])            ? $stuff['layout']['styles']            : null;
-            $SAFE_layout['styles_parent']       = !empty($stuff['layout']['styles_parent'])     ? $stuff['layout']['styles_parent']     : null;
-
-            $SAFE_options['arguments']          = !empty($stuff['options']['arguments']);
-            $SAFE_options['codes_foot_inherit'] = !empty($stuff['options']['codes_foot_inherit']);
-            $SAFE_options['codes_head_inherit'] = !empty($stuff['options']['codes_head_inherit']);
-            $SAFE_options['css_inherit']        = !empty($stuff['options']['css_inherit']);
-            $SAFE_options['scripts_inherit']    = !empty($stuff['options']['scripts_inherit']);
-            $SAFE_options['styles_inherit']     = !empty($stuff['options']['styles_inherit']);
-            $SAFE_options['widgets_inherit']    = !empty($stuff['options']['widgets_inherit']);
-
-            $SAFE_widgets = !empty($stuff['widgets']) ? $stuff['widgets'] : null;
-
-            $url = rtrim(get_permalink($id), '/') . '/';
-            $path = str_replace(array($_SERVER['SERVER_NAME'], 'https://', 'http://'), '', $url);
-            $meta_key = USI_Page_Cache::POST_META . ($SAFE_options['arguments'] ? '*' : '!') . $path;
-
-            self::$post_meta = array('key' => $meta_key, 'post_id' => $id, 'cache' => $SAFE_cache, 
-               'layout' => $SAFE_layout, 'options' => $SAFE_options, 'widgets' => $SAFE_widgets);
-            // USI_Debug::message(__METHOD__.':'.__LINE__.':post_meta=' . print_r(self::$post_meta, true));
-
-         }
-      }
-   } // post_meta_get();
-
-   static function post_meta_update() {
-      update_post_meta(self::$post_meta['post_id'], self::$post_meta['key'], self::$post_meta);
-      // USI_Debug::message(__METHOD__.':post_meta=' . print_r(self::$post_meta, true));
-   } // post_meta_update();
+   static function shutdown() {
+      if ($message = USI_Debug::get_message()) USI_Page_Cache::log($message);
+   } // shutdown();
 
 } // Class USI_Page_Solutions;
 

@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 final class USI_Page_Solutions_Admin {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '0.0.3 (2018-01-05)';
 
    public static $enhanced_edit  = false;
    public static $settings_view  = false;

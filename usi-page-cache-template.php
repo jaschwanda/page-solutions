@@ -7,7 +7,7 @@ class USI_Page_Exception extends Exception { } // Class USI_Page_Exception;
 
 final class USI_Page_Cache {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '0.0.3 (2018-01-05)';
 
    const DATE_ALPHA = '0000-00-00 00:00:00';
    const DATE_OMEGA = '9999-12-31 23:59:59';
@@ -63,7 +63,7 @@ final class USI_Page_Cache {
             "WHERE (`meta_key` <> '" . self::POST_META . "') AND ((`meta_key` = ?) OR (? LIKE CONCAT(`meta_key`, '%'))) " .
             'ORDER BY `meta_key` DESC LIMIT 1', // SQL;
             array('ss', & $path_no_args, & $path_args), // Input parameters;
-            array(& self::$meta_id, & self::$post_id, & $meta_key, & $meta_value_serialized) // Output variables;
+            array(& self::$meta_id, & self::$post_id, & $meta_key, & $meta_value) // Output variables;
          );
          if (self::DEBUG_SQL & self::$debug) USI_Debug::message(__METHOD__.':'.$query->get_status());
          if (!($query->num_rows && $query->fetch())) throw new USI_Page_Exception(__METHOD__.":status:not_in_cache:$path");
@@ -75,7 +75,7 @@ final class USI_Page_Cache {
             $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_URI'], 0, -$length);
          }
 
-         self::$meta_value = unserialize($meta_value_serialized);
+         self::$meta_value = unserialize(base64_decode($meta_value));
 
          if (self::DEBUG_META_DATA & self::$debug) USI_Debug::print_r(__METHOD__.':meta_value:', self::$meta_value, null, true);
          switch ($mode = isset(self::$meta_value['cache']['mode']) ? self::$meta_value['cache']['mode'] : 'disabled') {
@@ -174,12 +174,12 @@ final class USI_Page_Cache {
       self::$meta_value['cache']['updated'] = self::$current_time;
       self::$meta_value['cache']['valid_until'] = self::$valid_until;
 
-      $meta_value_serialized = serialize(self::$meta_value);
+      $meta_value = base64_encode(serialize(self::$meta_value));
       $query = null;
       try {
          $query = self::$dbs->prepare_x(
             'UPDATE `/* USI-PAGE-SOLUTIONS-7 */postmeta` SET `meta_value` = ? WHERE (`meta_id` = ?)', // SQL;
-            array('si', & $meta_value_serialized, & self::$meta_id) // Input parameters;
+            array('si', & $meta_value, & self::$meta_id) // Input parameters;
          );
          if (self::DEBUG_SQL & self::$debug) USI_Debug::message(__METHOD__.':'.$query->get_status());
       } catch(USI_Dbs_Exception $e) {
