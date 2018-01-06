@@ -2,7 +2,10 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
-## 0.0.3 (2018-01-04) ##
+## 0.0.3 (2018-01-05) ##
+* Improved and standardized debug logging.
+* Replaced meta value access functions with meta_value_get() and meta_value_put().
+* Save page meta value as base64 string to address serialization errors.
 * Changed name of edit virtual list permission.
 
 ## 0.0.2 (2018-01-04) ##
