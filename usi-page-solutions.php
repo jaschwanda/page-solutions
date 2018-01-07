@@ -17,7 +17,7 @@ require_once('usi-settings.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '1.0.0 (2018-01-07)';
+   const VERSION = '1.0.1 (2018-01-07)';
 
    const DEBUG_OFF   = 0x00;
    const DEBUG_HTML  = 0x01;
@@ -53,7 +53,8 @@ final class USI_Page_Solutions {
    static function action_widgets_init() {
       $theme = wp_get_theme();
       self::$theme_name = sanitize_title($theme->get('Name'));
-      self::$option_name_base = 'usi-page-solutions-options-' . self::$theme_name;
+      // self::$option_name_base = 'usi-page-solutions-options-' . self::$theme_name; // This seems too f++king long;
+      self::$option_name_base = 'usi-page-' . self::$theme_name;
       self::$option_name_virtual = self::$option_name_base . '-virtual';
       self::$options_virtual = get_option(self::$option_name_virtual);
       if (!empty(self::$options_virtual)) {

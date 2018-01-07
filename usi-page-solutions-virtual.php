@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Virtual {
 
-   const VERSION = '1.0.0 (2018-01-07)';
+   const VERSION = '1.0.1 (2018-01-07)';
 
    private $options = null;
    private $option_name = null;
@@ -191,33 +191,56 @@ class USI_Page_Solutions_Virtual {
 
       if (!current_user_can('manage_options')) wp_die(__('You are not authorized to perform that operation.', USI_Page_Solutions::TEXTDOMAIN));
 
-      if (empty($_REQUEST['submit'])) {
+      global $wp_registered_sidebars;
+
+      if (empty($input)) {
+
+         $message = sprintf(__('Internal error, could not get information (%d).', USI_Page_Solutions::TEXTDOMAIN), __LINE__);
+         $type = 'error';
+
+      } else if (empty($_REQUEST['submit'])) {
 
          $message = sprintf(__('Internal error, action not set (%d).', USI_Page_Solutions::TEXTDOMAIN), __LINE__);
          $type = 'error';
 
       } else if (__('Add Collection', USI_Page_Solutions::TEXTDOMAIN) == $_REQUEST['submit']) {
 
-         global $wp_registered_sidebars;
-
          $old_number_of_sidebars = count($wp_registered_sidebars);
 
-         if (empty($input['id'])) $input['id'] = strtolower(sanitize_title($input['name']));
-
-         register_sidebar($input);
-
-         $new_number_of_sidebars = count($wp_registered_sidebars);
-
-         if ((1 + $old_number_of_sidebars) != $new_number_of_sidebars) {
-            $message = sprintf(__('Internal error, widget area not created (%d).', USI_Page_Solutions::TEXTDOMAIN), __LINE__);
-            $type = 'error';
+         if (empty($input['id'])) {
+            $input['id'] = strtolower(sanitize_title($input['name']));
          } else {
-            end($wp_registered_sidebars);
-            $new_sidebar = key($wp_registered_sidebars);
-            USI_Page_Solutions::$options_virtual[] = $wp_registered_sidebars[$new_sidebar];
-            update_option(USI_Page_Solutions::$option_name_virtual, USI_Page_Solutions::$options_virtual);
-            $message = __('Widget collection created. <a href="widgets.php">View widgets</a>', USI_Page_Solutions::TEXTDOMAIN);
-            $type = 'updated';
+            $input['id'] = strtolower(sanitize_title($input['id']));
+         }
+
+         if (empty($input['id'])) {
+
+            $message = sprintf(__('Internal error, could not get information (%d).', USI_Page_Solutions::TEXTDOMAIN), __LINE__);
+            $type = 'error';
+
+         } else if (!empty($wp_registered_sidebars[$input['id']])) {
+
+            $message = sprintf(__('Error, widget collection "%s" already exists, a new collection was not created.', USI_Page_Solutions::TEXTDOMAIN), $input['id']);
+            $type = 'error';
+
+         } else {
+
+            register_sidebar($input);
+
+            $new_number_of_sidebars = count($wp_registered_sidebars);
+
+            if ((1 + $old_number_of_sidebars) != $new_number_of_sidebars) {
+               $message = sprintf(__('Internal error, widget area not created (%d).', USI_Page_Solutions::TEXTDOMAIN), __LINE__);
+               $type = 'error';
+            } else {
+               end($wp_registered_sidebars);
+               $new_sidebar = key($wp_registered_sidebars);
+               USI_Page_Solutions::$options_virtual[] = $wp_registered_sidebars[$new_sidebar];
+               update_option(USI_Page_Solutions::$option_name_virtual, USI_Page_Solutions::$options_virtual);
+               $message = __('Widget collection created. <a href="widgets.php">View widgets</a>', USI_Page_Solutions::TEXTDOMAIN);
+               $type = 'updated';
+            }
+
          }
 
       } else if (empty($input['id'])) {
