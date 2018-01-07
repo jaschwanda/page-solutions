@@ -10,8 +10,6 @@ if (!class_exists('USI_Settings_Admin')) { class USI_Settings_Admin {
 
    protected $active_tab = null;
    protected $is_tabbed = false;
-   protected $sections = null;
-
    protected $name = null;
    protected $option_name = null;
    protected $page_slug = null;
@@ -19,6 +17,7 @@ if (!class_exists('USI_Settings_Admin')) { class USI_Settings_Admin {
    protected $section_callback_offset = 0;
    protected $section_callbacks = array();
    protected $section_ids = array();
+   protected $sections = null;
    protected $text_domain = null;
 
    function __construct($name, $prefix, $text_domain) {
