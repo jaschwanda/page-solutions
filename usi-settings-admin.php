@@ -6,7 +6,7 @@ require_once('usi-settings.php');
 
 if (!class_exists('USI_Settings_Admin')) { class USI_Settings_Admin {
 
-   const VERSION = '1.0.5 (2018-01-07)';
+   const VERSION = '1.0.6 (2018-01-07)';
 
    protected $active_tab = null;
    protected $is_tabbed = false;
@@ -20,7 +20,7 @@ if (!class_exists('USI_Settings_Admin')) { class USI_Settings_Admin {
    protected $sections = null;
    protected $text_domain = null;
 
-   function __construct($name, $prefix, $text_domain) {
+   function __construct($name, $prefix, $text_domain, $add_setting_link = true) {
 
       $this->name = $name;
       $this->option_name = $prefix . '-options';
@@ -46,7 +46,7 @@ if (!class_exists('USI_Settings_Admin')) { class USI_Settings_Admin {
       add_action('admin_init', array($this, 'action_admin_init'));
       add_action('admin_menu', array($this, 'action_admin_menu'));
 
-      add_filter('plugin_action_links', array($this, 'filter_plugin_action_links'), 10, 2);
+      if ($add_setting_link) add_filter('plugin_action_links', array($this, 'filter_plugin_action_links'), 10, 2);
 
    } // __construct();
 

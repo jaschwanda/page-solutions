@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
 
-   const VERSION = '1.0.0 (2018-01-07)';
+   const VERSION = '1.0.1 (2018-01-07)';
 
    protected $is_tabbed = true;
 
@@ -100,7 +100,8 @@ class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
       parent::__construct(
          USI_Page_Solutions::NAME . '-Layout', 
          USI_Page_Solutions::PREFIX . '-solutions-layout', 
-         USI_Page_Solutions::TEXTDOMAIN
+         USI_Page_Solutions::TEXTDOMAIN,
+         false
       );
 
    } // __construct();
