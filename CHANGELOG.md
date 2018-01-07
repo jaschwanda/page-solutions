@@ -3,6 +3,7 @@
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
 ## 1.0.0 (2018-01-07) ##
+* Added mysqli database support functions to repository.
 * Updated all class versions to same version.
 * Converted code and CSS page editors to use settings API.
 * Improved recusive saving of page options and parameters.
