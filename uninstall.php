@@ -7,7 +7,7 @@ require_once('usi-page-solutions.php');
 
 final class USI_Page_Solutions_Uninstall {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '1.0.0 (2018-01-07)';
 
    private function __construct() {
    } // __construct();

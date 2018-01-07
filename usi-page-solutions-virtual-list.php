@@ -8,7 +8,7 @@ if (!class_exists('WP_List_Table')) {
 
 class USI_Page_Solutions_Virtual_List extends WP_List_Table {
 
-   const VERSION = '0.0.3 (2018-01-05)';
+   const VERSION = '1.0.0 (2018-01-07)';
 
    private $delete_virtual = false;
    private $edit_virtual = false;
@@ -87,6 +87,7 @@ class USI_Page_Solutions_Virtual_List extends WP_List_Table {
                unset(USI_Page_Solutions::$options_virtual[$ith]);
                USI_Page_Solutions::$options_virtual = array_values(USI_Page_Solutions::$options_virtual);
                update_option(USI_Page_Solutions::$option_name_virtual, USI_Page_Solutions::$options_virtual);
+               break;
             }
          }
       }

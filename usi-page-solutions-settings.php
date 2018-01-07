@@ -8,7 +8,7 @@ require_once('usi-settings-versions.php');
 
 class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 
-   const VERSION = '0.0.3 (2018-01-05)';
+   const VERSION = '1.0.0 (2018-01-07)';
 
    protected $is_tabbed = true;
 
@@ -321,8 +321,8 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
    function fields_sanitize($input) {
       $input = parent::fields_sanitize($input);
       if ('preferences' == $this->active_tab) {
-         if (!empty($input['preferences']['enable-cache'])) {
-            if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
+         if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
+            if (empty($input['preferences']['enable-cache'])) {
                self::index_file_restore();
                self::cache_file_generate();
             }
@@ -407,13 +407,20 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
       }
    } // index_file_restore();
 
-   function page_render($extra_buttons = '') {
+   function page_render($options = null) {
+
+      $options = array();
+
       if ('collections' == $this->active_tab) {
-         if (USI_Page_Solutions_Admin::$virtual_add) $extra_buttons =
-            ' <a href="options-general.php?page=usi-page-solutions-virtual&action=add" class="page-title-action">' . 
-            __('Add New', USI_Page_Solutions::TEXTDOMAIN) . '</a>';
+         if (USI_Page_Solutions_Admin::$virtual_add) {
+            $options['title_buttons'] = 
+               ' <a href="options-general.php?page=usi-page-solutions-virtual&action=add" class="page-title-action">' . 
+               __('Add New', USI_Page_Solutions::TEXTDOMAIN) . '</a>';
+         }
       }
-      parent::page_render($extra_buttons);
+
+      parent::page_render($options);
+
    } // page_render();
 
 } // Class USI_Page_Solutions_Settings;

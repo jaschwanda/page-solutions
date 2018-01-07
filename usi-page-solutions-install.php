@@ -6,7 +6,7 @@ require_once('usi-page-solutions-settings.php');
 
 final class USI_Page_Solutions_Install {
 
-   const VERSION = '0.0.3 (2018-01-05)';
+   const VERSION = '1.0.0 (2018-01-07)';
 
    private function __construct() {
    } // __construct();

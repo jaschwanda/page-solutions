@@ -6,7 +6,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 Plugin Name: Page-Solutions
 Plugin URI: https://github.com/jaschwanda/page-solutions
 Description: The Page-Solutions plugin extends the WordPress widget system by enabling the creation of virtual widget collections that can be displayed in enhanced widget areas on a page by page basis. It also provides page caching functionality. The Page-Solutions plugin is developed and maintained by Universal Solutions. 
-Version: 0.0.3 (2018-01-05)
+Version: 1.0.0 (2018-01-07)
 Author: Jim Schwanda
 Author URI: http://www.usi2solve.com/leader
 Text Domain: usi-page-solutions
@@ -17,8 +17,9 @@ require_once('usi-settings.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '0.0.3 (2018-01-05)';
+   const VERSION = '1.0.0 (2018-01-07)';
 
+   const DEBUG_OFF   = 0x00;
    const DEBUG_HTML  = 0x01;
    const DEBUG_VALUE = 0x02;
 
@@ -36,7 +37,7 @@ final class USI_Page_Solutions {
       'Settings-View'  => 'View settings page',
    );
 
-   private static $debug = self::DEBUG_VALUE;
+   private static $debug = self::DEBUG_OFF;
    private static $info  = null;
 
    public static $meta_value = null; // Page/post postmeta data;
@@ -68,7 +69,7 @@ final class USI_Page_Solutions {
 
       $post_id = (int)(!empty($post->ID) ? $post->ID : 0);
 
-      self::$meta_value = self::meta_value_get($post_id, __METHOD__);
+      self::$meta_value = self::meta_value_get(__METHOD__, $post_id);
 
       $what2do = array(
          array('key' => 'styles_parent',  'inherit' => 'styles_inherit',  'funtction' => 'wp_enqueue_style',  'default' => null),
@@ -142,16 +143,18 @@ final class USI_Page_Solutions {
    static function filter_dynamic_sidebar_params($sidebar_params) {
       // Override theme html with virtual widget values;
       static $ps_offset = 0;
-      $virtual_widget_id = self::$virtual_source[$ps_offset++];
-      if (!empty(self::$options_virtual)) {
-         for ($ith = 0; $ith < count(self::$options_virtual); $ith++) {
-            if ($virtual_widget_id == self::$options_virtual[$ith]['id']) {
-               $option_virtual = self::$options_virtual[$ith];
-               if ('disable' != $option_virtual['before_title'])  $sidebar_params[0]['before_title']  = $option_virtual['before_title'];
-               if ('disable' != $option_virtual['after_title'])   $sidebar_params[0]['after_title']   = $option_virtual['after_title'];
-               if ('disable' != $option_virtual['before_widget']) $sidebar_params[0]['before_widget'] = $option_virtual['before_widget'];
-               if ('disable' != $option_virtual['after_widget'])  $sidebar_params[0]['after_widget']  = $option_virtual['after_widget'];
-               break;
+      if (!empty(self::$virtual_source[$ps_offset])) {
+         $virtual_widget_id = self::$virtual_source[$ps_offset++];
+         if (!empty(self::$options_virtual)) {
+            for ($ith = 0; $ith < count(self::$options_virtual); $ith++) {
+               if ($virtual_widget_id == self::$options_virtual[$ith]['id']) {
+                  $option_virtual = self::$options_virtual[$ith];
+                  if ('disable' != $option_virtual['before_title'])  $sidebar_params[0]['before_title']  = $option_virtual['before_title'];
+                  if ('disable' != $option_virtual['after_title'])   $sidebar_params[0]['after_title']   = $option_virtual['after_title'];
+                  if ('disable' != $option_virtual['before_widget']) $sidebar_params[0]['before_widget'] = $option_virtual['before_widget'];
+                  if ('disable' != $option_virtual['after_widget'])  $sidebar_params[0]['after_widget']  = $option_virtual['after_widget'];
+                  break;
+               }
             }
          }
       }
@@ -179,9 +182,9 @@ final class USI_Page_Solutions {
          if ($mapped_widgets) return($mapped_widgets);
 
          if (!empty(self::$meta_value['widgets'])) {
-            foreach (self::$meta_value['widgets'] as $target_id => $options_enhanced) {
+            foreach (self::$meta_value['widgets'] as $target_id => $enhanced_widget_areas) {
                $jth = 0;
-               foreach ($options_enhanced as $source_id) {
+               foreach ($enhanced_widget_areas as $source_id) {
                   for ($ith = 0; $ith < count($sidebars_widgets[$source_id]); $ith++, $jth++) {
                      $sidebars_widgets[$target_id][$jth] = $sidebars_widgets[$source_id][$ith];
                      self::$virtual_source[] = $source_id;
@@ -241,7 +244,7 @@ final class USI_Page_Solutions {
 
    } // init();
 
-   static function meta_value_get($post_id, $method) {
+   static function meta_value_get($method, $post_id, $debug = false) {
 
       try {
          global $wpdb;
@@ -302,7 +305,7 @@ final class USI_Page_Solutions {
          'widgets' => $widgets
       );
 
-      if (self::$debug) {
+      if (self::$debug || $debug) {
 
          if (!(self::$debug & self::DEBUG_HTML)) { 
             $html = $value['cache']['html']; 
@@ -321,9 +324,9 @@ final class USI_Page_Solutions {
 
    } // meta_value_get();
 
-   static function meta_value_put($value, $method) {
+   static function meta_value_put($method, $value, $debug = false) {
 
-      if (self::$debug) {
+      if (self::$debug || $debug) {
 
          if (!(self::$debug & self::DEBUG_HTML)) { 
             $html = $value['cache']['html']; 
@@ -363,6 +366,7 @@ if (is_admin() && !defined('WP_UNINSTALL_PLUGIN')) {
    require_once('usi-page-solutions-admin.php');
    require_once('usi-page-solutions-install.php');
    require_once('usi-page-solutions-layout.php');
+   require_once('usi-page-solutions-layout-edit.php');
    require_once('usi-page-solutions-settings.php');
    require_once('usi-page-solutions-virtual.php');
    require_once('usi-page-solutions-virtual-list.php');

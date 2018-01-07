@@ -1,7 +1,5 @@
 <?php // --- file generated from usi-page-cache-template.php -------------------------------------------------------------------- //
 
-@include('wp-config-stanton-holly-trail.php');
-
 require_once('usi-debug-enable.php');
 require_once('usi-dbs-mysqli.php');
 
@@ -9,11 +7,11 @@ class USI_Page_Exception extends Exception { } // Class USI_Page_Exception;
 
 final class USI_Page_Cache {
 
-   const VERSION = '0.0.1 (2018-01-03)';
+   const VERSION = '1.0.0 (2018-01-07)';
 
    const DATE_ALPHA = '0000-00-00 00:00:00';
    const DATE_OMEGA = '9999-12-31 23:59:59';
-   const DATE_WRITE = '2018-01-05 22:07:40';
+   const DATE_WRITE = '2018-01-06 18:23:36';
 
    const DEBUG_DEFAULTS   = 0x01;
    const DEBUG_META_DATA  = 0x02;
@@ -61,7 +59,7 @@ final class USI_Page_Cache {
          self::dbs_connect();
 
          $query = self::$dbs->prepare_x(
-            'SELECT `meta_id`, `post_id`, `meta_key`, `meta_value` FROM `holly_postmeta` ' .
+            'SELECT `meta_id`, `post_id`, `meta_key`, `meta_value` FROM `test_postmeta` ' .
             "WHERE (`meta_key` <> '" . self::POST_META . "') AND ((`meta_key` = ?) OR (? LIKE CONCAT(`meta_key`, '%'))) " .
             'ORDER BY `meta_key` DESC LIMIT 1', // SQL;
             array('ss', & $path_no_args, & $path_args), // Input parameters;
@@ -77,7 +75,6 @@ final class USI_Page_Cache {
             $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_URI'], 0, -$length);
          }
 
-         // self::$meta_value = unserialize($meta_value);
          self::$meta_value = unserialize(base64_decode($meta_value));
 
          if (self::DEBUG_META_DATA & self::$debug) USI_Debug::print_r(__METHOD__.':meta_value:', self::$meta_value, null, true);
@@ -181,7 +178,7 @@ final class USI_Page_Cache {
       $query = null;
       try {
          $query = self::$dbs->prepare_x(
-            'UPDATE `holly_postmeta` SET `meta_value` = ? WHERE (`meta_id` = ?)', // SQL;
+            'UPDATE `test_postmeta` SET `meta_value` = ? WHERE (`meta_id` = ?)', // SQL;
             array('si', & $meta_value, & self::$meta_id) // Input parameters;
          );
          if (self::DEBUG_SQL & self::$debug) USI_Debug::message(__METHOD__.':'.$query->get_status());
@@ -195,14 +192,14 @@ final class USI_Page_Cache {
    } // capture();
 
    public static function dbs_connect() {
-      if (!self::$dbs) self::$dbs = new USI_Dbs(array('hash' => DB_PASSWORD, 'host' => DB_HOST, 'name' => DB_NAME, 'user' => DB_USER));
+      if (!self::$dbs) self::$dbs = new USI_Dbs(array('hash' => 'Klz@39Jd%1A', 'host' => 'localhost', 'name' => 'test_CMS', 'user' => 'test_wp'));
    } // dbs_connect();
 
    public static function log($action) {
       try {
          self::dbs_connect();
          if (self::$dbs) self::$dbs->prepare_x(
-            'INSERT INTO `holly_USI_log` (`user_id`, `action`) VALUES (0, ?)', // SQL;
+            'INSERT INTO `test_USI_log` (`user_id`, `action`) VALUES (0, ?)', // SQL;
             array('s', & $action) // Input parameters;
          );     
       } catch(USI_Dbs_Exception $e) {        
@@ -267,7 +264,5 @@ final class USI_Page_Cache {
    } // validate();
 
 } // Class USI_Page_Cache;
-
-USI_Page_Cache::cache(true, '::1');
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>

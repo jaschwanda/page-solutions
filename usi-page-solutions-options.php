@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Options {
 
-   const VERSION = '0.0.3 (2018-01-05)';
+   const VERSION = '1.0.0 (2018-01-07)';
 
    function __construct() {
       add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
@@ -51,14 +51,14 @@ class USI_Page_Solutions_Options {
       } else if (!wp_verify_nonce($_POST['usi-page-solutions-options-nonce'], basename(__FILE__))) {
       } else {
          $new_arguments = !empty($_POST['usi-page-solutions-options-arguments']);
-         $meta_value = USI_Page_Solutions::meta_value_get($page_id, __METHOD__);
+         $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $page_id);
          if ($meta_value['options']['arguments'] != $new_arguments) {
             delete_post_meta($page_id, $meta_value['key']); 
             $offset = strlen(USI_Page_cache::POST_META);
             $meta_value['key'][$offset] = ($new_arguments ? '*' : '!');
             $meta_value['options']['arguments'] = $new_arguments;
          }
-         USI_Page_Solutions::meta_value_put($meta_value, __METHOD__);
+         USI_Page_Solutions::meta_value_put(__METHOD__, $meta_value);
       }
 
    } // action_save_post();
@@ -67,7 +67,7 @@ class USI_Page_Solutions_Options {
 
       wp_nonce_field(basename(__FILE__), 'usi-page-solutions-options-nonce');
 
-      $meta_value = USI_Page_Solutions::meta_value_get($post->ID, __METHOD__);
+      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $post->ID);
 
       $arguments = $meta_value['options']['arguments'];
 
