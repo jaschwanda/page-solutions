@@ -2,9 +2,9 @@
 
 defined('ABSPATH') or die('Accesss not allowed.');
 
-require_once('usi-settings-admin.php');
-require_once('usi-settings-capabilities.php');
-require_once('usi-settings-versions.php');
+require_once('usi-settings/usi-settings-admin.php');
+require_once('usi-settings/usi-settings-capabilities.php');
+require_once('usi-settings/usi-settings-versions.php');
 
 class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 

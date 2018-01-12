@@ -13,7 +13,7 @@ Text Domain: usi-page-solutions
 */
 
 require_once('usi-page-cache.php');
-require_once('usi-settings.php'); 
+require_once('usi-settings/usi-settings.php'); 
 
 final class USI_Page_Solutions {
 
@@ -375,8 +375,8 @@ if (is_admin() && !defined('WP_UNINSTALL_PLUGIN')) {
       require_once('usi-page-solutions-cache.php');
       require_once('usi-page-solutions-options.php');
    }
-   require_once('usi-settings-admin.php');
-   require_once('usi-settings-capabilities.php');
+   require_once('usi-settings/usi-settings-admin.php');
+   require_once('usi-settings/usi-settings-capabilities.php');
 }
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>
