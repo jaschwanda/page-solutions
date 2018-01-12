@@ -2,6 +2,9 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.0.1 (2018-01-10) ##
+* Moved usi-settings files into their own folder and made them a Git submodule.
+
 ## 1.0.0 (2018-01-07) ##
 * Reduced length of enhanced widgets option name.
 * Add ability to surpress the settings link added to the installed plugins page.
