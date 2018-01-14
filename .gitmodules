@@ -1,3 +1,6 @@
 [submodule "usi-settings"]
 	path = usi-settings
 	url = https://github.com/jaschwanda/usi-settings
+[submodule "usi-library"]
+	path = usi-library
+	url = https://github.com/jaschwanda/usi-library

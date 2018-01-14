@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout {
 
-   const VERSION = '1.0.0 (2018-01-07)';
+   const VERSION = '1.0.2 (2018-01-13)';
 
    private $options = null;
    private $page_id = 0;
@@ -172,13 +172,39 @@ class USI_Page_Solutions_Layout {
                (!empty($parent_meta_value['layout']['codes_foot_parent']) ? $parent_meta_value['layout']['codes_foot_parent'] : null) .
                (!empty($parent_meta_value['layout']['codes_foot']) ? $parent_meta_value['layout']['codes_foot'] : null);
          }
-   
+
          if (empty($meta_value['options']['css_inherit'])) {
             $meta_value['layout']['css_parent'] = null;
          } else {
             $meta_value['layout']['css_parent'] = 
                (!empty($parent_meta_value['layout']['css_parent']) ? $parent_meta_value['layout']['css_parent'] : null) .
                (!empty($parent_meta_value['layout']['css']) ? $parent_meta_value['layout']['css'] : null);
+         }
+
+         if (empty($meta_value['options']['scripts_inherit'])) {
+            $meta_value['layout']['scripts_parent'] = null;
+         } else {
+            if (empty($parent_meta_value['layout']['scripts_parent'])) {
+               $meta_value['layout']['scripts_parent'] = (!empty($parent_meta_value['layout']['scripts']) ? $parent_meta_value['layout']['scripts'] : null);
+            } else if (empty($parent_meta_value['layout']['scripts'])) {
+               $meta_value['layout']['scripts_parent'] = (!empty($parent_meta_value['layout']['scripts_parent']) ? $parent_meta_value['layout']['scripts_parent'] : null);
+            } else {
+               $meta_value['layout']['scripts_parent'] = 
+                  array_merge($parent_meta_value['layout']['scripts_parent'], $parent_meta_value['layout']['scripts']);
+            }
+         }
+
+         if (empty($meta_value['options']['styles_inherit'])) {
+            $meta_value['layout']['styles_parent'] = null;
+         } else {
+            if (empty($parent_meta_value['layout']['styles_parent'])) {
+               $meta_value['layout']['styles_parent'] = (!empty($parent_meta_value['layout']['styles']) ? $parent_meta_value['layout']['styles'] : null);
+            } else if (empty($parent_meta_value['layout']['styles'])) {
+               $meta_value['layout']['styles_parent'] = (!empty($parent_meta_value['layout']['styles_parent']) ? $parent_meta_value['layout']['styles_parent'] : null);
+            } else {
+               $meta_value['layout']['styles_parent'] = 
+                  array_merge($parent_meta_value['layout']['styles_parent'], $parent_meta_value['layout']['styles']);
+            }
          }
    
          if (!empty($meta_value['options']['widgets_inherit'])) {
@@ -222,12 +248,13 @@ class USI_Page_Solutions_Layout {
 
       $html = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) ?
          '<p>' .
-           '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=code&page_id='  . $post->ID . '">Code</a> &nbsp; ' .
-           '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=css&page_id='   . $post->ID . '">CSS</a> &nbsp; ' .
-           // '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=links&page_id=' . $post->ID . '">Links</a> &nbsp; ' .
+           '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=code&page_id='    . $post->ID . '">Code</a> &nbsp; ' .
+           '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=css&page_id='     . $post->ID . '">CSS</a> &nbsp; ' .
+           '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=scripts&page_id=' . $post->ID . '">Script</a> &nbsp; ' .
+           '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=styles&page_id='  . $post->ID . '">Style</a> &nbsp; ' .
          '</p>' : '';
 
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $post->ID);
+      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $post->ID, true);
 
       $codes_foot_inherit = $meta_value['options']['codes_foot_inherit'];
       $codes_head_inherit = $meta_value['options']['codes_head_inherit'];
@@ -236,15 +263,17 @@ class USI_Page_Solutions_Layout {
       $styles_inherit     = $meta_value['options']['styles_inherit'];
       $widgets_inherit    = $meta_value['options']['widgets_inherit'];
 
+      USI_Debug::print_r(__METHOD__.':options=', USI_Settings::$options[USI_Page_Solutions::PREFIX]);
+
       if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
 
          $collection_index = 0;
 
-         $enhanced_widget_areas   = get_option(USI_Page_Solutions::$option_name_base . '-enhanced');
+         $enhanced_widget_areas = get_option(USI_Page_Solutions::$option_name_base . '-enhanced');
 
-         $options_virtual    = USI_Page_Solutions::$options_virtual;
+         $options_virtual = USI_Page_Solutions::$options_virtual;
 
-         $widgets    = $meta_value['widgets'];
+         $widgets = $meta_value['widgets'];
 
          foreach ($wp_registered_sidebars as $id => $sidebar) {
             if ($id == $options_virtual[0]['id']) break;
@@ -294,21 +323,20 @@ class USI_Page_Solutions_Layout {
       if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'])) {
 ?>
   <input id="usi-page-solutions-layout-codes-head-inherit"<?php checked($codes_head_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-codes-head-inherit" type="checkbox" value="true" />
-  <label for="usi-page-solutions-layout-codes-head-inherit"><?php _e('Inherit header code from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
+  <label for="usi-page-solutions-layout-codes-head-inherit"><?php _e('Inherit raw header code from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
   <br />
   <input id="usi-page-solutions-layout-codes-foot-inherit"<?php checked($codes_foot_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-codes-foot-inherit" type="checkbox" value="true" />
-  <label for="usi-page-solutions-layout-codes-foot-inherit"><?php _e('Inherit footer code from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
+  <label for="usi-page-solutions-layout-codes-foot-inherit"><?php _e('Inherit raw footer code from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
   <br />
   <input id="usi-page-solutions-layout-css-inherit"<?php checked($css_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-css-inherit" type="checkbox" value="true" />
-  <label for="usi-page-solutions-layout-css-inherit"><?php _e('Inherit CSS from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
-<?php /*
-  <br />
-  <input id="usi-page-solutions-layout-styles-inherit"<?php checked($styles_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-styles-inherit" type="checkbox" value="true" />
-  <label for="usi-page-solutions-layout-styles-inherit"><?php _e('Inherit style links from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
+  <label for="usi-page-solutions-layout-css-inherit"><?php _e('Inherit raw CSS from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
   <br />
   <input id="usi-page-solutions-layout-scripts-inherit"<?php checked($scripts_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-scripts-inherit" type="checkbox" value="true" />
   <label for="usi-page-solutions-layout-scripts-inherit"><?php _e('Inherit script links from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
-*/
+  <br />
+  <input id="usi-page-solutions-layout-styles-inherit"<?php checked($styles_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-styles-inherit" type="checkbox" value="true" />
+  <label for="usi-page-solutions-layout-styles-inherit"><?php _e('Inherit style links from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
+<?php
       }
 
       if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
@@ -325,44 +353,6 @@ class USI_Page_Solutions_Layout {
          || !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) echo '</p>';
 
    } // render_meta_box();
-
-   private function settings_fields_update_recursive($level, $page_id, $key, $parent_value = null) {
-
-      // IF this is starting level of recursion;
-      if (1 == $level) {
-         // Get highest parent if any, otherwise start with self;
-         while ($parent_id = wp_get_post_parent_id($page_id)) $page_id = $parent_id;
-      }
-
-      // May be redundant, but get post meta for this page;
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $page_id);
-
-      // Clear parent's value if this page doesn't inherit;
-      if (empty($meta_value['options'][$key . '_inherit'])) $parent_value = null;
-
-      // Load parent's value or null if not inherited or this page has no parent;
-      $meta_value['layout'][$key . '_parent'] = $parent_value;
-
-      // Update this page's post meta data;
-      USI_Page_Solutions::meta_value_put(__METHOD__, $meta_value);
-
-      // Use this page's value as children's parent value;
-      $childrens_parent_value = $meta_value['layout'][$key];
-
-      // Get array of children, if any;
-      global $wpdb;
-      $SAFE_table_name = $wpdb->prefix . 'posts';
-      $children = $wpdb->get_results(
-         $wpdb->prepare("SELECT `ID` FROM `$SAFE_table_name` WHERE (`post_parent` = %d) AND (`post_type` = 'page')", $page_id), ARRAY_A
-      );
-      // USI_Debug::print_r(__METHOD__.':'.__LINE__.':children=', print_r($children, true));
-
-      // Load this page's value into children and propagate down to all descendants;
-      for ($ith = 0; $ith < count($children); $ith++) {
-         $this->settings_fields_update_recursive($level + 1, $children[$ith]['ID'], $key, $childrens_parent_value);
-      }
-
-   } // settings_fields_update_recursive();
       
 } // USI_Page_Solutions_Layout;
 
