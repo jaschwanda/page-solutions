@@ -8,7 +8,7 @@ require_once('usi-settings/usi-settings-versions.php');
 
 class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 
-   const VERSION = '1.0.0 (2018-01-07)';
+   const VERSION = '1.1.0 (2018-01-13)';
 
    protected $is_tabbed = true;
 

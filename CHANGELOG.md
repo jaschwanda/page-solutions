@@ -2,6 +2,11 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.1.0 (2018-01-13) ##
+* Updated all class versions to same version number.
+* Added script and style links to layout functionality.
+* Moved database and debugging files into the usi-library folder and made them a Git submodule.
+
 ## 1.0.1 (2018-01-10) ##
 * Moved usi-settings files into their own folder and made them a Git submodule.
 

@@ -1,13 +1,13 @@
 <?php // --- file generated from usi-page-cache-template.php -------------------------------------------------------------------- //
 /* USI-PAGE-SOLUTIONS-1 */
-require_once('usi-debug-enable.php');
-require_once('usi-dbs-mysqli.php');
+require_once('usi-library/usi-debug-enable.php');
+require_once('usi-library/usi-dbs-mysqli.php');
 
 class USI_Page_Exception extends Exception { } // Class USI_Page_Exception;
 
 final class USI_Page_Cache {
 
-   const VERSION = '1.0.0 (2018-01-07)';
+   const VERSION = '1.1.0 (2018-01-13)';
 
    const DATE_ALPHA = '0000-00-00 00:00:00';
    const DATE_OMEGA = '9999-12-31 23:59:59';

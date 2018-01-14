@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
 
-   const VERSION = '1.0.2 (2018-01-13)';
+   const VERSION = '1.1.0 (2018-01-13)';
 
    protected $is_tabbed = true;
 
@@ -295,7 +295,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
 
    function header_css() {
       echo '<p>' . 
-         __('Open and closing <b>&lt;style&gt;</b> tags must be included in the code fragment below:', USI_Page_Solutions::TEXTDOMAIN) . 
+         __('Open and closing <b>&lt;style&gt;</b><b>&lt;/style&gt;</b> tags must be included in the code fragment below:', USI_Page_Solutions::TEXTDOMAIN) . 
        '</p>' . PHP_EOL;
     } // header_css();
 
