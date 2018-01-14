@@ -4,7 +4,7 @@ The Page-Solutions plugin adds enhanced widget areas and page caching functional
 
 ## Description ##
 
-The Page-Solutions plugin provides custom CSS and JavaScript modifications, virtual widget mapping and page caching functionality on a page by page basis. This efficient and powerful plugin is well suited for page-intensive and non-blog applications. The Page-Solutions plugin is developed and maintained by <a href="https://www.usi2solve.com">Universal Solutions</a>.
+The Page-Solutions plugin provides custom CSS and JavaScript modifications, virtual widget mapping and page caching functionality on a page by page basis. This efficient and powerful plugin is well suited for page-intensive and non-blog WordPress applications. The Page-Solutions plugin is developed and maintained by <a href="https://www.usi2solve.com">Universal Solutions</a>.
 
 ## License ##
 > Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
