@@ -11,7 +11,7 @@ The Page-Solutions plugin is developed and maintained by <a href="https://www.us
 ## Page Caching ##
 The Page-Solutions plugin stores content in the database for quick access which improves performance by eliminating the overhead of loading and running WordPress for pages that have not changed recently. In order to see changes however, the page cache must be cleared whenever you edit a page or if a page is updated by a widget running in one the theme's widget areas. The following two features allow you to control the page cache:
 
-**Inherit parent page cache settings** - The cache settings are inherited from the parent page. Check this feature if this is a child page and its layout and function is similar to it's parent's page.
+   * **Inherit parent page cache settings** - The cache settings are inherited from the parent page. Check this feature if this is a child page and its layout and function is similar to it's parent's page.
 
 **Allow widgets to clear cache** - Allow widget(s) in your theme's widget area to dynamically clear the cache as the widget(s) desire. Check this feature if you use widget(s) that were designed to use the Page-Solutions caching system.
 
