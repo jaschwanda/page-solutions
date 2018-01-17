@@ -31,6 +31,13 @@ The following four options allow you to control how the page cache is cleared.
 
 The Page-Solutions cache features and options are configured on a page by page basis.
 
+## Page Options ##
+The Page-Solutions plugin adds the following page options:
+
+   * **Accepts arguments** - The page can be called with an argument string that follows the page URL. This argument string can be used to pass information into widgets that have been designed to use this feature. This option is disabled if this page is a parent page.
+
+The Page-Solutions plugin options are configured on a page by page basis.
+
 ## Installation ##
 The Page-Solutions plugin follows the standard WordPress <a href="https://codex.wordpress.org/Managing_Plugins#Manual_Plugin_Installation">manual plugin installation</a> procedure:
 1. Clone or Download the Page-Solutions archive to your computer.
