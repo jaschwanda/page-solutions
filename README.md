@@ -9,7 +9,7 @@ This efficient and powerful plugin is well suited for page-intensive and non-blo
 The Page-Solutions plugin is developed and maintained by <a href="https://www.usi2solve.com">Universal Solutions</a>.
 
 ## Page Caching ##
-The Page-Solutions plugin stores content in the database for quick access which improves performance by eliminating the overhead of loading and running WordPress for pages that have not changed recently. In order to see changes however, the page cache must be cleared whenever you edit a page or if a page is updated by a widget running in one the theme's widget areas. The following two features allow you to control the page cache:
+The Page-Solutions plugin stores content in the database for quick access which improves performance by eliminating the overhead of loading and running WordPress for pages that have not changed recently. In order to see changes however, the page cache must be cleared whenever you edit a page or if a page is updated by a widget running in one the theme's widget areas. The following four options allow you to control the page cache:
 
    * **Inherit parent page cache settings** - The cache settings are inherited from the parent page. Check this feature if this is a child page and its layout and function is similar to it's parent's page.
 
