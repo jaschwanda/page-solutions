@@ -2,6 +2,9 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.1.1 (2018-01-17) ##
+* Updated page caching documentation.
+
 ## 1.1.0 (2018-01-13) ##
 * Updated all class versions to same version number.
 * Added script and style links to layout functionality.

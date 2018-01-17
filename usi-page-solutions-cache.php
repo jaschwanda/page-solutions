@@ -6,7 +6,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Cache {
 
-   const VERSION = '1.1.0 (2018-01-13)';
+   const VERSION = '1.1.1 (2018-01-17)';
 
    private static $current_time = null;
    private static $valid_until = USI_Page_Cache::DATE_OMEGA;
@@ -39,7 +39,7 @@ class USI_Page_Solutions_Cache {
          'title' => __('Page-Solutions Cache', USI_Page_Solutions::TEXTDOMAIN),
          'id' => 'usi-page-solutions-cache',
          'content'  => 
-'<p>' . __('The Page-Solutions plugin stores content in the database for quick access which improves performance by eliminating the overhead of loading and running WordPress for pages that have not changed recently. In order to see changes however, the page cache must be cleared whenever you edit a page or if a page is updated by a widget running in one the theme\'s widget areas. The following two features allow you to control the page cache:', USI_Page_Solutions::TEXTDOMAIN) . '</p>'.
+'<p>' . __('The Page-Solutions plugin stores content in the database for quick access which improves performance by eliminating the overhead of loading and running WordPress for pages that have not changed recently. In order to see changes however, the page cache must be cleared whenever you edit a page or if a page is updated by a widget running in one the theme\'s widget areas. The following four options allow you to control the page cache:', USI_Page_Solutions::TEXTDOMAIN) . '</p>'.
 '<ul>' .
 '<li><b>' . __('Inherit parent page cache settings', USI_Page_Solutions::TEXTDOMAIN) . '</b> - ' . __('The cache settings are inherited from the parent page. Check this feature if this is a child page and its layout and function is similar to it\'s parent\'s page.', USI_Page_Solutions::TEXTDOMAIN) . '</li>' .
 '<li><b>' . __('Allow widgets to clear cache', USI_Page_Solutions::TEXTDOMAIN) . '</b> - ' . __('Allow widget(s) in your theme\'s widget area to dynamically clear the cache as the widget(s) desire. Check this feature if you use widget(s) that were designed to use the Page-Solutions caching system.', USI_Page_Solutions::TEXTDOMAIN) . '</li>' .
