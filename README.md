@@ -8,6 +8,29 @@ The Page-Solutions plugin provides custom CSS and JavaScript modifications, virt
 This efficient and powerful plugin is well suited for page-intensive and non-blog WordPress applications. 
 The Page-Solutions plugin is developed and maintained by <a href="https://www.usi2solve.com">Universal Solutions</a>.
 
+## Page Caching ##
+The Page-Solutions plugin stores content in the database for quick access which improves performance by eliminating the overhead of loading and running WordPress for pages that have not changed recently. In order to see changes however, the page cache must be cleared whenever you edit a page or if a page is updated by a widget running in one the theme's widget areas. The following two features allow you to control the page cache:
+
+**Inherit parent page cache settings** - The cache settings are inherited from the parent page. Check this feature if this is a child page and its layout and function is similar to it's parent's page.
+
+**Allow widgets to clear cache** - Allow widget(s) in your theme's widget area to dynamically clear the cache as the widget(s) desire. Check this feature if you use widget(s) that were designed to use the Page-Solutions caching system.
+
+**Clear cache on next update** - The cache is cleared the next time the Update button is clicked. Check this feature if you don't want to remember to clear the cash manualy the next time you update your changes.
+
+**Clear cache on every update** - The cache is cleared every time the Update button is clicked. Check this feature if you don't want to remember to clear the cash manualy every time you update your changes.
+
+The following four options allow you to control how the page cache is cleared.
+
+**Disable cache** - The cache is not used for the current page. Select this option if you don't want to use the caching features for this page or if the page is very dynamic and can rarely be re-used. This is the default option.
+
+**Clear cache manually** - You manually clear the cache after you edit the page. Select this option if this page is only changed by you and content is never changed by widget. Make sure you click the Clear Cache button when you finish your page edits or your changes will not be seen by the world.
+
+**Clear cache every** - The cache is cleared after the given time period has expired. Select this option if page content is changed by a widget(s) but it's not necessary for the changes to show immediately. Specify the period with the drop down box under this option.
+
+**Clear cache everyday at** - The cache is cleared based on the given schedule. Select this option if page content is changed by a widget(s) and you want to ensure that changes are show at specific times of the day. List the times when the cache should be cleared under this option.
+
+The Page-Solutions cache features and options are configured on a page by page basis.
+
 ## Installation ##
 The Page-Solutions plugin follows the standard WordPress <a href="https://codex.wordpress.org/Managing_Plugins#Manual_Plugin_Installation">manual plugin installation</a> procedure:
 1. Clone or Download the Page-Solutions archive to your computer.
