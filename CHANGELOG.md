@@ -2,6 +2,9 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.2.0 (2018-09-04) ##
+* Added clear all page cache information in settings. This is useful when a change is made that globally effects the site, like a menu change or template modification.
+
 ## 1.1.1 (2018-01-17) ##
 * Updated page caching documentation.
 * Updated page options documentation.
