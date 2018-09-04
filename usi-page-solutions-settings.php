@@ -8,7 +8,7 @@ require_once('usi-settings/usi-settings-versions.php');
 
 class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 
-   const VERSION = '1.1.0 (2018-01-13)';
+   const VERSION = '1.2.0 (2018-09-04)';
 
    protected $is_tabbed = true;
 
@@ -149,6 +149,11 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
                   'label' => 'Debug IP address',
                   'notes' => 'Enter the IP address of the user you wish to track for debugging.',
                ),
+               'clear-all-cache' => array(
+                  'type' => 'checkbox', 
+                  'label' => 'Clear all page cache information',
+                  'notes' => 'If checked, all page cache information will be cleared. This is useful when a change is made that globally effects the site, like a menu change or template modification.',
+               ),
              ),
          ); // cache;
 
@@ -230,6 +235,31 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
       }
       parent::action_admin_init();
    } // action_admin_init();
+
+   static function cache_all_clear() {
+      global $wpdb;
+      $SAFE_table_name = $wpdb->prefix . 'posts';
+      $pages = $wpdb->get_results("SELECT `ID` FROM `$SAFE_table_name` WHERE (`post_type` = 'page')", ARRAY_A);
+
+      for ($ith = 0; $ith < count($pages); $ith++) {
+         $page_id = $pages[$ith]['ID'];
+         $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $page_id);
+         $meta_value['cache']['updated'] = 
+         $meta_value['cache']['valid_until'] = USI_Page_Cache::DATE_ALPHA;
+         $meta_value['cache']['html'] = '';
+         $meta_value['cache']['size'] = 0;
+         USI_Page_Solutions::meta_value_put(__METHOD__, $meta_value);
+         // Since index.php does the updates, just call curl and discard the data.
+         $ch = curl_init(); 
+         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+         curl_setopt($ch, CURLOPT_URL, rtrim(get_permalink($page_id), '/') . '/');
+         curl_exec($ch);
+         curl_close($ch);
+      }
+   } // cache_all_clear();
 
    static function cache_file_generate($cache = null) {
       global $wpdb;
@@ -342,6 +372,10 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
                   if ($modification != $first_line) $this->index_file_modify();
                }
             }
+         }
+         if (!empty($input['cache']['clear-all-cache'])) {
+            self::cache_all_clear();
+            unset($input['cache']['clear-all-cache']);
          }
          self::cache_file_generate($input['cache']);
       } else if ('widgets' == $this->active_tab) {

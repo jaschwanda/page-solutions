@@ -7,7 +7,7 @@ class USI_Page_Exception extends Exception { } // Class USI_Page_Exception;
 
 final class USI_Page_Cache {
 
-   const VERSION = '1.1.0 (2018-01-13)';
+   const VERSION = '1.2.0 (2018-09-04)';
 
    const DATE_ALPHA = '0000-00-00 00:00:00';
    const DATE_OMEGA = '9999-12-31 23:59:59';
@@ -46,7 +46,7 @@ final class USI_Page_Cache {
 
       try {
 
-         foreach ($_COOKIE as $key => $value) if (substr($key, 0, 20) == 'wordpress_logged_in_') throw new USI_Page_Exception(__METHOD__.':status:wordpress');
+         foreach ($_COOKIE as $key => $value) if (substr($key, 0, 20) == 'wordpress_logged_in_') throw new USI_Page_Exception(__METHOD__.':status:wordpress!');
 
          $path = $_SERVER['REQUEST_URI'];
          if (self::$debug) USI_Debug::message(__METHOD__.':path:' . $path);
