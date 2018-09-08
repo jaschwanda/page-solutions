@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
 
-   const VERSION = '1.1.0 (2018-01-13)';
+   const VERSION = '1.2.0 (2018-09-04)';
 
    protected $is_tabbed = true;
 
