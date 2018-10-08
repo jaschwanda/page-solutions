@@ -6,7 +6,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Cache {
 
-   const VERSION = '1.2.0 (2018-09-04)';
+   const VERSION = '1.2.1 (2018-10-07)';
 
    private static $current_time = null;
    private static $valid_until = USI_Page_Cache::DATE_OMEGA;

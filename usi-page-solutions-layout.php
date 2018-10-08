@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout {
 
-   const VERSION = '1.2.0 (2018-09-04)';
+   const VERSION = '1.2.1 (2018-10-07)';
 
    private $options = null;
    private $page_id = 0;
@@ -254,7 +254,7 @@ class USI_Page_Solutions_Layout {
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=styles&page_id='  . $post->ID . '">Style</a> &nbsp; ' .
          '</p>' : '';
 
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $post->ID, true);
+      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $post->ID);
 
       $codes_foot_inherit = $meta_value['options']['codes_foot_inherit'];
       $codes_head_inherit = $meta_value['options']['codes_head_inherit'];

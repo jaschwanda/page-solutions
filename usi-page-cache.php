@@ -7,7 +7,7 @@ class USI_Page_Exception extends Exception { } // Class USI_Page_Exception;
 
 final class USI_Page_Cache {
 
-   const VERSION = '1.2.0 (2018-09-04)';
+   const VERSION = '1.2.1 (2018-10-07)';
 
    const DATE_ALPHA = '0000-00-00 00:00:00';
    const DATE_OMEGA = '9999-12-31 23:59:59';
