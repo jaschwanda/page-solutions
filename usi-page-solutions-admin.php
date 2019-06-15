@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 final class USI_Page_Solutions_Admin {
 
-   const VERSION = '1.2.1 (2018-10-07)';
+   const VERSION = '1.3.0 (2019-06-15)';
 
    public static $enhanced_edit  = false;
    public static $settings_view  = false;
@@ -43,7 +43,7 @@ final class USI_Page_Solutions_Admin {
       $get = $put = 0;
       $new = array();
       if ('page' == $post->post_type) {
-         $page_mru_max = (int)USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['page-mru-max'];
+         $page_mru_max = (int)USI_Page_Solutions::$options['preferences']['page-mru-max'];
          if ($page_mru_max++) {
             $old = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-page');
             $new[$put++] = array('page_id' => $post->ID, 'title' => $post->post_title);
@@ -57,7 +57,7 @@ final class USI_Page_Solutions_Admin {
             update_user_option(get_current_user_id(), USI_Page_Solutions::PREFIX . '-options-mru-page', $new);
          }
       } else {
-         $post_mru_max = (int)USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['post-mru-max'];
+         $post_mru_max = (int)USI_Page_Solutions::$options['preferences']['post-mru-max'];
          if ($post_mru_max++) {
             $old = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-post');
             $new[$put++] = array('page_id' => $post->ID, 'title' => $post->post_title);

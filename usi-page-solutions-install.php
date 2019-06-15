@@ -6,7 +6,7 @@ require_once('usi-page-solutions-settings.php');
 
 final class USI_Page_Solutions_Install {
 
-   const VERSION = '1.2.1 (2018-10-07)';
+   const VERSION = '1.3.0 (2019-06-15)';
 
    private function __construct() {
    } // __construct();
@@ -38,7 +38,7 @@ final class USI_Page_Solutions_Install {
 
       check_admin_referer('deactivate-plugin_' . (isset($_REQUEST['plugin']) ? $_REQUEST['plugin'] : ''));
 
-      if (USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache']) {
+      if (USI_Page_Solutions::$options['preferences']['enable-cache']) {
          USI_Page_Solutions_Settings::index_file_restore();
          USI_Page_Solutions_Settings::cache_file_generate();
       }

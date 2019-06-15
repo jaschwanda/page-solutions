@@ -2,9 +2,9 @@
 
 defined('ABSPATH') or die('Accesss not allowed.');
 
-class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
+class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.2.1 (2018-10-07)';
+   const VERSION = '1.3.0 (2019-06-15)';
 
    protected $is_tabbed = true;
 
@@ -17,96 +17,12 @@ class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
 
       $this->page_id = !empty($_REQUEST['page_id']) ? (int)$_REQUEST['page_id'] : 0;
 
-      $this->sections = array(
-
-         'code' => array(
-            'header_callback' => array($this, 'header_codes'),
-            'label' => __('Raw Code', USI_Page_Solutions::TEXTDOMAIN),
-            'settings' => array(
-               'page-id' => array(
-                  'type' => 'hidden', 
-                  'value' =>  $this->page_id, 
-               ),
-               'codes_head_parent' => array(
-                  'class' => 'large-text', 
-                  'label' => __('Header Code From Parent', USI_Page_Solutions::TEXTDOMAIN),
-                  'readonly' => true,
-                  'rows' => 10,
-                  'type' => 'textarea', 
-               ),
-               'codes_head' => array(
-                  'class' => 'large-text', 
-                  'label' => __('Header Code', USI_Page_Solutions::TEXTDOMAIN),
-                  'rows' => 10,
-                  'type' => 'textarea', 
-               ),
-               'codes_foot_parent' => array(
-                  'class' => 'large-text', 
-                  'label' => __('Footer Code From Parent', USI_Page_Solutions::TEXTDOMAIN),
-                  'readonly' => true,
-                  'rows' => 10,
-                  'type' => 'textarea', 
-               ),
-               'codes_foot' => array(
-                  'class' => 'large-text', 
-                  'label' => __('Footer Code', USI_Page_Solutions::TEXTDOMAIN),
-                  'rows' => 10,
-                  'type' => 'textarea', 
-               ),
-            ),
-         ), // code;
-
-         'css' => array(
-            'header_callback' => array($this, 'header_css'),
-            'label' => __('Raw CSS', USI_Page_Solutions::TEXTDOMAIN),
-            'settings' => array(
-               'page-id' => array(
-                  'type' => 'hidden', 
-                  'value' =>  $this->page_id, 
-               ),
-               'css_parent' => array(
-                  'class' => 'large-text', 
-                  'label' => __('CSS From Parent', USI_Page_Solutions::TEXTDOMAIN),
-                  'readonly' => true,
-                  'rows' => 10,
-                  'type' => 'textarea', 
-               ),
-               'css' => array(
-                  'class' => 'large-text', 
-                  'label' => __('CSS', USI_Page_Solutions::TEXTDOMAIN),
-                  'rows' => 10,
-                  'type' => 'textarea', 
-               ),
-            ),
-         ), // css;
-
-         'scripts' => array(
-            'header_callback' => array($this, 'header_script'),
-            'label' => 'Script Links',
-            'settings' => array(
-               'page-id' => array(
-                  'type' => 'hidden', 
-                  'value' =>  $this->page_id, 
-               ),
-            ),
-         ), // scripts;
-
-         'styles' => array(
-            'header_callback' => array($this, 'header_style'),
-            'label' => __('Style Links', USI_Page_Solutions::TEXTDOMAIN),
-            'settings' => array(
-               'page-id' => array(
-                  'type' => 'hidden', 
-                  'value' =>  $this->page_id, 
-               ),
-            ),
-         ), // styles;
-      );
-
       parent::__construct(
          USI_Page_Solutions::NAME . '-Layout', 
          USI_Page_Solutions::PREFIX . '-solutions-layout', 
          USI_Page_Solutions::TEXTDOMAIN,
+         USI_Page_Solutions::$options,
+         false,
          false
       );
 
@@ -116,9 +32,9 @@ class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
 
       $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $this->page_id);
 
-      USI_Settings::$options[$this->prefix]['code']['page-id']    = $this->page_id;
-      USI_Settings::$options[$this->prefix]['code']['codes_foot'] = $meta_value['layout']['codes_foot'];
-      USI_Settings::$options[$this->prefix]['code']['codes_head'] = $meta_value['layout']['codes_head'];
+      USI_Page_Solutions::$options['code']['page-id']    = $this->page_id;
+      USI_Page_Solutions::$options['code']['codes_foot'] = $meta_value['layout']['codes_foot'];
+      USI_Page_Solutions::$options['code']['codes_head'] = $meta_value['layout']['codes_head'];
 
       if (empty($meta_value['options']['codes_foot_inherit']) || empty($meta_value['layout']['codes_foot_parent'])) {
          unset($this->sections['code']['settings']['codes_foot_parent']);
@@ -128,21 +44,21 @@ class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
          unset($this->sections['code']['settings']['codes_head_parent']);
       }
 
-      USI_Settings::$options[$this->prefix]['css']['page-id']     = $this->page_id;
-      USI_Settings::$options[$this->prefix]['css']['css']         = $meta_value['layout']['css'];
-      USI_Settings::$options[$this->prefix]['css']['css_parent']  = $meta_value['layout']['css_parent'];
+      USI_Page_Solutions::$options['css']['page-id']     = $this->page_id;
+      USI_Page_Solutions::$options['css']['css']         = $meta_value['layout']['css'];
+      USI_Page_Solutions::$options['css']['css_parent']  = $meta_value['layout']['css_parent'];
 
       if (empty($meta_value['options']['css_inherit']) || empty($meta_value['layout']['css_parent'])) {
          unset($this->sections['css']['settings']['css_parent']);
       }
 
-      USI_Settings::$options[$this->prefix]['scripts']['page-id'] = $this->page_id;
+      USI_Page_Solutions::$options['scripts']['page-id'] = $this->page_id;
 
       if (!empty($meta_value['layout']['scripts_parent'])) {
          foreach ($meta_value['layout']['scripts_parent'] as $key => $value) {
             $tokens = self::explode($value);
             $key = $tokens[0];
-            USI_Settings::$options[$this->prefix]['scripts']['p-' . $key] = $value;
+            USI_Page_Solutions::$options['scripts']['p-' . $key] = $value;
             $this->sections['scripts']['settings']['p-' . $key] = array(
                'class' => 'large-text', 
                'label' => $key,
@@ -157,7 +73,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
             if ('scripts_add' == $key) continue;
             $tokens = self::explode($value);
             $key = $tokens[0];
-            USI_Settings::$options[$this->prefix]['scripts']['c-' . $key] = $value;
+            USI_Page_Solutions::$options['scripts']['c-' . $key] = $value;
             $this->sections['scripts']['settings']['c-' . $key] = array(
                'class' => 'large-text', 
                'label' => $key,
@@ -173,13 +89,13 @@ class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
          'notes' => '<i>unique-id &nbsp; script/path/name &nbsp; version &nbsp; in-footer</i>', 
       );
 
-      USI_Settings::$options[$this->prefix]['styles']['page-id'] = $this->page_id;
+      USI_Page_Solutions::$options['styles']['page-id'] = $this->page_id;
 
       if (!empty($meta_value['layout']['styles_parent'])) {
          foreach ($meta_value['layout']['styles_parent'] as $key => $value) {
             $tokens = self::explode($value);
             $key = $tokens[0];
-            USI_Settings::$options[$this->prefix]['styles']['p-' . $key] = $value;
+            USI_Page_Solutions::$options['styles']['p-' . $key] = $value;
             $this->sections['styles']['settings']['p-' . $key] = array(
                'class' => 'large-text', 
                'label' => $key,
@@ -194,7 +110,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
             if ('styles_add' == $key) continue;
             $tokens = self::explode($value);
             $key = $tokens[0];
-            USI_Settings::$options[$this->prefix]['styles']['c-' . $key] = $value;
+            USI_Page_Solutions::$options['styles']['c-' . $key] = $value;
             $this->sections['styles']['settings']['c-' . $key] = array(
                'class' => 'large-text', 
                'label' => $key,
@@ -347,6 +263,98 @@ class USI_Page_Solutions_Layout_Edit extends USI_Settings_Admin {
       parent::page_render($options);
 
    } // page_render();
+
+   function sections() {
+
+      $sections = array(
+
+         'code' => array(
+            'header_callback' => array($this, 'header_codes'),
+            'label' => __('Raw Code', USI_Page_Solutions::TEXTDOMAIN),
+            'settings' => array(
+               'page-id' => array(
+                  'type' => 'hidden', 
+                  'value' =>  $this->page_id, 
+               ),
+               'codes_head_parent' => array(
+                  'class' => 'large-text', 
+                  'label' => __('Header Code From Parent', USI_Page_Solutions::TEXTDOMAIN),
+                  'readonly' => true,
+                  'rows' => 10,
+                  'type' => 'textarea', 
+               ),
+               'codes_head' => array(
+                  'class' => 'large-text', 
+                  'label' => __('Header Code', USI_Page_Solutions::TEXTDOMAIN),
+                  'rows' => 10,
+                  'type' => 'textarea', 
+               ),
+               'codes_foot_parent' => array(
+                  'class' => 'large-text', 
+                  'label' => __('Footer Code From Parent', USI_Page_Solutions::TEXTDOMAIN),
+                  'readonly' => true,
+                  'rows' => 10,
+                  'type' => 'textarea', 
+               ),
+               'codes_foot' => array(
+                  'class' => 'large-text', 
+                  'label' => __('Footer Code', USI_Page_Solutions::TEXTDOMAIN),
+                  'rows' => 10,
+                  'type' => 'textarea', 
+               ),
+            ),
+         ), // code;
+
+         'css' => array(
+            'header_callback' => array($this, 'header_css'),
+            'label' => __('Raw CSS', USI_Page_Solutions::TEXTDOMAIN),
+            'settings' => array(
+               'page-id' => array(
+                  'type' => 'hidden', 
+                  'value' =>  $this->page_id, 
+               ),
+               'css_parent' => array(
+                  'class' => 'large-text', 
+                  'label' => __('CSS From Parent', USI_Page_Solutions::TEXTDOMAIN),
+                  'readonly' => true,
+                  'rows' => 10,
+                  'type' => 'textarea', 
+               ),
+               'css' => array(
+                  'class' => 'large-text', 
+                  'label' => __('CSS', USI_Page_Solutions::TEXTDOMAIN),
+                  'rows' => 10,
+                  'type' => 'textarea', 
+               ),
+            ),
+         ), // css;
+
+         'scripts' => array(
+            'header_callback' => array($this, 'header_script'),
+            'label' => 'Script Links',
+            'settings' => array(
+               'page-id' => array(
+                  'type' => 'hidden', 
+                  'value' =>  $this->page_id, 
+               ),
+            ),
+         ), // scripts;
+
+         'styles' => array(
+            'header_callback' => array($this, 'header_style'),
+            'label' => __('Style Links', USI_Page_Solutions::TEXTDOMAIN),
+            'settings' => array(
+               'page-id' => array(
+                  'type' => 'hidden', 
+                  'value' =>  $this->page_id, 
+               ),
+            ),
+         ), // styles;
+      );
+
+      return($sections);
+
+   } // sections();
 
 } // Class USI_Page_Solutions_Layout_Edit;
 

@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout {
 
-   const VERSION = '1.2.1 (2018-10-07)';
+   const VERSION = '1.3.0 (2019-06-15)';
 
    private $options = null;
    private $page_id = 0;
@@ -15,8 +15,8 @@ class USI_Page_Solutions_Layout {
 
       $this->page_id = !empty($_GET['page_id']) ? (int)$_GET['page_id'] : 0;
 
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
-         || !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) 
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout']) 
+         || !empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) 
          add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
 
       add_action('admin_head', array($this, 'action_admin_head'));
@@ -52,7 +52,7 @@ class USI_Page_Solutions_Layout {
             '</style>' . PHP_EOL;
       }
 
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'])) {
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout'])) {
 
          $screen = get_current_screen();
 
@@ -84,7 +84,7 @@ class USI_Page_Solutions_Layout {
       } else {
          $offset = 0;
       }
-      if ((int)USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['page-mru-max']) {
+      if ((int)USI_Page_Solutions::$options['preferences']['page-mru-max']) {
          $pages = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-page');
          for ($ith = 0; $ith < count($pages) - 1; $ith++) {
             if (!empty($pages[$ith + $offset]['title'])) {
@@ -94,7 +94,7 @@ class USI_Page_Solutions_Layout {
             }
          }
       }
-      if ((int)USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['post-mru-max']) {
+      if ((int)USI_Page_Solutions::$options['preferences']['post-mru-max']) {
          $posts = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-post');
          for ($ith = 0; $ith < count($posts) - 1; $ith++) {
             if (!empty($posts[$ith + $offset]['title'])) {
@@ -246,7 +246,7 @@ class USI_Page_Solutions_Layout {
 
       $disabled = ($post->post_parent ? null : ' disabled');
 
-      $html = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) ?
+      $html = !empty(USI_Page_Solutions::$options['preferences']['enable-layout']) ?
          '<p>' .
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=code&page_id='    . $post->ID . '">Code</a> &nbsp; ' .
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=css&page_id='     . $post->ID . '">CSS</a> &nbsp; ' .
@@ -263,9 +263,9 @@ class USI_Page_Solutions_Layout {
       $styles_inherit     = $meta_value['options']['styles_inherit'];
       $widgets_inherit    = $meta_value['options']['widgets_inherit'];
 
-      // USI_Debug::print_r(__METHOD__.':options=', USI_Settings::$options[USI_Page_Solutions::PREFIX]);
+      // USI_Debug::print_r(__METHOD__.':options=', USI_Page_Solutions::$option);
 
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
 
          $collection_index = 0;
 
@@ -317,10 +317,10 @@ class USI_Page_Solutions_Layout {
 
       echo $html;
 
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
-         || !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) echo '<p>';
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout']) 
+         || !empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) echo '<p>';
 
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout'])) {
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout'])) {
 ?>
   <input id="usi-page-solutions-layout-codes-head-inherit"<?php checked($codes_head_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-codes-head-inherit" type="checkbox" value="true" />
   <label for="usi-page-solutions-layout-codes-head-inherit"><?php _e('Inherit raw header code from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
@@ -339,18 +339,18 @@ class USI_Page_Solutions_Layout {
 <?php
       }
 
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
-         && !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) echo '<br />';
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout']) 
+         && !empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) echo '<br />';
 
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
 ?>
   <input id="usi-page-solutions-layout-widgets-inherit"<?php checked($widgets_inherit, true); echo $disabled; ?> name="usi-page-solutions-layout-widgets-inherit" type="checkbox" value="true" />
   <label for="usi-page-solutions-layout-widgets-inherit"><?php _e('Inherit widgets from parent', USI_Page_Solutions::TEXTDOMAIN); ?></label>
 <?php
       }
 
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-layout']) 
-         || !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) echo '</p>';
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout']) 
+         || !empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) echo '</p>';
 
    } // render_meta_box();
       

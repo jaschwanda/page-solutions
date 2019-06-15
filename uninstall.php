@@ -2,12 +2,11 @@
 
 require_once('usi-library/usi-debug-enable.php');
 require_once('usi-library/usi-dbs-mysqli.php');
-require_once('usi-settings/usi-settings-uninstall.php');
 require_once('usi-page-solutions.php');
 
 final class USI_Page_Solutions_Uninstall {
 
-   const VERSION = '1.2.1 (2018-10-07)';
+   const VERSION = '1.3.0 (2019-06-15)';
 
    private function __construct() {
    } // __construct();
@@ -16,7 +15,7 @@ final class USI_Page_Solutions_Uninstall {
 
       if (!defined('WP_UNINSTALL_PLUGIN')) exit;
 
-      USI_Settings_Uninstall::uninstall(
+      USI_Setting_Uninstall::uninstall(
          USI_Page_Solutions::NAME, 
          USI_Page_Solutions::PREFIX, 
          USI_Page_Solutions::$capabilities

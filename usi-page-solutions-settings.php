@@ -2,13 +2,13 @@
 
 defined('ABSPATH') or die('Accesss not allowed.');
 
-require_once('usi-settings/usi-settings-admin.php');
-require_once('usi-settings/usi-settings-capabilities.php');
-require_once('usi-settings/usi-settings-versions.php');
+require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-capabilities.php');
+require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-settings.php');
+require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-versions.php');
 
-class USI_Page_Solutions_Settings extends USI_Settings_Admin {
+class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.2.1 (2018-10-07)';
+   const VERSION = '1.3.0 (2019-06-15)';
 
    protected $is_tabbed = true;
 
@@ -16,10 +16,9 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
    private static $cache_config_warning = null;
 
    function __construct() {
-      global $wpdb;
 
       $good = __('Good', USI_Page_Solutions::TEXTDOMAIN);
-      $root_status = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-status']) ? USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-status'] : null;
+      $root_status = !empty(USI_Page_Solutions::$options['cache']['root-status']) ? USI_Page_Solutions::$options['cache']['root-status'] : null;
       if ($root_status == $good) {
          $pages = get_pages(array('sort_column' => 'ID', 'number' => 1, 'post_type' => 'page', 'post_status' => 'publish'));
          if (!empty($pages)) {
@@ -37,8 +36,8 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
                add_action('admin_notices', array(__CLASS__, 'action_admin_notices'));
             }
          }
-      } else if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
-         $root = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location']) ? USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location'] : null;
+      } else if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
+         $root = !empty(USI_Page_Solutions::$options['cache']['root-location']) ? USI_Page_Solutions::$options['cache']['root-location'] : null;
          if (!$root) {
             self::$cache_config_status  = __('Unknown', USI_Page_Solutions::TEXTDOMAIN);
             self::$cache_config_warning = __('The <b>index.php</b> file location is unknown. Access any WordPress page in the site from another browser that is not running in administrator mode, then go to the <a href="' . get_bloginfo('wpurl') . '/wp-admin/options-general.php?page=usi-page-settings&tab=cache">Cache Options</a> tab on the Page-Solutions Settings page and click the <b>Save Cache Options</b> button.', USI_Page_Solutions::TEXTDOMAIN);
@@ -64,153 +63,14 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
             }
          }
       }
-      USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-status'] = self::$cache_config_status;
-
-      $this->sections = array(
-         'preferences' => array(
-            'header_callback' => array($this, 'config_section_header_preferences'),
-            'label' => 'Preferences',
-            'settings' => array(
-               'page-mru-max' => array(
-                  'class' => 'small-text', 
-                  'type' => 'number', 
-                  'label' => 'Page MRU size',
-                  'min' => 0,
-                  'max' => 12,
-                  'notes' => 'Maximum number of entries in the most recently used (MRU) page list. Enter 1 through 12 inclusive or 0 to disable the list. Defaults to <b>4</b> enties.',
-               ),
-               'post-mru-max' => array(
-                  'class' => 'small-text', 
-                  'type' => 'number', 
-                  'label' => 'Post MRU size',
-                  'min' => 0,
-                  'max' => 12,
-                  'notes' => 'Maximum number of entries in the most recently used (MRU) post list. Enter 1 through 12 inclusive or 0 to disable the list. Defaults to <b>4</b> enties.',
-               ),
-               'enable-cache' => array(
-                  'type' => 'checkbox', 
-                  'label' => 'Page cache',
-                  'notes' => 'Enables page caching functionality. Another tab appears at the top of the page if this option is checked.',
-               ),
-               'enable-enhanced-areas' => array(
-                  'type' => 'checkbox', 
-                  'label' => 'Enhanced widget areas',
-                  'notes' => 'Enables enhanced widget area functionality. Two tabs appear at the top of the page if this option is checked.',
-               ),
-               'enable-layout' => array(
-                  'type' => 'checkbox', 
-                  'label' => 'Enable layout enhancements',
-                  'notes' => 'Enables layout enhancements.',
-               ),
-            ),
-         ), // preferences;
-
-         'capabilities' => USI_Settings_Capabilities::section(
-            USI_Page_Solutions::NAME, 
-            USI_Page_Solutions::PREFIX, 
-            USI_Page_Solutions::TEXTDOMAIN,
-            USI_Page_Solutions::$capabilities
-         ), // capabilities;
-
-      );
-
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
-
-         $this->sections['cache'] = array(
-            'header_callback' => array($this, 'config_section_header_cache'),
-            'label' => 'Cache Options',
-            'settings' => array(
-               'config-location' => array(
-                  'class' => 'large-text', 
-                  'type' => 'text', 
-                  'label' => 'External configuration',
-                  'notes' => 'Most WordPress installations store the database connection parameters in the <b>wp-config.php</b> file. To increase security, some experts recommend that you store theses parameters in a different file outside of your root folder and include this file in your <b>wp-config.php</b> file. If you follow this recommendation, please enter this file location path in the above field.',
-               ),
-               'root-location' => array(
-                  'class' => 'large-text', 
-                  'type' => 'text', 
-                  'label' => 'index.php location',
-                  'notes' => 'You can manually set the location of the root <b>index.php</b> file by entering the location above and clicking the <b>Save Cache Options</b> button. To force WordPress to scan for the actual location, clear the above field and click the <b>Save Cache Options</b> button, then access any page from another browser not in administrator mode.',
-               ),
-               'root-status' => array(
-                  'class' => 'large-text', 
-                  'type' => 'text', 
-                  'label' => 'index.php status',
-                  'notes' => self::$cache_config_warning,
-                  'readonly' => true,
-               ),
-               'track-times' => array(
-                  'type' => 'checkbox', 
-                  'label' => 'Append cache times',
-                  'notes' => 'Formats the page cache creation time, call-up time, expiration time and the Page-Solutions version as an HTML comment and appends it to the end of the page. It is recommended to use this feature as it uses negligible resources and gives valuable cache usage information.',
-               ),
-               'debug-ip' => array(
-                  'type' => 'text', 
-                  'label' => 'Debug IP address',
-                  'notes' => 'Enter the IP address of the user you wish to track for debugging.',
-               ),
-               'clear-all-cache' => array(
-                  'type' => 'checkbox', 
-                  'label' => 'Clear all page cache information',
-                  'notes' => 'If checked, all page cache information will be cleared. This is useful when a change is made that globally effects the site, like a menu change or template modification.',
-               ),
-             ),
-         ); // cache;
-
-         if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['debug-ip'])) {
-            $this->sections['cache']['settings']['debug-meta-data'] = array(
-               'type' => 'checkbox', 
-               'label' => 'DEBUG_META_DATA',
-               'notes' => 'Writes the page meta data to the WordPress <b>' . $wpdb->prefix . 'USI_log</b> database table.',
-            );
-            $this->sections['cache']['settings']['debug-sql'] = array(
-               'type' => 'checkbox', 
-               'label' => 'DEBUG_SQL',
-               'notes' => 'Writes SQL statements to the WordPress <b>' . $wpdb->prefix . 'USI_log</b> database table.',
-            );
-         } else {
-            unset(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['debug-meta-data']);
-            unset(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['debug-sql']);
-         }
-
-      }
-
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
-
-         $this->sections['widgets'] = array(
-            'header_callback' => array($this, 'config_section_header_widgets'),
-            'label' => 'Enhanced Widget Areas',
-            'settings' => array(),
-         ); // widgets;
-
-         $this->sections['collections'] = array(
-            'header_callback' => array($this, 'config_section_header_collections'),
-            'label' => 'Virtual Widget Collections',
-            'settings' => array(),
-            'submit' => '',
-         ); // collections;
-
-      }
-
-      foreach ($this->sections as $section_name => & $section) {
-         if ('capabilities' == $section_name) continue;
-         foreach ($section['settings'] as $setting_name => & $setting) {
-            if (!empty($setting['notes'])) {
-               $setting['notes'] = '<p class="description">' . __($setting['notes'], USI_Page_Solutions::TEXTDOMAIN) . '</p';
-            }
-         }
-      }
-      unset($setting);
+      USI_Page_Solutions::$options['cache']['root-status'] = self::$cache_config_status;
 
       parent::__construct(
          USI_Page_Solutions::NAME, 
          USI_Page_Solutions::PREFIX, 
-         USI_Page_Solutions::TEXTDOMAIN
+         USI_Page_Solutions::TEXTDOMAIN,
+         USI_Page_Solutions::$options
       );
-
-      USI_Settings_Versions::action();
-
-      add_filter('plugin_row_meta', array($this, 'filter_plugin_row_meta'), 10, 2);
 
    } // __construct();
 
@@ -219,7 +79,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
    } // action_admin_notices();
 
    function action_admin_init() {
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
          global $wp_registered_sidebars;
          $disabled = USI_Page_Solutions_Admin::$enhanced_edit ? null : 'disabled';
          foreach ($wp_registered_sidebars as $id => $sidebar) {
@@ -351,7 +211,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
    function fields_sanitize($input) {
       $input = parent::fields_sanitize($input);
       if ('preferences' == $this->active_tab) {
-         if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
+         if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
             if (empty($input['preferences']['enable-cache'])) {
                self::index_file_restore();
                self::cache_file_generate();
@@ -390,8 +250,13 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
 
    function filter_plugin_row_meta($links, $file) {
       if (false !== strpos($file, USI_Page_Solutions::TEXTDOMAIN)) {
-         $links[0] = USI_Settings_Versions::link($links[0], 'Page-Solutions', 
-            USI_Page_Solutions::VERSION, USI_Page_Solutions::TEXTDOMAIN, __FILE__);
+         $links[0] = USI_WordPress_Solutions_Versions::link(
+            $links[0], // Original link text;
+            USI_Page_Solutions::NAME, // Title;
+            USI_Page_Solutions::VERSION, // Version;
+            USI_Page_Solutions::TEXTDOMAIN, // Text domain;
+            __DIR__ // Folder containing plugin or theme;
+         );
          $links[] = '<a href="https://www.usi2solve.com/donate/page-solutions" target="_blank">' . 
             __('Donate', USI_Page_Solutions::TEXTDOMAIN) . '</a>';
       }
@@ -399,7 +264,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
    } // filter_plugin_row_meta();
 
    function index_file_modify() {
-      $root = USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location'];
+      $root = USI_Page_Solutions::$options['cache']['root-location'];
       if (!empty($root)) {
          if (is_file($root)) {
             if ($root_stream = fopen($root, 'r')) {
@@ -421,7 +286,7 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
    } // index_file_modify();
 
    static function index_file_restore() {
-      $root = !empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location']) ? USI_Settings::$options[USI_Page_Solutions::PREFIX]['cache']['root-location'] : null;
+      $root = !empty(USI_Page_Solutions::$options['cache']['root-location']) ? USI_Page_Solutions::$options['cache']['root-location'] : null;
       if ($root) {
          if (is_file($root)) {
             if ($root_stream = fopen($root, 'r')) {
@@ -456,6 +321,151 @@ class USI_Page_Solutions_Settings extends USI_Settings_Admin {
       parent::page_render($options);
 
    } // page_render();
+
+   function sections() {
+
+      global $wpdb;
+
+      $sections = array(
+         'preferences' => array(
+            'header_callback' => array($this, 'config_section_header_preferences'),
+            'label' => 'Preferences',
+            'settings' => array(
+               'page-mru-max' => array(
+                  'class' => 'small-text', 
+                  'type' => 'number', 
+                  'label' => 'Page MRU size',
+                  'min' => 0,
+                  'max' => 12,
+                  'notes' => 'Maximum number of entries in the most recently used (MRU) page list. Enter 1 through 12 inclusive or 0 to disable the list. Defaults to <b>4</b> enties.',
+               ),
+               'post-mru-max' => array(
+                  'class' => 'small-text', 
+                  'type' => 'number', 
+                  'label' => 'Post MRU size',
+                  'min' => 0,
+                  'max' => 12,
+                  'notes' => 'Maximum number of entries in the most recently used (MRU) post list. Enter 1 through 12 inclusive or 0 to disable the list. Defaults to <b>4</b> enties.',
+               ),
+               'enable-cache' => array(
+                  'type' => 'checkbox', 
+                  'label' => 'Page cache',
+                  'notes' => 'Enables page caching functionality. Another tab appears at the top of the page if this option is checked.',
+               ),
+               'enable-enhanced-areas' => array(
+                  'type' => 'checkbox', 
+                  'label' => 'Enhanced widget areas',
+                  'notes' => 'Enables enhanced widget area functionality. Two tabs appear at the top of the page if this option is checked.',
+               ),
+               'enable-layout' => array(
+                  'type' => 'checkbox', 
+                  'label' => 'Enable layout enhancements',
+                  'notes' => 'Enables layout enhancements.',
+               ),
+            ),
+         ), // preferences;
+
+         'capabilities' => USI_WordPress_Solutions_Capabilities::section(
+            USI_Page_Solutions::NAME, 
+            USI_Page_Solutions::PREFIX, 
+            USI_Page_Solutions::TEXTDOMAIN,
+            USI_Page_Solutions::$capabilities,
+            USI_Page_Solutions::$options
+         ), // capabilities;
+
+      );
+
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
+
+         $sections['cache'] = array(
+            'header_callback' => array($this, 'config_section_header_cache'),
+            'label' => 'Cache Options',
+            'settings' => array(
+               'config-location' => array(
+                  'class' => 'large-text', 
+                  'type' => 'text', 
+                  'label' => 'External configuration',
+                  'notes' => 'Most WordPress installations store the database connection parameters in the <b>wp-config.php</b> file. To increase security, some experts recommend that you store theses parameters in a different file outside of your root folder and include this file in your <b>wp-config.php</b> file. If you follow this recommendation, please enter this file location path in the above field.',
+               ),
+               'root-location' => array(
+                  'class' => 'large-text', 
+                  'type' => 'text', 
+                  'label' => 'index.php location',
+                  'notes' => 'You can manually set the location of the root <b>index.php</b> file by entering the location above and clicking the <b>Save Cache Options</b> button. To force WordPress to scan for the actual location, clear the above field and click the <b>Save Cache Options</b> button, then access any page from another browser not in administrator mode.',
+               ),
+               'root-status' => array(
+                  'class' => 'large-text', 
+                  'type' => 'text', 
+                  'label' => 'index.php status',
+                  'notes' => self::$cache_config_warning,
+                  'readonly' => true,
+               ),
+               'track-times' => array(
+                  'type' => 'checkbox', 
+                  'label' => 'Append cache times',
+                  'notes' => 'Formats the page cache creation time, call-up time, expiration time and the Page-Solutions version as an HTML comment and appends it to the end of the page. It is recommended to use this feature as it uses negligible resources and gives valuable cache usage information.',
+               ),
+               'debug-ip' => array(
+                  'type' => 'text', 
+                  'label' => 'Debug IP address',
+                  'notes' => 'Enter the IP address of the user you wish to track for debugging.',
+               ),
+               'clear-all-cache' => array(
+                  'type' => 'checkbox', 
+                  'label' => 'Clear all page cache information',
+                  'notes' => 'If checked, all page cache information will be cleared. This is useful when a change is made that globally effects the site, like a menu change or template modification.',
+               ),
+             ),
+         ); // cache;
+
+         if (!empty(USI_Page_Solutions::$options['cache']['debug-ip'])) {
+            $sections['cache']['settings']['debug-meta-data'] = array(
+               'type' => 'checkbox', 
+               'label' => 'DEBUG_META_DATA',
+               'notes' => 'Writes the page meta data to the WordPress <b>' . $wpdb->prefix . 'USI_log</b> database table.',
+            );
+            $sections['cache']['settings']['debug-sql'] = array(
+               'type' => 'checkbox', 
+               'label' => 'DEBUG_SQL',
+               'notes' => 'Writes SQL statements to the WordPress <b>' . $wpdb->prefix . 'USI_log</b> database table.',
+            );
+         } else {
+            unset(USI_Page_Solutions::$options['cache']['debug-meta-data']);
+            unset(USI_Page_Solutions::$options['cache']['debug-sql']);
+         }
+
+      }
+
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
+
+         $sections['widgets'] = array(
+            'header_callback' => array($this, 'config_section_header_widgets'),
+            'label' => 'Enhanced Widget Areas',
+            'settings' => array(),
+         ); // widgets;
+
+         $sections['collections'] = array(
+            'header_callback' => array($this, 'config_section_header_collections'),
+            'label' => 'Virtual Widget Collections',
+            'settings' => array(),
+            'submit' => '',
+         ); // collections;
+
+      }
+
+      foreach ($sections as $section_name => & $section) {
+         if ('capabilities' == $section_name) continue;
+         foreach ($section['settings'] as $setting_name => & $setting) {
+            if (!empty($setting['notes'])) {
+               $setting['notes'] = '<p class="description">' . __($setting['notes'], USI_Page_Solutions::TEXTDOMAIN) . '</p';
+            }
+         }
+      }
+      unset($setting);
+
+      return($sections);
+
+   } // sections();
 
 } // Class USI_Page_Solutions_Settings;
 

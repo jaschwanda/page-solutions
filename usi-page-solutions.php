@@ -6,18 +6,17 @@ defined('ABSPATH') or die('Accesss not allowed.');
 Plugin Name: Page-Solutions
 Plugin URI: https://github.com/jaschwanda/page-solutions
 Description: The Page-Solutions plugin provides custom CSS and JavaScript modifications, virtual widget mapping and page caching functionality on a page by page basis. This efficient and powerful plugin is well suited for page-intensive and non-blog WordPress applications. The Page-Solutions plugin is developed and maintained by Universal Solutions.
-Version: 1.1.0 (2018-01-13)
+Version: 1.3.0 (2019-06-15)
 Author: Jim Schwanda
 Author URI: http://www.usi2solve.com/leader
 Text Domain: usi-page-solutions
 */
 
 require_once('usi-page-cache.php');
-require_once('usi-settings/usi-settings.php'); 
 
 final class USI_Page_Solutions {
 
-   const VERSION = '1.2.1 (2018-10-07)';
+   const VERSION = '1.3.0 (2019-06-15)';
 
    const DEBUG_OFF   = 0x00;
    const DEBUG_HTML  = 0x01;
@@ -43,12 +42,25 @@ final class USI_Page_Solutions {
    public static $meta_value = null; // Page/post postmeta data;
    public static $option_name_base = null;
    public static $option_name_virtual = null;
+   public static $options = array();
    public static $options_virtual = null; // Virtual widget array for current theme;
    public static $theme_name = null; // Slugified name of current theme;
    public static $virtual_source = null; // Virtual source widget to map in enhanced widget area;
 
    private function __construct() {
    } // __construct();
+
+   static function action_admin_notices() {
+      global $pagenow;
+      if ('plugins.php' == $pagenow) {
+        $text = sprintf(
+           __('The %s plugin is required for the %s plugin to run properly.', self::TEXTDOMAIN), 
+           '<b>WordPress-Solutions</b>',
+           '<b>Page-Solutions</b>'
+        );
+        echo '<div class="notice notice-warning is-dismissible"><p>' . $text . '</p></div>';
+      }
+   } // action_admin_notices();
 
    static function action_widgets_init() {
       $theme = wp_get_theme();
@@ -207,7 +219,7 @@ final class USI_Page_Solutions {
 
    static function init() {
 
-      if (empty(USI_Settings::$options[self::PREFIX])) {
+      if (empty(USI_Page_Solutions::$option)) {
          $defaults['cache']['config-location'] =
          $defaults['cache']['root-location']   =
          $defaults['cache']['root-status']     =
@@ -220,12 +232,12 @@ final class USI_Page_Solutions {
          $defaults['preferences']['enable-layout'] = false;
          $defaults['preferences']['page-mru-max'] = 
          $defaults['preferences']['post-mru-max'] = 4;
-         USI_Settings::$options[self::PREFIX] = get_option(self::PREFIX . '-options', $defaults);
+         USI_Page_Solutions::$options = get_option(self::PREFIX . '-options', $defaults);
          if (!is_admin()) {
-            if (empty(USI_Settings::$options[self::PREFIX]['cache']['root-location'])) {
+            if (empty(USI_Page_Solutions::$options['cache']['root-location'])) {
                $included_files = get_included_files();
-               USI_Settings::$options[self::PREFIX]['cache']['root-location'] = $included_files[0];
-               update_option(self::PREFIX . '-options', USI_Settings::$options[self::PREFIX]);
+               USI_Page_Solutions::$options['cache']['root-location'] = $included_files[0];
+               update_option(self::PREFIX . '-options', USI_Page_Solutions::$option);
             }
          }
       }
@@ -235,7 +247,7 @@ final class USI_Page_Solutions {
       add_action('wp_footer', array(__CLASS__, 'action_wp_footer'), 9999);
       add_action('wp_head', array(__CLASS__, 'action_wp_head'), 100);
 
-      if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-enhanced-areas'])) {
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
          add_filter('dynamic_sidebar_params', array(__CLASS__, 'filter_dynamic_sidebar_params'));
          add_filter('sidebars_widgets', array(__CLASS__, 'filter_sidebars_widgets'));
          add_filter('widget_display_callback', array(__CLASS__, 'filter_widget_display_callback'), 10, 3);
@@ -364,19 +376,21 @@ final class USI_Page_Solutions {
 USI_Page_Solutions::init();
 
 if (is_admin() && !defined('WP_UNINSTALL_PLUGIN')) {
-   require_once('usi-page-solutions-admin.php');
-   require_once('usi-page-solutions-install.php');
-   require_once('usi-page-solutions-layout.php');
-   require_once('usi-page-solutions-layout-edit.php');
-   require_once('usi-page-solutions-settings.php');
-   require_once('usi-page-solutions-virtual.php');
-   require_once('usi-page-solutions-virtual-list.php');
-   if (!empty(USI_Settings::$options[USI_Page_Solutions::PREFIX]['preferences']['enable-cache'])) {
-      require_once('usi-page-solutions-cache.php');
-      require_once('usi-page-solutions-options.php');
+   if (is_dir(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions')) {
+      require_once('usi-page-solutions-admin.php');
+      require_once('usi-page-solutions-install.php');
+      require_once('usi-page-solutions-layout.php');
+      require_once('usi-page-solutions-layout-edit.php');
+      require_once('usi-page-solutions-settings.php');
+      require_once('usi-page-solutions-virtual.php');
+      require_once('usi-page-solutions-virtual-list.php');
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
+         require_once('usi-page-solutions-cache.php');
+         require_once('usi-page-solutions-options.php');
+      }
+   } else {
+      add_action('admin_notices', array('USI_Page_Solutions', 'action_admin_notices'));
    }
-   require_once('usi-settings/usi-settings-admin.php');
-   require_once('usi-settings/usi-settings-capabilities.php');
 }
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>
