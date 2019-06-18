@@ -1,7 +1,7 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
-require_once('usi-library/usi-debug-enable.php');
-require_once('usi-library/usi-dbs-mysqli.php');
+require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-uninstall.php');
+
 require_once('usi-page-solutions.php');
 
 final class USI_Page_Solutions_Uninstall {
@@ -13,42 +13,23 @@ final class USI_Page_Solutions_Uninstall {
 
    static function uninstall() {
 
+      global $wpdb;
+
       if (!defined('WP_UNINSTALL_PLUGIN')) exit;
 
-      USI_Setting_Uninstall::uninstall(
-         USI_Page_Solutions::NAME, 
-         USI_Page_Solutions::PREFIX, 
-         USI_Page_Solutions::$capabilities
-      );
-
-      try {
-
-         global $wpdb;
-
-         $dbs = new USI_Dbs(array('hash' => DB_PASSWORD, 'host' => DB_HOST, 'name' => DB_NAME, 'user' => DB_USER));
-
-         $key = USI_Page_Cache::POST_META . '%';
-
-         $query = $dbs->prepare_x(
-            'DELETE FROM `' . $wpdb->prefix . 'postmeta` WHERE (`meta_key` LIKE ?)', // SQL;
-            array('s', & $key), // Input parameters;
-            null, // Output parameters;
-            true, // Execute flag;
-            false // Store results flag;
-         );
-
-      } catch(USI_Dbs_Exception $e) {
-
-         USI_Debug::exception($e);
-
+      $results = $wpdb->get_results('SELECT option_name FROM ' . $wpdb->prefix . 
+         'options WHERE (option_name LIKE "' . USI_Page_Solutions::PREFIX . '-solutions-layout-options%")');
+      foreach ($results as $result) {
+         delete_option($result->option_name);
       }
 
-      delete_metadata('user', null, $wpdb->prefix . USI_Page_Solutions::PREFIX . '-options-mru-page', null, true);
-      delete_metadata('user', null, $wpdb->prefix . USI_Page_Solutions::PREFIX . '-options-mru-post', null, true);
+      $wpdb->query('DELETE FROM `' . $wpdb->prefix . "postmeta` WHERE (`meta_key` LIKE '" . USI_Page_Cache::POST_META . "%')");
 
    } // uninstall();
 
 } // Class USI_Page_Solutions_Uninstall;
+
+USI_WordPress_Solutions_Uninstall::uninstall(USI_Page_Solutions::PREFIX);
 
 USI_Page_Solutions_Uninstall::uninstall();
 

@@ -219,7 +219,7 @@ final class USI_Page_Solutions {
 
    static function init() {
 
-      if (empty(USI_Page_Solutions::$option)) {
+      if (empty(USI_Page_Solutions::$options)) {
          $defaults['cache']['config-location'] =
          $defaults['cache']['root-location']   =
          $defaults['cache']['root-status']     =
@@ -237,7 +237,7 @@ final class USI_Page_Solutions {
             if (empty(USI_Page_Solutions::$options['cache']['root-location'])) {
                $included_files = get_included_files();
                USI_Page_Solutions::$options['cache']['root-location'] = $included_files[0];
-               update_option(self::PREFIX . '-options', USI_Page_Solutions::$option);
+               update_option(self::PREFIX . '-options', USI_Page_Solutions::$options);
             }
          }
       }
