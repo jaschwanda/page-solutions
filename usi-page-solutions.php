@@ -261,7 +261,7 @@ final class USI_Page_Solutions {
 
       try {
          global $wpdb;
-         $dbs = new USI_Dbs(array('hash' => DB_PASSWORD, 'host' => DB_HOST, 'name' => DB_NAME, 'user' => DB_USER));
+         $dbs = new USI_Page_Dbs(array('hash' => DB_PASSWORD, 'host' => DB_HOST, 'name' => DB_NAME, 'user' => DB_USER));
          $query = $dbs->prepare_x(
             'SELECT `meta_key`, `meta_value` FROM `' . $wpdb->prefix . 'postmeta` ' .
             "WHERE (`post_id` = ?) AND (`meta_key` LIKE '" . USI_Page_Cache::POST_META . "%') " .
@@ -278,8 +278,8 @@ final class USI_Page_Solutions {
             }
          }
          $query = null; // Close query;
-      } catch(USI_Dbs_Exception $e) {
-         USI_Debug::exception($e);
+      } catch(USI_Page_Dbs_Exception $e) {
+         USI_Page_Debug::exception($e);
       }
 
       $cache = USI_Page_Cache::validate(!empty($data['cache']) ? $data['cache'] : null);
@@ -325,7 +325,7 @@ final class USI_Page_Solutions {
             $value['cache']['html'] = '~~~'; 
          }
 
-         USI_Debug::print_r($method . '>' . __METHOD__ . ':meta_value=', $value);
+         USI_Page_Debug::print_r($method . '>' . __METHOD__ . ':meta_value=', $value);
 
          if (!(self::$debug & self::DEBUG_HTML)) {
             $value['cache']['html'] = $html;
@@ -346,7 +346,7 @@ final class USI_Page_Solutions {
             $value['cache']['html'] = '~~~'; 
          }
 
-         USI_Debug::print_r($method . '>' . __METHOD__ . ':meta_value=', $value);
+         USI_Page_Debug::print_r($method . '>' . __METHOD__ . ':meta_value=', $value);
 
          if (!(self::$debug & self::DEBUG_HTML)) {
             $value['cache']['html'] = $html;
@@ -368,7 +368,7 @@ final class USI_Page_Solutions {
    } // number_of_offspring
 
    static function shutdown() {
-      if ($message = USI_Debug::get_message()) USI_Page_Cache::log($message);
+      if ($message = USI_Page_Debug::get_message()) USI_Page_Cache::log($message);
    } // shutdown();
 
 } // Class USI_Page_Solutions;

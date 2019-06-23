@@ -154,14 +154,14 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          $template_stream = fopen($template, 'r');
          $template_content = str_replace(
             array(
-               '/* USI-PAGE-SOLUTIONS-1 */',
+               '/* USI-PAGE-SOLUTIONS-1 external-config-location or null; */',
                '/* USI-PAGE-SOLUTIONS-2 */',
                '/* USI-PAGE-SOLUTIONS-3 */',
                '/* USI-PAGE-SOLUTIONS-4 */',
                '/* USI-PAGE-SOLUTIONS-5 */',
                '/* USI-PAGE-SOLUTIONS-6 */',
                '/* USI-PAGE-SOLUTIONS-7 */',
-               '/* USI-PAGE-SOLUTIONS-8 */',
+               '/* USI-PAGE-SOLUTIONS-8 USI_Page_Cache::cache() or null; */',
             ),
             array(
                $config_location,

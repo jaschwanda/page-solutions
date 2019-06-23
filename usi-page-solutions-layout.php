@@ -263,7 +263,7 @@ class USI_Page_Solutions_Layout {
       $styles_inherit     = $meta_value['options']['styles_inherit'];
       $widgets_inherit    = $meta_value['options']['widgets_inherit'];
 
-      // USI_Debug::print_r(__METHOD__.':options=', USI_Page_Solutions::$option);
+      // USI_Page_Debug::print_r(__METHOD__.':options=', USI_Page_Solutions::$option);
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
 
