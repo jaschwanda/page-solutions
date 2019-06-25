@@ -282,8 +282,6 @@ final class USI_Page_Solutions {
          USI_Page_Debug::exception($e);
       }
 
-      $cache = USI_Page_Cache::validate(!empty($data['cache']) ? $data['cache'] : null);
-
       $layout['codes_foot']          = !empty($data['layout']['codes_foot'])        ? $data['layout']['codes_foot']        : null;
       $layout['codes_foot_parent']   = !empty($data['layout']['codes_foot_parent']) ? $data['layout']['codes_foot_parent'] : null;
       $layout['codes_head']          = !empty($data['layout']['codes_head'])        ? $data['layout']['codes_head']        : null;
@@ -312,11 +310,15 @@ final class USI_Page_Solutions {
       $value = array(
          'key'     => $meta_key, 
          'post_id' => $post_id, 
-         'cache'   => $cache, 
+         'cache'   => null, 
          'layout'  => $layout, 
          'options' => $options, 
          'widgets' => $widgets
       );
+
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
+         $value['cache'] = USI_Page_Cache::validate(!empty($data['cache']) ? $data['cache'] : null);
+      }
 
       if (self::$debug || $debug) {
 
