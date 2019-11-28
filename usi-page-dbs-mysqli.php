@@ -18,7 +18,7 @@ Extends the standard mysqli database access functions by providing the following
 
 class USI_Page_Dbs extends mysqli {
 
-   const VERSION = '1.3.0 (2019-06-15) [USI_Dbs:1.1.3 (2018-01-18)]';
+   const VERSION = '1.4.0 (2019-11-27) [USI_Dbs:1.1.3 (2018-01-18)]';
 
    const PREPARE_ERROR_1 = '; check the manual that corresponds to your MySQL server version for the right syntax to use';
 
@@ -50,7 +50,7 @@ class USI_Page_Dbs_Exception extends Exception { } // Class USI_Page_Dbs_Excepti
 
 class USI_Page_Dbs_Stmt extends mysqli_stmt {
 
-   const VERSION = '1.3.0 (2019-06-15) [USI_Dbs_Stmt:1.1.1 (2017-11-14)]';
+   const VERSION = '1.4.0 (2019-11-27) [USI_Dbs_Stmt:1.1.1 (2017-11-14)]';
 
    const BIND_ERROR_1 = "Number of elements in type definition string doesn't match number of bind variables";
    const BIND_ERROR_2 = "Number of variables doesn't match number of parameters in prepared statement";
@@ -162,7 +162,7 @@ class USI_Page_Dbs_Stmt extends mysqli_stmt {
 
 class USI_Page_Debug {
 
-   const VERSION = '1.3.0 (2019-06-15) [USI_Page_Debug:1.1.2 (2017-12-31)]';
+   const VERSION = '1.4.0 (2019-11-27) [USI_Page_Debug:1.1.2 (2017-12-31)]';
 
    private static $message = null;
 

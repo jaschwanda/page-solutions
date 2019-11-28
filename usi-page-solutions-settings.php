@@ -8,7 +8,7 @@ require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-s
 
 class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.3.0 (2019-06-15)';
+   const VERSION = '1.4.0 (2019-11-27)';
 
    protected $is_tabbed = true;
 

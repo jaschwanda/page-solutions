@@ -2,6 +2,10 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.4.0 (2019-11-27) ##
+* Removed usi-dbs module and replaced with usi-page-dbs module.
+* Updated all plugin version numbers to match.
+
 ## 1.3.0 (2019-06-15) ##
 * Removed usi-settings files from sub-folder under parent plugin and made a stand alone class.
 * Updated all plugin version numbers to match.

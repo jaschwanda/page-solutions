@@ -6,7 +6,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 Plugin Name: Page-Solutions
 Plugin URI: https://github.com/jaschwanda/page-solutions
 Description: The Page-Solutions plugin provides custom CSS and JavaScript modifications, virtual widget mapping and page caching functionality on a page by page basis. This efficient and powerful plugin is well suited for page-intensive and non-blog WordPress applications. The Page-Solutions plugin is developed and maintained by Universal Solutions.
-Version: 1.3.0 (2019-06-15)
+Version: 1.4.0 (2019-11-27)
 Author: Jim Schwanda
 Author URI: http://www.usi2solve.com/leader
 Text Domain: usi-page-solutions
@@ -16,7 +16,7 @@ require_once('usi-page-cache.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '1.3.0 (2019-06-15)';
+   const VERSION = '1.4.0 (2019-11-27)';
 
    const DEBUG_OFF   = 0x00;
    const DEBUG_HTML  = 0x01;

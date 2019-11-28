@@ -4,7 +4,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Options {
 
-   const VERSION = '1.3.0 (2019-06-15)';
+   const VERSION = '1.4.0 (2019-11-27)';
 
    function __construct() {
       add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
