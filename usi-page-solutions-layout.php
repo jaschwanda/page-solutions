@@ -86,21 +86,25 @@ class USI_Page_Solutions_Layout {
       }
       if ((int)USI_Page_Solutions::$options['preferences']['page-mru-max']) {
          $pages = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-page');
-         for ($ith = 0; $ith < count($pages) - 1; $ith++) {
-            if (!empty($pages[$ith + $offset]['title'])) {
-               $title = '&raquo; ' . $pages[$ith + $offset]['title'];
-               $page_id = $pages[$ith + $offset]['page_id'];
-               add_submenu_page('edit.php?post_type=page', $title, $title, 'manage_options', 'post.php?post=' . $page_id . '&action=edit');
+         if (is_array($pages)) {
+            for ($ith = 0; $ith < count($pages) - 1; $ith++) {
+               if (!empty($pages[$ith + $offset]['title'])) {
+                  $title = '&raquo; ' . $pages[$ith + $offset]['title'];
+                  $page_id = $pages[$ith + $offset]['page_id'];
+                  add_submenu_page('edit.php?post_type=page', $title, $title, 'manage_options', 'post.php?post=' . $page_id . '&action=edit');
+               }
             }
          }
       }
       if ((int)USI_Page_Solutions::$options['preferences']['post-mru-max']) {
          $posts = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-post');
-         for ($ith = 0; $ith < count($posts) - 1; $ith++) {
-            if (!empty($posts[$ith + $offset]['title'])) {
-               $title = '&raquo; ' . $posts[$ith + $offset]['title'];
-               $post_id = $posts[$ith + $offset]['page_id'];
-               add_submenu_page('edit.php', $title, $title, 'manage_options', 'post.php?post=' . $post_id . '&action=edit');
+         if (is_array($posts)) {
+            for ($ith = 0; $ith < count($posts) - 1; $ith++) {
+               if (!empty($posts[$ith + $offset]['title'])) {
+                  $title = '&raquo; ' . $posts[$ith + $offset]['title'];
+                  $post_id = $posts[$ith + $offset]['page_id'];
+                  add_submenu_page('edit.php', $title, $title, 'manage_options', 'post.php?post=' . $post_id . '&action=edit');
+               }
             }
          }
       }
