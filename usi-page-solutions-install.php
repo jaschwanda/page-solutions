@@ -6,7 +6,7 @@ require_once('usi-page-solutions-settings.php');
 
 final class USI_Page_Solutions_Install {
 
-   const VERSION = '1.4.0 (2019-11-27)';
+   const VERSION = '1.4.1 (2019-11-28)';
 
    private function __construct() {
    } // __construct();
@@ -18,8 +18,6 @@ final class USI_Page_Solutions_Install {
    } // init();
 
    static function hook_activation() {
-
-      global $wpdb;
 
       if (!current_user_can('activate_plugins')) return;
 
