@@ -2,21 +2,41 @@
 
 defined('ABSPATH') or die('Accesss not allowed.');
 
-/*
-Plugin Name: Page-Solutions
-Plugin URI: https://github.com/jaschwanda/page-solutions
-Description: The Page-Solutions plugin provides custom CSS and JavaScript modifications, virtual widget mapping and page caching functionality on a page by page basis. This efficient and powerful plugin is well suited for page-intensive and non-blog WordPress applications. The Page-Solutions plugin is developed and maintained by Universal Solutions.
-Version: 1.4.0 (2019-11-27)
-Author: Jim Schwanda
-Author URI: http://www.usi2solve.com/leader
-Text Domain: usi-page-solutions
+/* 
+Author:            Jim Schwanda
+Author URI:        https://www.usi2solve.com/leader
+Description:       The Page-Solutions plugin provides custom CSS and JavaScript modifications, virtual widget mapping and page caching functionality on a page by page basis. This efficient and powerful plugin is well suited for page-intensive and non-blog WordPress applications. The Page-Solutions plugin is developed and maintained by Universal Solutions.
+Donate link:       https://www.usi2solve.com/donate/wordpress-solutions
+License:           GPL-3.0
+License URI:       https://github.com/jaschwanda/wordpress-solutions/blob/master/LICENSE.md
+Plugin Name:       Page-Solutions
+Plugin URI:        https://github.com/jaschwanda/page-solutions
+Requires at least: 5.0
+Requires PHP:      5.6.25
+Tested up to:      5.3.2
+Text Domain:       usi-page-solutions
+Version:           1.5.0
 */
+
+/*
+Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
+License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ 
+Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ 
+You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
+https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
+
+Copyright (c) 2020 by Jim Schwanda.
+*/
+
 
 require_once('usi-page-cache.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '1.4.0 (2019-11-27)';
+   const VERSION = '1.5.0 (2020-01-12)';
 
    const DEBUG_OFF   = 0x00;
    const DEBUG_HTML  = 0x01;
