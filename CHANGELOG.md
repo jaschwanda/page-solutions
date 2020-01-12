@@ -2,6 +2,12 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.4.1 (2020-01-12) ##
+* Added 'Updates' tab to settings page to optionally allow GitHub updates.
+* Added license and copyright notice.
+* Changed format of version number on main plugin file header to facilitate Git Hub update.
+* Updated all plugin version numbers to match.
+
 ## 1.4.0 (2019-11-27) ##
 * Removed usi-dbs module and replaced with usi-page-dbs module.
 * Updated all plugin version numbers to match.
