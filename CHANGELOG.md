@@ -2,6 +2,9 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.5.0 (2020-01-12) ##
+* Added license and copyright notice.
+
 ## 1.4.1 (2020-01-12) ##
 * Added 'Updates' tab to settings page to optionally allow GitHub updates.
 * Added license and copyright notice.
