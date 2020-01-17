@@ -31,7 +31,6 @@ https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
 Copyright (c) 2020 by Jim Schwanda.
 */
 
-
 require_once('usi-page-cache.php');
 
 final class USI_Page_Solutions {
