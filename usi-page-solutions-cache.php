@@ -1,12 +1,25 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
+/*
+Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
+License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ 
+Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ 
+You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
+https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
+
+Copyright (c) 2020 by Jim Schwanda.
+*/
+
 defined('ABSPATH') or die('Accesss not allowed.');
 
 // 2do add action prefix;
 
 class USI_Page_Solutions_Cache {
 
-   const VERSION = '1.4.0 (2019-11-27)';
+   const VERSION = '1.5.0 (2020-01-12)';
 
    private static $current_time = null;
    private static $valid_until = USI_Page_Cache::DATE_OMEGA;
