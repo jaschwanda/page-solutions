@@ -410,6 +410,10 @@ if (is_admin() && !defined('WP_UNINSTALL_PLUGIN')) {
          require_once('usi-page-solutions-cache.php');
          require_once('usi-page-solutions-options.php');
       }
+      if (!empty(USI_Page_Solutions::$options['updates']['git-update'])) {
+         require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-update.php');
+         new USI_WordPress_Solutions_Update(__FILE__, 'jaschwanda', 'page-solutions');
+      }
    } else {
       add_action('admin_notices', array('USI_Page_Solutions', 'action_admin_notices'));
    }
