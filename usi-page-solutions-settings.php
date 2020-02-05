@@ -22,7 +22,7 @@ require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-s
 
 class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.5.0 (2020-01-12)';
+   const VERSION = '1.5.1 (2020-02-05)';
 
    protected $is_tabbed = true;
 
@@ -47,7 +47,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
             if ($content == USI_Page_Cache::TEST_DATA) {
                self::$cache_config_status  = __('Data base connect error', USI_Page_Solutions::TEXTDOMAIN);
                self::$cache_config_warning = __('The Page-Solutions caching system cannot connect to the WordPress database, go to the <a href="' . get_bloginfo('wpurl') . '/wp-admin/options-general.php?page=usi-page-settings&tab=cache">Cache Options</a> tab on the Page-Solutions Settings page and check your configuration parameters.', USI_Page_Solutions::TEXTDOMAIN);
-               add_action('admin_notices', array(__CLASS__, 'action_admin_notices'));
+               add_action('admin_notices', array(__CLASS__, 'action_admin_notices_page'));
             }
          }
       } else if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
@@ -55,7 +55,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          if (!$root) {
             self::$cache_config_status  = __('Unknown', USI_Page_Solutions::TEXTDOMAIN);
             self::$cache_config_warning = __('The <b>index.php</b> file location is unknown. Access any WordPress page in the site from another browser that is not running in administrator mode, then go to the <a href="' . get_bloginfo('wpurl') . '/wp-admin/options-general.php?page=usi-page-settings&tab=cache">Cache Options</a> tab on the Page-Solutions Settings page and click the <b>Save Cache Options</b> button.', USI_Page_Solutions::TEXTDOMAIN);
-            add_action('admin_notices', array(__CLASS__, 'action_admin_notices'));
+            add_action('admin_notices', array(__CLASS__, 'action_admin_notices_page'));
          } else {
             $root_folder  = substr($root, 0, -9);
             $plugin_path  = plugin_dir_path(__FILE__);
@@ -71,7 +71,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                   } else {
                      self::$cache_config_status  = __('Pending Modification', USI_Page_Solutions::TEXTDOMAIN);
                      self::$cache_config_warning ='The <b>index.php</b> file has has not been modified to support caching. Go to the <a href="' . get_bloginfo('wpurl') . '/wp-admin/options-general.php?page=usi-page-settings&tab=cache">Cache Options</a> tab on the Page-Solutions Settings page and click the <b>Save Cache Options</b> button.';
-                     add_action('admin_notices', array(__CLASS__, 'action_admin_notices'));
+                     add_action('admin_notices', array(__CLASS__, 'action_admin_notices_page'));
                   }
                }
             }
@@ -88,9 +88,9 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
    } // __construct();
 
-   static function action_admin_notices() {
+   static function action_admin_notices_page() {
       echo '<div class="notice notice-warning"><p>' . self::$cache_config_warning . '</p></div>';
-   } // action_admin_notices();
+   } // action_admin_notices_page();
 
    function action_admin_init() {
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
@@ -387,10 +387,6 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
             USI_Page_Solutions::$options
          ), // capabilities;
 
-         'updates' => USI_WordPress_Solutions_Updates::section(
-            USI_Page_Solutions::TEXTDOMAIN
-         ), // updates;
-
       );
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
@@ -470,6 +466,8 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          ); // collections;
 
       }
+
+      $sections['updates'] = USI_WordPress_Solutions_Updates::section(USI_Page_Solutions::TEXTDOMAIN);
 
       foreach ($sections as $section_name => & $section) {
          if ('capabilities' == $section_name) continue;
