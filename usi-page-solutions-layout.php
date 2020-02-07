@@ -17,7 +17,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout {
 
-   const VERSION = '1.5.0 (2020-01-12)';
+   const VERSION = '1.5.2 (2020-02-06)';
 
    private $options = null;
    private $page_id = 0;

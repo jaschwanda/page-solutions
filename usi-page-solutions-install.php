@@ -19,7 +19,7 @@ require_once('usi-page-solutions-settings.php');
 
 final class USI_Page_Solutions_Install {
 
-   const VERSION = '1.5.0 (2020-01-12)';
+   const VERSION = '1.5.2 (2020-02-06)';
 
    private function __construct() {
    } // __construct();
