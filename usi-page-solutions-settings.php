@@ -22,7 +22,7 @@ require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-s
 
 class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.5.2 (2020-02-06)';
+   const VERSION = '1.5.3 (2020-02-20)';
 
    protected $is_tabbed = true;
 
@@ -80,10 +80,14 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
       USI_Page_Solutions::$options['cache']['root-status'] = self::$cache_config_status;
 
       parent::__construct(
-         USI_Page_Solutions::NAME, 
-         USI_Page_Solutions::PREFIX, 
-         USI_Page_Solutions::TEXTDOMAIN,
-         USI_Page_Solutions::$options
+         array(
+            'name' => USI_Page_Solutions::NAME, 
+            'prefix' => USI_Page_Solutions::PREFIX, 
+            'text_domain' => USI_Page_Solutions::TEXTDOMAIN,
+            'options' => USI_Page_Solutions::$options,
+            'capabilities' => USI_Page_Solutions::$capabilities,
+            'file' => str_replace('-settings', '', __FILE__), // Plugin main file, this initializes capabilities on plugin activation;
+         )
       );
 
    } // __construct();
@@ -344,6 +348,8 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          'preferences' => array(
             'header_callback' => array($this, 'config_section_header_preferences'),
             'label' => 'Preferences',
+            'localize_labels' => 'yes',
+            'localize_notes' => 3, // <p class="description">__()</p>;
             'settings' => array(
                'page-mru-max' => array(
                   'class' => 'small-text', 
@@ -379,13 +385,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
             ),
          ), // preferences;
 
-         'capabilities' => USI_WordPress_Solutions_Capabilities::section(
-            USI_Page_Solutions::NAME, 
-            USI_Page_Solutions::PREFIX, 
-            USI_Page_Solutions::TEXTDOMAIN,
-            USI_Page_Solutions::$capabilities,
-            USI_Page_Solutions::$options
-         ), // capabilities;
+         'capabilities' => new USI_WordPress_Solutions_Capabilities($this),
 
       );
 
@@ -467,17 +467,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
       }
 
-      $sections['updates'] = USI_WordPress_Solutions_Updates::section(USI_Page_Solutions::TEXTDOMAIN);
-
-      foreach ($sections as $section_name => & $section) {
-         if ('capabilities' == $section_name) continue;
-         foreach ($section['settings'] as $setting_name => & $setting) {
-            if (!empty($setting['notes'])) {
-               $setting['notes'] = '<p class="description">' . __($setting['notes'], USI_Page_Solutions::TEXTDOMAIN) . '</p';
-            }
-         }
-      }
-      unset($setting);
+      $sections['updates'] = new USI_WordPress_Solutions_Updates($this);
 
       return($sections);
 
