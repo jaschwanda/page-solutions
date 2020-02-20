@@ -15,7 +15,7 @@ Requires at least: 5.0
 Requires PHP:      5.6.25
 Tested up to:      5.3.2
 Text Domain:       usi-page-solutions
-Version:           1.5.2
+Version:           1.5.3
 */
 
 /*
@@ -35,7 +35,7 @@ require_once('usi-page-cache.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '1.5.2 (2020-02-06)';
+   const VERSION = '1.5.3 (2020-02-20)';
 
    const DEBUG_OFF   = 0x00;
    const DEBUG_HTML  = 0x01;
@@ -48,11 +48,11 @@ final class USI_Page_Solutions {
    const WIDGETS_INIT_PRIORITY = 100;
 
    public static $capabilities = array(
-      'Enhanced-Edit'  => 'Select enhanced widget areas',
-      'Virtual-Add'    => 'Add virtual widget collections',
-      'Virtual-Edit'   => 'Edit virtual widget collections',
-      'Virtual-Delete' => 'Delete virtual widget collections',
-      'Settings-View'  => 'View settings page',
+      'enhanced-edit'  => 'Select enhanced widget areas|administrator',
+      'virtual-add'    => 'Add virtual widget collections|administrator',
+      'virtual-edit'   => 'Edit virtual widget collections|administrator',
+      'virtual-delete' => 'Delete virtual widget collections|administrator',
+      'settings-view'  => 'View settings page|administrator',
    );
 
    private static $debug = self::DEBUG_OFF;
