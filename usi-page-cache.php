@@ -17,7 +17,7 @@ require_once('usi-page-dbs-mysqli.php');
 
 final class USI_Page_Cache {
 
-   const VERSION = '1.5.2 (2020-02-06)';
+   const VERSION = '1.5.3 (2020-02-20)';
 
    const DATE_ALPHA = '0000-00-00 00:00:00';
    const DATE_OMEGA = '9999-12-31 23:59:59';
