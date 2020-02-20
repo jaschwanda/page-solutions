@@ -17,7 +17,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.5.2 (2020-02-06)';
+   const VERSION = '1.5.3 (2020-02-20)';
 
    protected $is_tabbed = true;
 
