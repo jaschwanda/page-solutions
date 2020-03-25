@@ -17,7 +17,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.5.3 (2020-02-20)';
+   const VERSION = '1.5.5 (2020-03-24)';
 
    protected $is_tabbed = true;
 
@@ -31,12 +31,13 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
       $this->page_id = !empty($_REQUEST['page_id']) ? (int)$_REQUEST['page_id'] : 0;
 
       parent::__construct(
-         USI_Page_Solutions::NAME . '-Layout', 
-         USI_Page_Solutions::PREFIX . '-solutions-layout', 
-         USI_Page_Solutions::TEXTDOMAIN,
-         USI_Page_Solutions::$options,
-         false,
-         false
+         array(
+            'name' => USI_Page_Solutions::NAME . '-Layout', 
+            'prefix' => USI_Page_Solutions::PREFIX . '-solutions-layout', 
+            'text_domain' => USI_Page_Solutions::TEXTDOMAIN,
+            'options' => USI_Page_Solutions::$options,
+            'no_settings_link' => true
+         )
       );
 
    } // __construct();
@@ -73,7 +74,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
             $key = $tokens[0];
             USI_Page_Solutions::$options['scripts']['p-' . $key] = $value;
             $this->sections['scripts']['settings']['p-' . $key] = array(
-               'class' => 'large-text', 
+               'f-class' => 'large-text', 
                'label' => $key,
                'readonly' => true,
                'type' => 'text', 
@@ -88,7 +89,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
             $key = $tokens[0];
             USI_Page_Solutions::$options['scripts']['c-' . $key] = $value;
             $this->sections['scripts']['settings']['c-' . $key] = array(
-               'class' => 'large-text', 
+               'f-class' => 'large-text', 
                'label' => $key,
                'type' => 'text', 
             );
@@ -96,7 +97,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
       }
 
       $this->sections['scripts']['settings']['scripts_add'] = array(
-         'class' => 'large-text', 
+         'f-class' => 'large-text', 
          'label' => __('Add Script', USI_Page_Solutions::TEXTDOMAIN),
          'type' => 'text', 
          'notes' => '<i>unique-id &nbsp; script/path/name &nbsp; version &nbsp; in-footer</i>', 
@@ -110,7 +111,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
             $key = $tokens[0];
             USI_Page_Solutions::$options['styles']['p-' . $key] = $value;
             $this->sections['styles']['settings']['p-' . $key] = array(
-               'class' => 'large-text', 
+               'f-class' => 'large-text', 
                'label' => $key,
                'readonly' => true,
                'type' => 'text', 
@@ -125,7 +126,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
             $key = $tokens[0];
             USI_Page_Solutions::$options['styles']['c-' . $key] = $value;
             $this->sections['styles']['settings']['c-' . $key] = array(
-               'class' => 'large-text', 
+               'f-class' => 'large-text', 
                'label' => $key,
                'type' => 'text', 
             );
@@ -133,7 +134,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
       }
 
       $this->sections['styles']['settings']['styles_add'] = array(
-         'class' => 'large-text', 
+         'f-class' => 'large-text', 
          'label' => __('Add Style', USI_Page_Solutions::TEXTDOMAIN),
          'type' => 'text', 
          'notes' => '<i>unique-id &nbsp; style/path/name &nbsp; version &nbsp; media</i>', 
@@ -290,27 +291,27 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
                   'value' =>  $this->page_id, 
                ),
                'codes_head_parent' => array(
-                  'class' => 'large-text', 
+                  'f-class' => 'large-text', 
                   'label' => __('Header Code From Parent', USI_Page_Solutions::TEXTDOMAIN),
                   'readonly' => true,
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
                'codes_head' => array(
-                  'class' => 'large-text', 
+                  'f-class' => 'large-text', 
                   'label' => __('Header Code', USI_Page_Solutions::TEXTDOMAIN),
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
                'codes_foot_parent' => array(
-                  'class' => 'large-text', 
+                  'f-class' => 'large-text', 
                   'label' => __('Footer Code From Parent', USI_Page_Solutions::TEXTDOMAIN),
                   'readonly' => true,
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
                'codes_foot' => array(
-                  'class' => 'large-text', 
+                  'f-class' => 'large-text', 
                   'label' => __('Footer Code', USI_Page_Solutions::TEXTDOMAIN),
                   'rows' => 10,
                   'type' => 'textarea', 
@@ -327,14 +328,14 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
                   'value' =>  $this->page_id, 
                ),
                'css_parent' => array(
-                  'class' => 'large-text', 
+                  'f-class' => 'large-text', 
                   'label' => __('CSS From Parent', USI_Page_Solutions::TEXTDOMAIN),
                   'readonly' => true,
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
                'css' => array(
-                  'class' => 'large-text', 
+                  'f-class' => 'large-text', 
                   'label' => __('CSS', USI_Page_Solutions::TEXTDOMAIN),
                   'rows' => 10,
                   'type' => 'textarea', 

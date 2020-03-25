@@ -2,6 +2,12 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.5.5 (2020-03-24) ##
+* Updated settings class argument.
+
+## 1.5.4 (2020-02-28) ##
+* Updated settings handling.
+
 ## 1.5.3 (2020-02-20) ##
 * Updated capability and updates handling, set all versions numbers to same version.
 

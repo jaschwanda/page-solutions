@@ -22,7 +22,7 @@ require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-s
 
 class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.5.3 (2020-02-20)';
+   const VERSION = '1.5.5 (2020-03-24)';
 
    protected $is_tabbed = true;
 
@@ -352,7 +352,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
             'localize_notes' => 3, // <p class="description">__()</p>;
             'settings' => array(
                'page-mru-max' => array(
-                  'class' => 'small-text', 
+                  'f-class' => 'small-text', 
                   'type' => 'number', 
                   'label' => 'Page MRU size',
                   'min' => 0,
@@ -360,7 +360,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                   'notes' => 'Maximum number of entries in the most recently used (MRU) page list. Enter 1 through 12 inclusive or 0 to disable the list. Defaults to <b>4</b> enties.',
                ),
                'post-mru-max' => array(
-                  'class' => 'small-text', 
+                  'f-class' => 'small-text', 
                   'type' => 'number', 
                   'label' => 'Post MRU size',
                   'min' => 0,
@@ -396,19 +396,18 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
             'label' => 'Cache Options',
             'settings' => array(
                'config-location' => array(
-                  'class' => 'large-text', 
+                  'f-class' => 'large-text', 
                   'type' => 'text', 
                   'label' => 'External configuration',
                   'notes' => 'Most WordPress installations store the database connection parameters in the <b>wp-config.php</b> file. To increase security, some experts recommend that you store theses parameters in a different file outside of your root folder and include this file in your <b>wp-config.php</b> file. If you follow this recommendation, please enter this file location path in the above field.',
                ),
                'root-location' => array(
-                  'class' => 'large-text', 
+                  'f-class' => 'large-text', 
                   'type' => 'text', 
                   'label' => 'index.php location',
                   'notes' => 'You can manually set the location of the root <b>index.php</b> file by entering the location above and clicking the <b>Save Cache Options</b> button. To force WordPress to scan for the actual location, clear the above field and click the <b>Save Cache Options</b> button, then access any page from another browser not in administrator mode.',
                ),
                'root-status' => array(
-                  'class' => 'large-text', 
                   'type' => 'text', 
                   'label' => 'index.php status',
                   'notes' => self::$cache_config_warning,
