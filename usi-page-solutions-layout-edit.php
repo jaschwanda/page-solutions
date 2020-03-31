@@ -42,6 +42,12 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
    } // __construct();
 
+   function action_admin_head2($css = null) {
+      parent::action_admin_head2(
+         'textarea,.usi-page-solutions-mono-font{font-family:courier;}' . PHP_EOL
+      );
+   } // action_admin_head2();
+
    function action_admin_menu() { 
 
       $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $this->page_id);
@@ -219,13 +225,13 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
    function header_codes() {
       echo '<p>' . 
-         __('The appropriate open and closing <b>&lt;tag&gt;&lt;/tag&gt;</b> must be included in the code fragments below:', USI_Page_Solutions::TEXTDOMAIN) . 
+         __('The appropriate open and closing <span class="usi-page-solutions-mono-font"><b>&lt;tag&gt;&lt;/tag&gt;</b></span> must be included in the code fragments below:', USI_Page_Solutions::TEXTDOMAIN) . 
        '</p>' . PHP_EOL;
     } // header_codes();
 
    function header_css() {
       echo '<p>' . 
-         __('Open and closing <b>&lt;style&gt;</b><b>&lt;/style&gt;</b> tags must be included in the code fragment below:', USI_Page_Solutions::TEXTDOMAIN) . 
+         __('Open and closing <span class="usi-page-solutions-mono-font"><b>&lt;style&gt;</b><b>&lt;/style&gt;</b></span> tags must be included in the code fragment below:', USI_Page_Solutions::TEXTDOMAIN) . 
        '</p>' . PHP_EOL;
     } // header_css();
 

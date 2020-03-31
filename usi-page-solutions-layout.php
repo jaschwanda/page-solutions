@@ -32,7 +32,9 @@ class USI_Page_Solutions_Layout {
          || !empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) 
          add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
 
-      add_action('admin_head', array($this, 'action_admin_head'));
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout'])) {
+         add_action('admin_head', array($this, 'action_admin_head'));
+      }
       if ($this->page_id) add_action('admin_init', array($this, 'action_admin_init'));
       add_action('admin_menu', array($this, 'action_admin_menu'));
       add_action('save_post', array($this, 'action_save_post'));
@@ -52,18 +54,6 @@ class USI_Page_Solutions_Layout {
    } // action_add_meta_boxes();
 
    function action_admin_head() {
-      $page = !empty($_GET['page']) ? $_GET['page'] : null;
-      if ('usi-page-solutions-layout-links-edit' == $page) {
-         echo '<style>' . PHP_EOL .
-            '.form-table td{padding-bottom:2px; padding-top:2px;} /* 15px; */' . PHP_EOL .
-            '.form-table th{padding-bottom:7px; padding-top:7px;} /* 20px; */' . PHP_EOL .
-            'h2{margin-bottom:0.1em; margin-top:2em;} /* 1em; */' . PHP_EOL .
-            '</style>' . PHP_EOL;
-      } else if (('usi-page-solutions-layout-css-edit' == $page) || ('usi-page-solutions-layout-codes-edit' == $page)) {
-         echo '<style>' . PHP_EOL .
-            '.usi-page-solutions-options-mono-font{font-family:courier;}' . PHP_EOL .
-            '</style>' . PHP_EOL;
-      }
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout'])) {
 
