@@ -2,6 +2,9 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.5.6 (2020-03-31) ##
+* Added use of 'visual-grid' option and 'action_admin_head' convenience function.
+
 ## 1.5.5 (2020-03-24) ##
 * Updated settings class argument.
 

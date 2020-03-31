@@ -25,21 +25,19 @@ class USI_Page_Solutions_Virtual {
    private $section_id = null;
 
    function __construct() {
-      add_action('admin_head', array($this, 'action_admin_head'));
+
       add_action('admin_init', array($this, 'action_admin_init_settings'));
       add_action('admin_menu', array($this, 'action_admin_menu'));
       add_action('widgets_init', array($this, 'action_widgets_init'), USI_Page_Solutions::WIDGETS_INIT_PRIORITY);
+
    } // __construct();
 
-   function action_admin_head() {
-      echo '<style>' . PHP_EOL .
-         '.form-table td{padding-bottom:2px; padding-top:2px;} /* 15px; */' . PHP_EOL .
-         '.form-table th{padding-bottom:7px; padding-top:7px;} /* 20px; */' . PHP_EOL .
-         'h2{margin-bottom:0.1em; margin-top:2em;} /* 1em; */' . PHP_EOL .
+   function action_admin_head2($css = null) {
+      parent::action_admin_head2(
          '.usi-page-solutions-virtual-notes{font-style:italic; padding-bottom:10px;}' . PHP_EOL .
-         '.usi-page-solutions-virtual-notes-code{font-family:courier; font-style:normal!important; font-weight:bold;}' . PHP_EOL .
-         '</style>' . PHP_EOL;
-   } // action_admin_head();
+         '.usi-page-solutions-virtual-notes-code{font-family:courier; font-style:normal!important; font-weight:bold;}' . PHP_EOL
+      );
+   } // action_admin_head2();
 
    function action_admin_init_settings() {
 
