@@ -15,6 +15,8 @@ Copyright (c) 2020 by Jim Schwanda.
 
 defined('ABSPATH') or die('Accesss not allowed.');
 
+require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-static.php');
+
 class USI_Page_Solutions_Virtual {
 
    const VERSION = '1.5.3 (2020-02-20)';
@@ -26,18 +28,19 @@ class USI_Page_Solutions_Virtual {
 
    function __construct() {
 
+      add_action('admin_head', array($this, 'action_admin_head'));
       add_action('admin_init', array($this, 'action_admin_init_settings'));
       add_action('admin_menu', array($this, 'action_admin_menu'));
       add_action('widgets_init', array($this, 'action_widgets_init'), USI_Page_Solutions::WIDGETS_INIT_PRIORITY);
 
    } // __construct();
 
-   function action_admin_head2($css = null) {
-      parent::action_admin_head2(
+   function action_admin_head($css = null) {
+      USI_WordPress_Solutions_Static::action_admin_head(
          '.usi-page-solutions-virtual-notes{font-style:italic; padding-bottom:10px;}' . PHP_EOL .
          '.usi-page-solutions-virtual-notes-code{font-family:courier; font-style:normal!important; font-weight:bold;}' . PHP_EOL
       );
-   } // action_admin_head2();
+   } // action_admin_head();
 
    function action_admin_init_settings() {
 

@@ -148,7 +148,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          $db_name = "'" . DB_NAME . "'";
          $db_user = "'" . DB_USER . "'";
       } else {
-         $config_location = PHP_EOL . "@include('" . $cache['config-location'] . "');" . PHP_EOL;
+         $config_location = PHP_EOL . "@require_once('" . $cache['config-location'] . "');" . PHP_EOL;
          $db_pass = 'DB_PASSWORD';
          $db_host = 'DB_HOST';
          $db_name = 'DB_NAME';

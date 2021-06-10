@@ -123,7 +123,7 @@ class USI_Page_Solutions_Virtual_List extends WP_List_Table {
       if (!empty($data)) usort($data, 'usort_reorder');
 
       $current_page = $this->get_pagenum();
-      $total_items = count($data);
+      $total_items  = is_array($data) ? count($data) : 0;
       if (!empty($data)) $data = array_slice($data, (($current_page - 1) * $per_page), $per_page);
       $this->items = $data;
 

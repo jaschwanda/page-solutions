@@ -16,6 +16,93 @@ Copyright (c) 2020 by Jim Schwanda.
 /* USI-PAGE-SOLUTIONS-1 external-config-location or null; */
 require_once('usi-page-dbs-mysqli.php');
 
+if (!class_exists('USI')) { final class USI {
+
+   const VERSION = '2.11.3 (2021-04-20)';
+
+   private static $info   = null;
+   private static $mysqli = null;
+   private static $mysqli_stmt = null;
+   private static $offset = 0;
+   private static $user   = 0;
+
+   private function __construct() {
+   } // __construct();
+
+   public static function log() {
+      $info = null;
+      try {
+         $trace = debug_backtrace();
+         if (!empty($trace[self::$offset+0])) {
+            if (empty($trace[self::$offset+1])) {
+               $info .= $trace[self::$offset+0]['file'];
+            } else {
+            // $info .= !empty($trace[self::$offset+1]['class']) ? $trace[self::$offset+1]['class'] . ':' : $trace[self::$offset+1]['file'];
+               $info .= !empty($trace[self::$offset+1]['class']) ? $trace[self::$offset+1]['class'] . ':' : $trace[self::$offset+0]['file'];
+               if (!empty($trace[self::$offset+1]['function'])) {
+                  switch ($trace[self::$offset+1]['function']) {
+                  case 'include':
+                  case 'include_once':
+                  case 'require':
+                  case 'require_once':
+                     break;
+                  default:
+                     $info .= ':' . $trace[self::$offset+1]['function'] . '()';
+                  }
+               }
+            }
+            if (!empty($trace[self::$offset+0]['line'])) $info .= '~' . $trace[self::$offset+0]['line'] . ':';
+         }
+         if (isset($trace[self::$offset/2+0]['args'])) {
+            $args = $trace[self::$offset/2+0]['args'];
+            foreach ($args as $arg) {
+               if (is_array($arg) || is_object($arg)) {
+                  $info .= print_r($arg, true);
+               } else if (is_string($arg)) {
+                  $first = substr($arg, 0, 1);
+                  if ('\\' == $first) {
+                     $second = substr($arg, 1, 1);
+                     if ('!' == $second) {
+                        $info = substr($arg, 1);
+                     } else if ('n' == $second) {
+                        $info .= PHP_EOL . substr($arg, 2);
+                     } else if ('%' == $second) {
+                        $info .= PHP_EOL . 'backtrace=' . print_r($trace, true) . PHP_EOL;
+                     } else if ('2n' == substr($arg, 1, 2)) {
+                        $info .= PHP_EOL . PHP_EOL . substr($arg, 3);
+                     }
+                  } else {
+                     $info .= $arg;
+                  }
+               } else {
+                  $info .= $arg;
+               }
+            }
+         }
+      } catch (Exception $e) {
+         $info .= PHP_EOL . 'exception=' . $e->GetMessage();
+      }
+
+      if (!self::$mysqli) {
+         self::$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+         self::$mysqli_stmt = new mysqli_stmt(self::$mysqli);
+         self::$mysqli_stmt->prepare('INSERT INTO `' . DB_WP_PREFIX . 'USI_log` (`user_id`, `action`) VALUES (?, ?)');     
+         self::$mysqli_stmt->bind_param('is', self::$user, self::$info);
+      }
+      self::$info = substr($info, 0, 16777215); // If `action` field is MEDIUMTEXT;
+      self::$user = 0;
+      self::$mysqli_stmt->execute();
+
+   } // log();
+
+   public static function log2() {
+      self::$offset = 2;
+      self::log();
+      self::$offset = 0;
+   } // log2();
+
+} } // Class USI;
+
 class USI_Page_Exception extends Exception { } // Class USI_Page_Exception;
 
 final class USI_Page_Cache {
@@ -62,7 +149,7 @@ final class USI_Page_Cache {
          foreach ($_COOKIE as $key => $value) if (substr($key, 0, 20) == 'wordpress_logged_in_') throw new USI_Page_Exception(__METHOD__.':status:wordpress');
 
          $path = $_SERVER['REQUEST_URI'];
-         if (self::$debug) USI_Page_Debug::message(__METHOD__.':path:' . $path);
+         if (self::$debug) usi::log('$path=', $path);
          if (($offset = strpos($path, '/?')) !== false) $path = substr($path, 0, $offset);
          $path = rtrim($path, '/') . '/';
 
@@ -78,19 +165,19 @@ final class USI_Page_Cache {
             array('ss', & $path_no_args, & $path_args), // Input parameters;
             array(& self::$meta_id, & self::$post_id, & $meta_key, & $meta_value) // Output variables;
          );
-         if (self::DEBUG_SQL & self::$debug) USI_Page_Debug::message(__METHOD__.':'.$query->get_status());
+         if (self::DEBUG_SQL & self::$debug) usi::log('$num_rows=', $query->num_rows, ' get_status()=', $query->get_status());
          if (!($query->num_rows && $query->fetch())) throw new USI_Page_Exception(__METHOD__.":status:not_in_cache:$path");
          $query = null; // Close query;
 
          self::$query_string = trim(substr($path, strlen(substr($meta_key, 20))), '/');
          if ($length = strlen(self::$query_string)) {
-            if (self::$debug) USI_Page_Debug::message(__METHOD__.':query:' . self::$query_string);
+            if (self::$debug) usi::log('$query_string=', self::$query_string);
             $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_URI'], 0, -$length);
          }
 
          self::$meta_value = unserialize(base64_decode($meta_value));
 
-         if (self::DEBUG_META_DATA & self::$debug) USI_Page_Debug::print_r(__METHOD__.':meta_value:', self::$meta_value, null, true);
+         if (self::DEBUG_META_DATA & self::$debug) usi::log('$meta_value:', self::$meta_value);
          switch ($mode = isset(self::$meta_value['cache']['mode']) ? self::$meta_value['cache']['mode'] : 'disabled') {
          default:        throw new USI_Page_Exception(__METHOD__.":status:bad cache mode ($mode)");
          case 'disable': throw new USI_Page_Exception(__METHOD__.':status:cache disabled');
@@ -105,7 +192,7 @@ final class USI_Page_Cache {
             throw new USI_Page_Exception(__METHOD__.':status:capture');
          } 
 
-         if (self::$debug) USI_Page_Debug::message(__METHOD__.':status:fetched');
+         if (self::$debug) usi::log('status:fetched');
          if (empty(self::$meta_value['cache']['dynamics'])) {
             $output = self::$meta_value['cache']['html'] . self::times();
          } else {
@@ -130,23 +217,19 @@ final class USI_Page_Cache {
          echo $output;
          ob_end_flush();
          flush();
-         if (self::$debug) USI_Page_Cache::log(USI_Page_Debug::get_message());
          die();
 
       } catch(USI_Page_Dbs_Exception $e) {
 
          if (self::$debug) {
-            USI_Page_Debug::message(__METHOD__.':status:exception');
-            USI_Page_Debug::exception($e);
-            USI_Page_Cache::log(USI_Page_Debug::get_message());
+            usi::log('status:dbs:exception=', $e->GetMessage(), '\ntrace=', $e->GetTraceAsString());
             if (self::TEST_DATA == $_SERVER['QUERY_STRING']) die(self::TEST_DATA);
          }
 
       } catch(USI_Page_Exception $e) {
 
          if (self::$debug) {
-            USI_Page_Debug::message($e->GetMessage());
-            if (!self::$capture) USI_Page_Cache::log(USI_Page_Debug::get_message());
+            if (!self::$capture) usi::log('status:page:exception=', $e->GetMessage());
          }
 
       }
@@ -196,13 +279,12 @@ final class USI_Page_Cache {
             'UPDATE `/* USI-PAGE-SOLUTIONS-7 */postmeta` SET `meta_value` = ? WHERE (`meta_id` = ?)', // SQL;
             array('si', & $meta_value, & self::$meta_id) // Input parameters;
          );
-         if (self::DEBUG_SQL & self::$debug) USI_Page_Debug::message(__METHOD__.':'.$query->get_status());
+         if (self::DEBUG_SQL & self::$debug) usi::log('get_status()=', $query->get_status());
       } catch(USI_Page_Dbs_Exception $e) {
-         if (self::DEBUG_SQL & self::$debug) USI_Page_Debug::message(__METHOD__.':'.$query->get_status());
-         if (self::$debug) USI_Page_Debug::exception($e);
+         if (self::DEBUG_SQL & self::$debug) usi::log('get_status()=', $query->get_status());
+         if (self::$debug) usi::log('status:page:exception=', $e->GetMessage(), '\ntrace=', $e->GetTraceAsString());
       }
       $query = null; // Close query;
-      if (self::$debug) USI_Page_Cache::log(USI_Page_Debug::get_message());
       return($buffer . self::times());
    } // capture();
 

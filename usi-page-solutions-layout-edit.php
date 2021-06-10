@@ -35,26 +35,26 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
             'name' => USI_Page_Solutions::NAME . '-Layout', 
             'prefix' => USI_Page_Solutions::PREFIX . '-solutions-layout', 
             'text_domain' => USI_Page_Solutions::TEXTDOMAIN,
-            'options' => USI_Page_Solutions::$options,
+            'options' => & $this->options,
             'no_settings_link' => true
          )
       );
 
    } // __construct();
 
-   function action_admin_head2($css = null) {
-      parent::action_admin_head2(
+   function action_admin_head($css = null) {
+      parent::action_admin_head(
          'textarea,.usi-page-solutions-mono-font{font-family:courier;}' . PHP_EOL
       );
-   } // action_admin_head2();
+   } // action_admin_head();
 
    function action_admin_menu() { 
 
       $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $this->page_id);
 
-      USI_Page_Solutions::$options['code']['page-id']    = $this->page_id;
-      USI_Page_Solutions::$options['code']['codes_foot'] = $meta_value['layout']['codes_foot'];
-      USI_Page_Solutions::$options['code']['codes_head'] = $meta_value['layout']['codes_head'];
+      $this->options['code']['page-id']    = $this->page_id;
+      $this->options['code']['codes_foot'] = $meta_value['layout']['codes_foot'];
+      $this->options['code']['codes_head'] = $meta_value['layout']['codes_head'];
 
       if (empty($meta_value['options']['codes_foot_inherit']) || empty($meta_value['layout']['codes_foot_parent'])) {
          unset($this->sections['code']['settings']['codes_foot_parent']);
@@ -64,21 +64,21 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
          unset($this->sections['code']['settings']['codes_head_parent']);
       }
 
-      USI_Page_Solutions::$options['css']['page-id']     = $this->page_id;
-      USI_Page_Solutions::$options['css']['css']         = $meta_value['layout']['css'];
-      USI_Page_Solutions::$options['css']['css_parent']  = $meta_value['layout']['css_parent'];
+      $this->options['page-css']['page-id']     = $this->page_id;
+      $this->options['page-css']['css']         = $meta_value['layout']['css'];
+      $this->options['page-css']['css_parent']  = $meta_value['layout']['css_parent'];
 
       if (empty($meta_value['options']['css_inherit']) || empty($meta_value['layout']['css_parent'])) {
-         unset($this->sections['css']['settings']['css_parent']);
+         unset($this->sections['page-css']['settings']['css_parent']);
       }
 
-      USI_Page_Solutions::$options['scripts']['page-id'] = $this->page_id;
+      $this->options['scripts']['page-id'] = $this->page_id;
 
       if (!empty($meta_value['layout']['scripts_parent'])) {
          foreach ($meta_value['layout']['scripts_parent'] as $key => $value) {
             $tokens = self::explode($value);
             $key = $tokens[0];
-            USI_Page_Solutions::$options['scripts']['p-' . $key] = $value;
+            $this->options['scripts']['p-' . $key] = $value;
             $this->sections['scripts']['settings']['p-' . $key] = array(
                'f-class' => 'large-text', 
                'label' => $key,
@@ -93,7 +93,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
             if ('scripts_add' == $key) continue;
             $tokens = self::explode($value);
             $key = $tokens[0];
-            USI_Page_Solutions::$options['scripts']['c-' . $key] = $value;
+            $this->options['scripts']['c-' . $key] = $value;
             $this->sections['scripts']['settings']['c-' . $key] = array(
                'f-class' => 'large-text', 
                'label' => $key,
@@ -104,18 +104,18 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
       $this->sections['scripts']['settings']['scripts_add'] = array(
          'f-class' => 'large-text', 
-         'label' => __('Add Script', USI_Page_Solutions::TEXTDOMAIN),
+         'label' => 'Add Script',
          'type' => 'text', 
          'notes' => '<i>unique-id &nbsp; script/path/name &nbsp; version &nbsp; in-footer</i>', 
       );
 
-      USI_Page_Solutions::$options['styles']['page-id'] = $this->page_id;
+      $this->options['styles']['page-id'] = $this->page_id;
 
       if (!empty($meta_value['layout']['styles_parent'])) {
          foreach ($meta_value['layout']['styles_parent'] as $key => $value) {
             $tokens = self::explode($value);
             $key = $tokens[0];
-            USI_Page_Solutions::$options['styles']['p-' . $key] = $value;
+            $this->options['styles']['p-' . $key] = $value;
             $this->sections['styles']['settings']['p-' . $key] = array(
                'f-class' => 'large-text', 
                'label' => $key,
@@ -130,7 +130,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
             if ('styles_add' == $key) continue;
             $tokens = self::explode($value);
             $key = $tokens[0];
-            USI_Page_Solutions::$options['styles']['c-' . $key] = $value;
+            $this->options['styles']['c-' . $key] = $value;
             $this->sections['styles']['settings']['c-' . $key] = array(
                'f-class' => 'large-text', 
                'label' => $key,
@@ -141,7 +141,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
       $this->sections['styles']['settings']['styles_add'] = array(
          'f-class' => 'large-text', 
-         'label' => __('Add Style', USI_Page_Solutions::TEXTDOMAIN),
+         'label' => 'Add Style',
          'type' => 'text', 
          'notes' => '<i>unique-id &nbsp; style/path/name &nbsp; version &nbsp; media</i>', 
       );
@@ -177,8 +177,8 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
       if (!$this->page_id) {
          if (!empty($input['code']['page-id'])) {
             $this->page_id = $input['code']['page-id'];
-         } else if (!empty($input['css']['page-id'])) {
-            $this->page_id = $input['css']['page-id'];
+         } else if (!empty($input['page-css']['page-id'])) {
+            $this->page_id = $input['page-css']['page-id'];
          } else if (!empty($input['scripts']['page-id'])) {
             $this->page_id = $input['scripts']['page-id'];
          } else if (!empty($input['styles']['page-id'])) {
@@ -192,7 +192,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
          $meta_value['layout']['codes_foot'] = $input['code']['codes_foot'];
          $meta_value['layout']['codes_head'] = $input['code']['codes_head'];
       } else if ('css' == $this->active_tab) {
-         $meta_value['layout']['css'] = $input['css']['css'];
+         $meta_value['layout']['css'] = $input['page-css']['css'];
       } else if ('scripts' == $this->active_tab) {
          unset($meta_value['layout']['scripts']);
          if (!empty($input['scripts'])) {
@@ -222,30 +222,6 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
       return($input);
 
    } // fields_sanitize();
-
-   function header_codes() {
-      echo '<p>' . 
-         __('The appropriate open and closing <span class="usi-page-solutions-mono-font"><b>&lt;tag&gt;&lt;/tag&gt;</b></span> must be included in the code fragments below:', USI_Page_Solutions::TEXTDOMAIN) . 
-       '</p>' . PHP_EOL;
-    } // header_codes();
-
-   function header_css() {
-      echo '<p>' . 
-         __('Open and closing <span class="usi-page-solutions-mono-font"><b>&lt;style&gt;</b><b>&lt;/style&gt;</b></span> tags must be included in the code fragment below:', USI_Page_Solutions::TEXTDOMAIN) . 
-       '</p>' . PHP_EOL;
-    } // header_css();
-
-   function header_script() {
-      echo '<p>' . 
-         __('The <b><i>unique-id</i></b> must contain only lowercase letters, numbers or dashes and no spaces. The <b><i>script/path/name</i></b> must not contain any spaces. Use <b><i>null</i></b> as a place holder for <b><i>version</i></b> if you don\'t want to use a version but want to specifiy the <b><i>in-footer</i></b> flag. Use <b><i>true</i></b> for the <b><i>in-footer</i></b> flag if you want the script to be placed at the end of the page.', USI_Page_Solutions::TEXTDOMAIN) . 
-       '</p>' . PHP_EOL;
-    } // header_script();
-
-   function header_style() {
-      echo '<p>' . 
-         __('The <b><i>unique-id</i></b> must contain only lowercase letters, numbers or dashes and no spaces. The <b><i>style/path/name</i></b> must not contain any spaces. Use <b><i>null</i></b> as a place holder for <b><i>version</i></b> if you don\'t want to use a version but want to specifiy the <b><i>media</i></b> specifier. Common <b><i>media</i></b> specifiers are <b><i>all</i></b>, <b><i>print</i></b> and <b><i>screen</i></b>.', USI_Page_Solutions::TEXTDOMAIN) . 
-       '</p>' . PHP_EOL;
-    } // header_style();
 
    function page_render($options = null) {
 
@@ -286,11 +262,13 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
    function sections() {
 
+      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $this->page_id);
+
       $sections = array(
 
          'code' => array(
-            'header_callback' => array($this, 'header_codes'),
-            'label' => __('Raw Code', USI_Page_Solutions::TEXTDOMAIN),
+            'header_callback' => array($this, 'sections_header', '<p>' . __('The appropriate open and closing <span class="usi-page-solutions-mono-font"><b>&lt;tag&gt;&lt;/tag&gt;</b></span> must be included in the code fragments below:', USI_Page_Solutions::TEXTDOMAIN) . '</p>' . PHP_EOL),
+            'label' => 'Raw Code',
             'settings' => array(
                'page-id' => array(
                   'type' => 'hidden', 
@@ -298,36 +276,38 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
                ),
                'codes_head_parent' => array(
                   'f-class' => 'large-text', 
-                  'label' => __('Header Code From Parent', USI_Page_Solutions::TEXTDOMAIN),
+                  'label' => 'Header Code From Parent',
                   'readonly' => true,
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
                'codes_head' => array(
                   'f-class' => 'large-text', 
-                  'label' => __('Header Code', USI_Page_Solutions::TEXTDOMAIN),
+                  'label' => 'Header Code',
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
                'codes_foot_parent' => array(
                   'f-class' => 'large-text', 
-                  'label' => __('Footer Code From Parent', USI_Page_Solutions::TEXTDOMAIN),
+                  'label' => 'Footer Code From Parent',
                   'readonly' => true,
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
                'codes_foot' => array(
                   'f-class' => 'large-text', 
-                  'label' => __('Footer Code', USI_Page_Solutions::TEXTDOMAIN),
+                  'label' => 'Footer Code',
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
             ),
          ), // code;
 
-         'css' => array(
-            'header_callback' => array($this, 'header_css'),
-            'label' => __('Raw CSS', USI_Page_Solutions::TEXTDOMAIN),
+         'page-css' => array(
+            'header_callback' => array($this, 'sections_header', '<p>' . __('Open and closing <span class="usi-page-solutions-mono-font"><b>&lt;style&gt;</b><b>&lt;/style&gt;</b></span> tags must be included in the code fragment below:', USI_Page_Solutions::TEXTDOMAIN) . '</p>' . PHP_EOL),
+            'label' => 'Raw CSS',
+            'localize_labels' => 'yes',
+            'localize_notes' => 3, // <p class="description">__()</p>;
             'settings' => array(
                'page-id' => array(
                   'type' => 'hidden', 
@@ -335,14 +315,14 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
                ),
                'css_parent' => array(
                   'f-class' => 'large-text', 
-                  'label' => __('CSS From Parent', USI_Page_Solutions::TEXTDOMAIN),
+                  'label' => 'CSS From Parent',
                   'readonly' => true,
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
                'css' => array(
                   'f-class' => 'large-text', 
-                  'label' => __('CSS', USI_Page_Solutions::TEXTDOMAIN),
+                  'label' => 'CSS',
                   'rows' => 10,
                   'type' => 'textarea', 
                ),
@@ -350,7 +330,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
          ), // css;
 
          'scripts' => array(
-            'header_callback' => array($this, 'header_script'),
+            'header_callback' => array($this, 'sections_header', '<p>' . __('The <b><i>unique-id</i></b> must contain only lowercase letters, numbers or dashes and no spaces. The <b><i>script/path/name</i></b> must not contain any spaces. Use <b><i>null</i></b> as a place holder for <b><i>version</i></b> if you don\'t want to use a version but want to specifiy the <b><i>in-footer</i></b> flag. Use <b><i>true</i></b> for the <b><i>in-footer</i></b> flag if you want the script to be placed at the end of the page.', USI_Page_Solutions::TEXTDOMAIN) . '</p>' . PHP_EOL),
             'label' => 'Script Links',
             'settings' => array(
                'page-id' => array(
@@ -361,8 +341,8 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
          ), // scripts;
 
          'styles' => array(
-            'header_callback' => array($this, 'header_style'),
-            'label' => __('Style Links', USI_Page_Solutions::TEXTDOMAIN),
+            'header_callback' => array($this, 'sections_header', '<p>' . __('The <b><i>unique-id</i></b> must contain only lowercase letters, numbers or dashes and no spaces. The <b><i>style/path/name</i></b> must not contain any spaces. Use <b><i>null</i></b> as a place holder for <b><i>version</i></b> if you don\'t want to use a version but want to specifiy the <b><i>media</i></b> specifier. Common <b><i>media</i></b> specifiers are <b><i>all</i></b>, <b><i>print</i></b> and <b><i>screen</i></b>.', USI_Page_Solutions::TEXTDOMAIN) . '</p>' . PHP_EOL),
+            'label' => 'Style Links',
             'settings' => array(
                'page-id' => array(
                   'type' => 'hidden', 
