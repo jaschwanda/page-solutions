@@ -19,7 +19,7 @@ require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-s
 
 class USI_Page_Solutions_Virtual {
 
-   const VERSION = '1.5.3 (2020-02-20)';
+   const VERSION = '1.6.0 (2021-06-12)';
 
    private $options = null;
    private $option_name = null;

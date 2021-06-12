@@ -21,7 +21,7 @@ if (!class_exists('WP_List_Table')) {
 
 class USI_Page_Solutions_Virtual_List extends WP_List_Table {
 
-   const VERSION = '1.5.3 (2020-02-20)';
+   const VERSION = '1.6.0 (2021-06-12)';
 
    private $delete_virtual = false;
    private $edit_virtual = false;
