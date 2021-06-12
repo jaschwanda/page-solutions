@@ -272,8 +272,6 @@ final class USI_Page_Solutions {
          add_filter('widget_display_callback', array(__CLASS__, 'filter_widget_display_callback'), 10, 3);
       }
 
-      register_shutdown_function(array(__CLASS__, 'shutdown'));
-
    } // init();
 
    static function meta_value_get($method, $post_id, $debug = false) {
@@ -298,7 +296,9 @@ final class USI_Page_Solutions {
          }
          $query = null; // Close query;
       } catch(USI_Page_Dbs_Exception $e) {
-         USI_Page_Debug::exception($e);
+         if (self::$debug || $debug) {
+            usi::log('message=', $e->GetMessage(), '\ntrace=', $e->GetTraceAsString());
+         }
       }
 
       $layout['codes_foot']          = !empty($data['layout']['codes_foot'])        ? $data['layout']['codes_foot']        : null;
@@ -346,7 +346,7 @@ final class USI_Page_Solutions {
             $value['cache']['html'] = '~~~'; 
          }
 
-         USI_Page_Debug::print_r($method . '>' . __METHOD__ . ':meta_value=', $value);
+         usi::log($method . '>' . __METHOD__ . ':meta_value=', $value);
 
          if (!(self::$debug & self::DEBUG_HTML)) {
             $value['cache']['html'] = $html;
@@ -367,7 +367,7 @@ final class USI_Page_Solutions {
             $value['cache']['html'] = '~~~'; 
          }
 
-         USI_Page_Debug::print_r($method . '>' . __METHOD__ . ':meta_value=', $value);
+         usi::log($method . '>' . __METHOD__ . ':meta_value=', $value);
 
          if (!(self::$debug & self::DEBUG_HTML)) {
             $value['cache']['html'] = $html;
@@ -387,10 +387,6 @@ final class USI_Page_Solutions {
       );
       return($children);
    } // number_of_offspring
-
-   static function shutdown() {
-      if ($message = USI_Page_Debug::get_message()) USI_Page_Cache::log($message);
-   } // shutdown();
 
 } // Class USI_Page_Solutions;
 

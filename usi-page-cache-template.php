@@ -12,98 +12,8 @@ https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
 
 Copyright (c) 2020 by Jim Schwanda.
 */
-
 /* USI-PAGE-SOLUTIONS-1 external-config-location or null; */
 require_once('usi-page-dbs-mysqli.php');
-
-if (!class_exists('USI')) { final class USI {
-
-   const VERSION = '2.11.3 (2021-04-20)';
-
-   private static $info   = null;
-   private static $mysqli = null;
-   private static $mysqli_stmt = null;
-   private static $offset = 0;
-   private static $user   = 0;
-
-   private function __construct() {
-   } // __construct();
-
-   public static function log() {
-      $info = null;
-      try {
-         $trace = debug_backtrace();
-         if (!empty($trace[self::$offset+0])) {
-            if (empty($trace[self::$offset+1])) {
-               $info .= $trace[self::$offset+0]['file'];
-            } else {
-            // $info .= !empty($trace[self::$offset+1]['class']) ? $trace[self::$offset+1]['class'] . ':' : $trace[self::$offset+1]['file'];
-               $info .= !empty($trace[self::$offset+1]['class']) ? $trace[self::$offset+1]['class'] . ':' : $trace[self::$offset+0]['file'];
-               if (!empty($trace[self::$offset+1]['function'])) {
-                  switch ($trace[self::$offset+1]['function']) {
-                  case 'include':
-                  case 'include_once':
-                  case 'require':
-                  case 'require_once':
-                     break;
-                  default:
-                     $info .= ':' . $trace[self::$offset+1]['function'] . '()';
-                  }
-               }
-            }
-            if (!empty($trace[self::$offset+0]['line'])) $info .= '~' . $trace[self::$offset+0]['line'] . ':';
-         }
-         if (isset($trace[self::$offset/2+0]['args'])) {
-            $args = $trace[self::$offset/2+0]['args'];
-            foreach ($args as $arg) {
-               if (is_array($arg) || is_object($arg)) {
-                  $info .= print_r($arg, true);
-               } else if (is_string($arg)) {
-                  $first = substr($arg, 0, 1);
-                  if ('\\' == $first) {
-                     $second = substr($arg, 1, 1);
-                     if ('!' == $second) {
-                        $info = substr($arg, 1);
-                     } else if ('n' == $second) {
-                        $info .= PHP_EOL . substr($arg, 2);
-                     } else if ('%' == $second) {
-                        $info .= PHP_EOL . 'backtrace=' . print_r($trace, true) . PHP_EOL;
-                     } else if ('2n' == substr($arg, 1, 2)) {
-                        $info .= PHP_EOL . PHP_EOL . substr($arg, 3);
-                     }
-                  } else {
-                     $info .= $arg;
-                  }
-               } else {
-                  $info .= $arg;
-               }
-            }
-         }
-      } catch (Exception $e) {
-         $info .= PHP_EOL . 'exception=' . $e->GetMessage();
-      }
-
-      if (!self::$mysqli) {
-         self::$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-         self::$mysqli_stmt = new mysqli_stmt(self::$mysqli);
-         self::$mysqli_stmt->prepare('INSERT INTO `' . DB_WP_PREFIX . 'USI_log` (`user_id`, `action`) VALUES (?, ?)');     
-         self::$mysqli_stmt->bind_param('is', self::$user, self::$info);
-      }
-      self::$info = substr($info, 0, 16777215); // If `action` field is MEDIUMTEXT;
-      self::$user = 0;
-      self::$mysqli_stmt->execute();
-
-   } // log();
-
-   public static function log2() {
-      self::$offset = 2;
-      self::log();
-      self::$offset = 0;
-   } // log2();
-
-} } // Class USI;
-
-class USI_Page_Exception extends Exception { } // Class USI_Page_Exception;
 
 final class USI_Page_Cache {
 
@@ -193,10 +103,12 @@ final class USI_Page_Cache {
          } 
 
          if (self::$debug) usi::log('status:fetched');
+
+         $output = self::times();
+
          if (empty(self::$meta_value['cache']['dynamics'])) {
-            $output = self::$meta_value['cache']['html'] . self::times();
+            $output .= self::$meta_value['cache']['html'];
          } else {
-            $output = '';
             $dynamics = self::$meta_value['cache']['dynamics'];
             for ($ith = $offset = 0; $ith < count($dynamics); $ith++) {
                $output .= substr(self::$meta_value['cache']['html'], $offset, $dynamics[$ith]['begin'] - $offset);
@@ -210,7 +122,7 @@ final class USI_Page_Cache {
                   ob_end_clean();
                }
             }
-            $output .= substr(self::$meta_value['cache']['html'], $offset) . self::times();
+            $output .= substr(self::$meta_value['cache']['html'], $offset);
          }
          header('connection:close');
          header('content-length:' . strlen($output));
@@ -228,9 +140,7 @@ final class USI_Page_Cache {
 
       } catch(USI_Page_Exception $e) {
 
-         if (self::$debug) {
-            if (!self::$capture) usi::log('status:page:exception=', $e->GetMessage());
-         }
+         if (self::$debug && !self::$capture) usi::log('status:page:exception=', $e->GetMessage());
 
       }
 
@@ -290,18 +200,8 @@ final class USI_Page_Cache {
 
    public static function dbs_connect() {
       if (!self::$dbs) self::$dbs = new USI_Page_Dbs(array('hash' => /* USI-PAGE-SOLUTIONS-3 */, 'host' => /* USI-PAGE-SOLUTIONS-4 */, 'name' => /* USI-PAGE-SOLUTIONS-5 */, 'user' => /* USI-PAGE-SOLUTIONS-6 */));
+      return(self::$dbs);
    } // dbs_connect();
-
-   public static function log($action) {
-      try {
-         self::dbs_connect();
-         if (self::$dbs) self::$dbs->prepare_x(
-            'INSERT INTO `/* USI-PAGE-SOLUTIONS-7 */USI_log` (`user_id`, `action`) VALUES (0, ?)', // SQL;
-            array('s', & $action) // Input parameters;
-         );     
-      } catch(USI_Page_Dbs_Exception $e) {        
-      }
-   } // log();
 
    public static function que($info) {
       self::$info['dynamics'][] = $info;
@@ -312,15 +212,11 @@ final class USI_Page_Cache {
    } // query_string();
 
    private static function times() {
-      return(
-         self::$times ? PHP_EOL . '<!-- ' . self::$meta_value['cache']['updated'] . ' | ' . 
-         self::$current_time . ' | ' . self::$meta_value['cache']['valid_until'] . ' | ' . self::VERSION . ' -->' : ''
-     );
+      return(self::$times ? '<!-- ' . self::$meta_value['cache']['updated'] . ' | ' . self::$current_time . ' | ' . self::$meta_value['cache']['valid_until'] . ' | ' . self::VERSION . ' -->' . PHP_EOL : null);
    } // times();
 
    public static function valid_until(string $time) {
-      if (preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $time) && 
-         ($time > self::$current_time) && ($time < self::$valid_until)) self::$valid_until = $time;
+      if (preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $time) && ($time > self::$current_time) && ($time < self::$valid_until)) self::$valid_until = $time;
    } // valid_until();
 
    public static function validate($cache) {
@@ -342,17 +238,13 @@ final class USI_Page_Cache {
          if (preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $time)) $safe_schedule[] = $time;
       }
       if (empty($safe_schedule)) { $safe_schedule = array('00:00:00'); } else { sort($safe_schedule); }
-      $updated = isset($cache['updated']) && 
-         preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $cache['updated']) ? 
-         $cache['updated'] : self::DATE_ALPHA;
-      $valid_until = isset($cache['valid_until']) && 
-         preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $cache['valid_until']) ?
-         $cache['valid_until'] : self::DATE_ALPHA;
+      $updated     = isset($cache['updated']) && preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $cache['updated']) ? $cache['updated'] : self::DATE_ALPHA;
+      $valid_until = isset($cache['valid_until']) &&  preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $cache['valid_until']) ? $cache['valid_until'] : self::DATE_ALPHA;
       if (isset($cache['html'])) {
-         $html = $cache['html'];
+         $html     = $cache['html'];
       } else {
-         $html = '';
-         $updated = $valid_until = self::DATE_ALPHA;
+         $html     = '';
+         $updated  = $valid_until = self::DATE_ALPHA;
       }
       $size = strlen($html);
       return(array('allow-clear' => $allow_clear, 'clear-every-publish' => $clear_every_publish, 'inherit-parent' => $inherit_parent, 
@@ -361,5 +253,13 @@ final class USI_Page_Cache {
    } // validate();
 
 } // Class USI_Page_Cache;
-/* USI-PAGE-SOLUTIONS-8 USI_Page_Cache::cache() or null; */
+
+class USI_Page_Exception extends Exception { } // Class USI_Page_Exception;
+
+if (!function_exists('is_admin')) {
+
+require_once('/* USI-PAGE-SOLUTIONS-8 */');
+/* USI-PAGE-SOLUTIONS-9 USI_Page_Cache::cache() or null; */
+}
+
 // --------------------------------------------------------------------------------------------------------------------------- // ?>

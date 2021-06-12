@@ -169,7 +169,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
       $template = dirname(__FILE__) . '/usi-page-cache-template.php';
 
       if (is_file($template) && is_readable($template)) {
-         $template_stream = fopen($template, 'r');
+         $template_stream  = fopen($template, 'r');
          $template_content = str_replace(
             array(
                '/* USI-PAGE-SOLUTIONS-1 external-config-location or null; */',
@@ -179,7 +179,8 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                '/* USI-PAGE-SOLUTIONS-5 */',
                '/* USI-PAGE-SOLUTIONS-6 */',
                '/* USI-PAGE-SOLUTIONS-7 */',
-               '/* USI-PAGE-SOLUTIONS-8 USI_Page_Cache::cache() or null; */',
+               '/* USI-PAGE-SOLUTIONS-8 */',
+               '/* USI-PAGE-SOLUTIONS-9 USI_Page_Cache::cache() or null; */',
             ),
             array(
                $config_location,
@@ -189,6 +190,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                $db_name,
                $db_user,
                $wpdb->prefix,
+               plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-log.php',
                $instantiate_class,
             ), 
             fread($template_stream, filesize($template))
@@ -198,6 +200,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          fwrite($usi_page_cache, $template_content);
          fclose($usi_page_cache);
       }
+
    } // cache_file_generate();
 
    function config_section_header_cache() {
