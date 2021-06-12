@@ -13,9 +13,9 @@ Plugin Name:       Page-Solutions
 Plugin URI:        https://github.com/jaschwanda/page-solutions
 Requires at least: 5.0
 Requires PHP:      5.6.25
-Tested up to:      5.3.2
+Tested up to:      7.4.19
 Text Domain:       usi-page-solutions
-Version:           1.5.6
+Version:           1.6.0
 */
 
 /*
@@ -35,7 +35,7 @@ require_once('usi-page-cache.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '1.5.6 (2020-03-31)';
+   const VERSION = '1.6.0 (2021-06-12)';
 
    const DEBUG_OFF   = 0x00;
    const DEBUG_HTML  = 0x01;

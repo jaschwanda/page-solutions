@@ -18,7 +18,7 @@ Extends the standard mysqli database access functions by providing the following
 
 class USI_Page_Dbs extends mysqli {
 
-   const VERSION = '1.5.3 (2020-02-20) [USI_Dbs:1.1.3 (2018-01-18)]';
+   const VERSION = '1.6.0 (2021-06-12) [USI_Dbs:1.1.3 (2018-01-18)]';
 
    const PREPARE_ERROR_1 = '; check the manual that corresponds to your MySQL server version for the right syntax to use';
 

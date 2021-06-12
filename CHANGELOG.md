@@ -2,6 +2,10 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.6.0 (2021-06-12) ##
+* Set all versions numbers to same version.
+* Improved logging and database connection functions.
+
 ## 1.5.6 (2020-03-31) ##
 * Added use of 'visual-grid' option and 'action_admin_head' convenience function.
 

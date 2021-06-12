@@ -19,7 +19,7 @@ require_once('usi-page-solutions.php');
 
 final class USI_Page_Solutions_Uninstall {
 
-   const VERSION = '1.5.3 (2020-02-20)';
+   const VERSION = '1.6.0 (2021-06-12)';
 
    private function __construct() {
    } // __construct();

@@ -22,7 +22,7 @@ require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-s
 
 class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.5.5 (2020-03-24)';
+   const VERSION = '1.6.0 (2021-06-12)';
 
    protected $is_tabbed = true;
 
@@ -418,8 +418,8 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                ),
                'track-times' => array(
                   'type' => 'checkbox', 
-                  'label' => 'Append cache times',
-                  'notes' => 'Formats the page cache creation time, call-up time, expiration time and the Page-Solutions version as an HTML comment and appends it to the end of the page. It is recommended to use this feature as it uses negligible resources and gives valuable cache usage information.',
+                  'label' => 'Prepend cache times',
+                  'notes' => 'Formats the page cache creation time, call-up time, expiration time and the Page-Solutions version as an HTML comment and prepends it to the top of the page. It is recommended to use this feature as it uses negligible resources and gives valuable cache usage information.',
                ),
                'debug-ip' => array(
                   'type' => 'text', 
