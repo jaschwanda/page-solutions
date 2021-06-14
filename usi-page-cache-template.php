@@ -195,7 +195,7 @@ final class USI_Page_Cache {
          if (self::$debug) usi::log('status:page:exception=', $e->GetMessage(), '\ntrace=', $e->GetTraceAsString());
       }
       $query = null; // Close query;
-      return($buffer . self::times());
+      return(self::times() . $buffer);
    } // capture();
 
    public static function dbs_connect() {

@@ -185,9 +185,11 @@ class USI_Page_Solutions_Cache {
       if ($clear_cache) {
          // Since index.php does the updates, just call curl and discard the data.
          $ch = curl_init(); 
-         curl_setopt($ch, CURLOPT_URL, rtrim(get_permalink($page_id), '/') . '/');
-         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
          curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+         curl_setopt($ch, CURLOPT_URL, rtrim(get_permalink($page_id), '/') . '/');
          curl_exec($ch);
          curl_close($ch);
       }
