@@ -22,7 +22,7 @@ require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-s
 
 class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.6.0 (2021-06-12)';
+   const VERSION = '1.7.1 (2023-01-25)';
 
    protected $is_tabbed = true;
 
@@ -121,12 +121,12 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
       for ($ith = 0; $ith < count($pages); $ith++) {
          $page_id = $pages[$ith]['ID'];
-         $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $page_id);
+         $meta_value = USI_Page_Solutions::meta_value_get($page_id);
          $meta_value['cache']['updated'] = 
          $meta_value['cache']['valid_until'] = USI_Page_Cache::DATE_ALPHA;
          $meta_value['cache']['html'] = '';
          $meta_value['cache']['size'] = 0;
-         USI_Page_Solutions::meta_value_put(__METHOD__, $meta_value);
+         USI_Page_Solutions::meta_value_put($meta_value);
          // Since index.php does the updates, just call curl and discard the data.
          $ch = curl_init(); 
          curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
@@ -156,22 +156,19 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
       }
 
       $option = empty($cache['track-times']) ? 'false' : 'true';
-      if (!empty($cache['debug-ip'])) {
-         $debug = null;
-         if (!empty($cache['debug-meta-data']))  $debug .= ($debug ? '|' : '') . 'USI_Page_Cache::DEBUG_META_DATA';
-         if (!empty($cache['debug-sql']))        $debug .= ($debug ? '|' : '') . 'USI_Page_Cache::DEBUG_SQL';
-         $option .= ", '" . $cache['debug-ip'] . "'" . ($debug ? ", " . $debug : '');
+      if (!empty($cache['session'])) {
+         $option .= ", '" . $cache['session'] . "'";
       }
       if ('false' == $option) $option = null;
 
-      $instantiate_class = empty($cache) ? null : PHP_EOL . 'USI_Page_Cache::cache(' . $option . ');' . PHP_EOL;
+      $instantiate_class = 'USI_Page_Cache::cache(' . $option . ');';
 
       $template = dirname(__FILE__) . '/usi-page-cache-template.php';
 
       if (is_file($template) && is_readable($template)) {
          $template_stream  = fopen($template, 'r');
          $template_content = str_replace(
-            array(
+            [
                '/* USI-PAGE-SOLUTIONS-1 external-config-location or null; */',
                '/* USI-PAGE-SOLUTIONS-2 */',
                '/* USI-PAGE-SOLUTIONS-3 */',
@@ -181,18 +178,18 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                '/* USI-PAGE-SOLUTIONS-7 */',
                '/* USI-PAGE-SOLUTIONS-8 */',
                '/* USI-PAGE-SOLUTIONS-9 USI_Page_Cache::cache() or null; */',
-            ),
-            array(
-               $config_location,
-               current_time('mysql'),
-               $db_pass,
-               $db_host,
-               $db_name,
-               $db_user,
-               $wpdb->prefix,
-               plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-log.php',
-               $instantiate_class,
-            ), 
+            ],
+            [
+            /* 1 */ $config_location,
+            /* 2 */ current_time('mysql'),
+            /* 3 */ $db_pass,
+            /* 4 */ $db_host,
+            /* 5 */ $db_name,
+            /* 6 */ $db_user,
+            /* 7 */ $wpdb->prefix,
+            /* 8 */ plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-log.php',
+            /* 9 */ $instantiate_class,
+            ], 
             fread($template_stream, filesize($template))
          );
          fclose($template_stream);
@@ -257,6 +254,9 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          if (!empty($input['cache']['clear-all-cache'])) {
             self::cache_all_clear();
             unset($input['cache']['clear-all-cache']);
+         }
+         if (!empty($input['diagnostics']['DEBUG_CACHE']) && !empty($input['diagnostics']['session']) && !empty($input['diagnostics']['DEBUG_CACHE'])) {
+            $input['cache']['session'] = $input['diagnostics']['session'];
          }
          self::cache_file_generate($input['cache']);
       } else if ('widgets' == $this->active_tab) {
@@ -385,10 +385,32 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                   'label' => 'Enable layout enhancements',
                   'notes' => 'Enables layout enhancements.',
                ),
+               'global-header' => array(
+                  'f-class' => 'large-text', 
+                  'label' => 'Global Header Content',
+                  'rows' => 5,
+                  'type' => 'textarea', 
+                  'notes' => 'The above content, if given, is emitted after the <i>&lt;body&gt;</i> tag.',
+               ),
             ),
          ), // preferences;
 
          'capabilities' => new USI_WordPress_Solutions_Capabilities($this),
+
+         'diagnostics' => new USI_WordPress_Solutions_Diagnostics($this, 
+            array(
+               'DEBUG_CACHE' => array(
+                  'value' => USI_Page_Solutions::DEBUG_CACHE,
+                  'notes' => 'Log USI_Page_Cache::cache() method. <b>Note</b> - you must resave the Cached Options tab to use this feature.',
+               ),
+               'DEBUG_HTML' => array(
+                  'value' => USI_Page_Solutions::DEBUG_HTML,
+                  'notes' => 'Log meta_value_[get|put]() methods.',
+               ),
+            )
+         ),
+
+         'updates' => new USI_WordPress_Solutions_Updates($this)
 
       );
 
@@ -421,11 +443,6 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                   'label' => 'Prepend cache times',
                   'notes' => 'Formats the page cache creation time, call-up time, expiration time and the Page-Solutions version as an HTML comment and prepends it to the top of the page. It is recommended to use this feature as it uses negligible resources and gives valuable cache usage information.',
                ),
-               'debug-ip' => array(
-                  'type' => 'text', 
-                  'label' => 'Debug IP address',
-                  'notes' => 'Enter the IP address of the user you wish to track for debugging.',
-               ),
                'clear-all-cache' => array(
                   'type' => 'checkbox', 
                   'label' => 'Clear all page cache information',
@@ -433,22 +450,6 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                ),
              ),
          ); // cache;
-
-         if (!empty(USI_Page_Solutions::$options['cache']['debug-ip'])) {
-            $sections['cache']['settings']['debug-meta-data'] = array(
-               'type' => 'checkbox', 
-               'label' => 'DEBUG_META_DATA',
-               'notes' => 'Writes the page meta data to the WordPress <b>' . $wpdb->prefix . 'USI_log</b> database table.',
-            );
-            $sections['cache']['settings']['debug-sql'] = array(
-               'type' => 'checkbox', 
-               'label' => 'DEBUG_SQL',
-               'notes' => 'Writes SQL statements to the WordPress <b>' . $wpdb->prefix . 'USI_log</b> database table.',
-            );
-         } else {
-            unset(USI_Page_Solutions::$options['cache']['debug-meta-data']);
-            unset(USI_Page_Solutions::$options['cache']['debug-sql']);
-         }
 
       }
 
@@ -468,8 +469,6 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          ); // collections;
 
       }
-
-      $sections['updates'] = new USI_WordPress_Solutions_Updates($this);
 
       return($sections);
 

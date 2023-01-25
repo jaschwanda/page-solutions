@@ -17,7 +17,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Options {
 
-   const VERSION = '1.6.0 (2021-06-12)';
+   const VERSION = '1.7.0 (2022-08-09)';
 
    function __construct() {
       add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
@@ -64,14 +64,16 @@ class USI_Page_Solutions_Options {
       } else if (!wp_verify_nonce($_POST['usi-page-solutions-options-nonce'], basename(__FILE__))) {
       } else {
          $new_arguments = !empty($_POST['usi-page-solutions-options-arguments']);
-         $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $page_id);
-         if ($meta_value['options']['arguments'] != $new_arguments) {
+         $new_theme     = $_POST['usi-page-solutions-options-theme'] ?? 'default';
+         $meta_value = USI_Page_Solutions::meta_value_get($page_id);
+         if (($meta_value['options']['arguments'] != $new_arguments) || ($meta_value['options']['theme'] != $new_theme)) {
             delete_post_meta($page_id, $meta_value['key']); 
             $offset = strlen(USI_Page_cache::POST_META);
             $meta_value['key'][$offset] = ($new_arguments ? '*' : '!');
             $meta_value['options']['arguments'] = $new_arguments;
+            $meta_value['options']['theme']     = $new_theme;
          }
-         USI_Page_Solutions::meta_value_put(__METHOD__, $meta_value);
+         USI_Page_Solutions::meta_value_put($meta_value);
       }
 
    } // action_save_post();
@@ -80,17 +82,30 @@ class USI_Page_Solutions_Options {
 
       wp_nonce_field(basename(__FILE__), 'usi-page-solutions-options-nonce');
 
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $post->ID);
+      $meta_value = USI_Page_Solutions::meta_value_get($post->ID);
 
-      $arguments = $meta_value['options']['arguments'];
+      $arguments  = $meta_value['options']['arguments'];
 
-      $disabled = USI_Page_Solutions::number_of_offspring($post->ID) ? ' disabled' : null;
+      $disabled   = USI_Page_Solutions::number_of_offspring($post->ID) ? ' disabled' : null;
 
+      $theme      = $meta_value['options']['theme'];
+
+      $themes     = wp_get_themes();
+
+      WP_Theme::sort_by_name($themes);
+
+      $select = '<option value="default"' . ($theme == 'default' ? ' selected' : '') . '>default</option>';
+      foreach ($themes as $theme_obj) {
+         $select .= '<option value="' . $theme_obj->name . '"' . ($theme_obj->name == $theme ? ' selected' : '') . '>' . $theme_obj->name . '</option>';
+      }
 ?>
-<p>
-  <input id="usi-page-solutions-options-arguments"<?php checked($arguments, true); echo $disabled; ?> name="usi-page-solutions-options-arguments" type="checkbox" value="true" />
-  <label for="usi-page-solutions-options-arguments"><?php _e('Accepts arguments', USI_Page_Solutions::TEXTDOMAIN); ?></label>
-</p>
+<div>
+   <label for="usi-page-solutions-options-theme"><?php _e('Theme :', USI_Page_Solutions::TEXTDOMAIN); ?></label>
+   <select name="usi-page-solutions-options-theme" style="width:100%;"><?php echo $select; ?></select>
+   <div>&nbsp;</div>
+   <input id="usi-page-solutions-options-arguments"<?php checked($arguments, true); echo $disabled; ?> name="usi-page-solutions-options-arguments" type="checkbox" value="true" />
+   <label for="usi-page-solutions-options-arguments"><?php _e('Accepts arguments', USI_Page_Solutions::TEXTDOMAIN); ?></label>
+</div>
 <?php
 
    } // render_meta_box();

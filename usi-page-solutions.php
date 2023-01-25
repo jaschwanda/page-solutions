@@ -15,7 +15,7 @@ Requires at least: 5.0
 Requires PHP:      5.6.25
 Tested up to:      7.4.19
 Text Domain:       usi-page-solutions
-Version:           1.6.0
+Version:           1.7.1
 */
 
 /*
@@ -35,15 +35,15 @@ require_once('usi-page-cache.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '1.6.0 (2021-06-12)';
+   const VERSION = '1.7.1 (2023-01-25)';
 
-   const DEBUG_OFF   = 0x00;
-   const DEBUG_HTML  = 0x01;
-   const DEBUG_VALUE = 0x02;
+   const DEBUG_OFF   = 0x00000000;
+   const DEBUG_CACHE = 0x13000001;
+   const DEBUG_HTML  = 0x13000002;
 
-   const NAME       = 'Page-Solutions';
-   const PREFIX     = 'usi-page';
-   const TEXTDOMAIN = 'usi-page-solutions';
+   const NAME        = 'Page-Solutions';
+   const PREFIX      = 'usi-page';
+   const TEXTDOMAIN  = 'usi-page-solutions';
 
    const WIDGETS_INIT_PRIORITY = 100;
 
@@ -95,13 +95,17 @@ final class USI_Page_Solutions {
       }
    } // action_widgets_init();
 
+   static function action_wp_body_open() {
+      echo USI_Page_Solutions::$options['preferences']['global-header'];
+   } // action_wp_body_open();
+
    static function action_wp_enqueue_scripts() {
 
       global $post;
 
       $post_id = (int)(!empty($post->ID) ? $post->ID : 0);
 
-      self::$meta_value = self::meta_value_get(__METHOD__, $post_id);
+      self::$meta_value = self::meta_value_get($post_id);
 
       $what2do = array(
          array('key' => 'styles_parent',  'inherit' => 'styles_inherit',  'funtction' => 'wp_enqueue_style',  'default' => null),
@@ -249,6 +253,7 @@ final class USI_Page_Solutions {
          $defaults['preferences']['enable-cache'] = 
          $defaults['preferences']['enable-enhanced-areas'] = 
          $defaults['preferences']['enable-layout'] = false;
+         $defaults['preferences']['global-header'] = null;
          $defaults['preferences']['page-mru-max'] = 
          $defaults['preferences']['post-mru-max'] = 4;
          USI_Page_Solutions::$options = get_option(self::PREFIX . '-options', $defaults);
@@ -272,9 +277,13 @@ final class USI_Page_Solutions {
          add_filter('widget_display_callback', array(__CLASS__, 'filter_widget_display_callback'), 10, 3);
       }
 
+      if (!empty(USI_Page_Solutions::$options['preferences']['global-header'])) {
+         add_action('wp_body_open', array(__CLASS__, 'action_wp_body_open'));
+      }
+
    } // init();
 
-   static function meta_value_get($method, $post_id, $debug = false) {
+   static function meta_value_get($post_id, $debug = false) {
 
       try {
          global $wpdb;
@@ -301,16 +310,16 @@ final class USI_Page_Solutions {
          }
       }
 
-      $layout['codes_foot']          = !empty($data['layout']['codes_foot'])        ? $data['layout']['codes_foot']        : null;
-      $layout['codes_foot_parent']   = !empty($data['layout']['codes_foot_parent']) ? $data['layout']['codes_foot_parent'] : null;
-      $layout['codes_head']          = !empty($data['layout']['codes_head'])        ? $data['layout']['codes_head']        : null;
-      $layout['codes_head_parent']   = !empty($data['layout']['codes_head_parent']) ? $data['layout']['codes_head_parent'] : null;
-      $layout['css']                 = !empty($data['layout']['css'])               ? $data['layout']['css']               : null;
-      $layout['css_parent']          = !empty($data['layout']['css_parent'])        ? $data['layout']['css_parent']        : null;
-      $layout['scripts']             = !empty($data['layout']['scripts'])           ? $data['layout']['scripts']           : null;
-      $layout['scripts_parent']      = !empty($data['layout']['scripts_parent'])    ? $data['layout']['scripts_parent']    : null;
-      $layout['styles']              = !empty($data['layout']['styles'])            ? $data['layout']['styles']            : null;
-      $layout['styles_parent']       = !empty($data['layout']['styles_parent'])     ? $data['layout']['styles_parent']     : null;
+      $layout['codes_foot']          = $data['layout']['codes_foot']        ?? null;
+      $layout['codes_foot_parent']   = $data['layout']['codes_foot_parent'] ?? null;
+      $layout['codes_head']          = $data['layout']['codes_head']        ?? null;
+      $layout['codes_head_parent']   = $data['layout']['codes_head_parent'] ?? null;
+      $layout['css']                 = $data['layout']['css']               ?? null;
+      $layout['css_parent']          = $data['layout']['css_parent']        ?? null;
+      $layout['scripts']             = $data['layout']['scripts']           ?? null;
+      $layout['scripts_parent']      = $data['layout']['scripts_parent']    ?? null;
+      $layout['styles']              = $data['layout']['styles']            ?? null;
+      $layout['styles_parent']       = $data['layout']['styles_parent']     ?? null;
 
       $options['arguments']          = !empty($data['options']['arguments']);
       $options['codes_foot_inherit'] = !empty($data['options']['codes_foot_inherit']);
@@ -318,9 +327,10 @@ final class USI_Page_Solutions {
       $options['css_inherit']        = !empty($data['options']['css_inherit']);
       $options['scripts_inherit']    = !empty($data['options']['scripts_inherit']);
       $options['styles_inherit']     = !empty($data['options']['styles_inherit']);
+      $options['theme']              = $data['options']['theme'] ?? 'default';
       $options['widgets_inherit']    = !empty($data['options']['widgets_inherit']);
 
-      $widgets = !empty($data['widgets']) ? $data['widgets'] : null;
+      $widgets = $data['widgets'] ?? null;
 
       $url      = rtrim(get_permalink($post_id), '/') . '/';
       $path     = str_replace(array($_SERVER['SERVER_NAME'], 'https://', 'http://'), '', $url);
@@ -346,7 +356,7 @@ final class USI_Page_Solutions {
             $value['cache']['html'] = '~~~'; 
          }
 
-         usi::log($method . '>' . __METHOD__ . ':meta_value=', $value);
+         usi::log2('meta_value_get():meta_value=', $value);
 
          if (!(self::$debug & self::DEBUG_HTML)) {
             $value['cache']['html'] = $html;
@@ -358,7 +368,7 @@ final class USI_Page_Solutions {
 
    } // meta_value_get();
 
-   static function meta_value_put($method, $value, $debug = false) {
+   static function meta_value_put($value, $debug = false) {
 
       if (self::$debug || $debug) {
 
@@ -367,7 +377,7 @@ final class USI_Page_Solutions {
             $value['cache']['html'] = '~~~'; 
          }
 
-         usi::log($method . '>' . __METHOD__ . ':meta_value=', $value);
+         usi::log2('meta_value_put():meta_value=', $value);
 
          if (!(self::$debug & self::DEBUG_HTML)) {
             $value['cache']['html'] = $html;

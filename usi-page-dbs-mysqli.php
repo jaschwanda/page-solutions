@@ -18,7 +18,7 @@ Extends the standard mysqli database access functions by providing the following
 
 class USI_Page_Dbs extends mysqli {
 
-   const VERSION = '1.6.0 (2021-06-12) [USI_Dbs:1.1.3 (2018-01-18)]';
+   const VERSION = '1.7.0 (2022-08-09) [USI_Dbs:1.1.3 (2018-01-18)]';
 
    const PREPARE_ERROR_1 = '; check the manual that corresponds to your MySQL server version for the right syntax to use';
 
@@ -100,6 +100,7 @@ class USI_Page_Dbs_Stmt extends mysqli_stmt {
    } // error_handler();
 
    public function execute_x($store = false) {
+      $sql = $this->get_bound_statement();
       $status = parent::execute();
       if (!$status) throw new USI_Page_Dbs_Exception(__METHOD__ . ':' . $this->error);
       if ($store) $this->store_result_x();

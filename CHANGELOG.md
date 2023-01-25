@@ -2,6 +2,14 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.7.1 (2023-01-25) ##
+* Added global header content functionality.
+
+## 1.7.0 (2022-08-09) ##
+* Set all versions numbers to same version.
+* Improved debug handling.
+* Changed the capture method to not use output buffering.
+
 ## 1.6.0 (2021-06-12) ##
 * Set all versions numbers to same version.
 * Improved logging and database connection functions.

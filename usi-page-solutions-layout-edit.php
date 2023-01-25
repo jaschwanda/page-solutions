@@ -17,7 +17,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.6.0 (2021-06-12)';
+   const VERSION = '1.7.0 (2022-08-09)';
 
    protected $is_tabbed = true;
 
@@ -50,7 +50,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
    function action_admin_menu() { 
 
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $this->page_id);
+      $meta_value = USI_Page_Solutions::meta_value_get($this->page_id);
 
       $this->options['code']['page-id']    = $this->page_id;
       $this->options['code']['codes_foot'] = $meta_value['layout']['codes_foot'];
@@ -186,7 +186,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
          }
       }
 
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $this->page_id);
+      $meta_value = USI_Page_Solutions::meta_value_get($this->page_id);
 
       if ('code' == $this->active_tab) {
          $meta_value['layout']['codes_foot'] = $input['code']['codes_foot'];
@@ -217,7 +217,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
          }
       }
 
-      USI_Page_Solutions_Layout::update_recursively(__METHOD__, null, $meta_value);
+      USI_Page_Solutions_Layout::update_recursively(null, $meta_value);
 
       return($input);
 
@@ -262,7 +262,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
    function sections() {
 
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $this->page_id);
+      $meta_value = USI_Page_Solutions::meta_value_get($this->page_id);
 
       $sections = array(
 

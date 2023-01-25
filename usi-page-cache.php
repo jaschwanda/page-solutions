@@ -9,7 +9,6 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Gen
  
 You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
 https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
 Copyright (c) 2020 by Jim Schwanda.
 */
 
@@ -17,7 +16,7 @@ require_once('usi-page-dbs-mysqli.php');
 
 final class USI_Page_Cache {
 
-   const VERSION = '1.6.0 (2021-06-12)';
+   const VERSION = '1.7.0 (2022-08-09)';
 
    const DATE_ALPHA = '0000-00-00 00:00:00';
    const DATE_OMEGA = '9999-12-31 23:59:59';
@@ -29,9 +28,9 @@ final class USI_Page_Cache {
    } // __construct();
 
    public static function validate($cache) {
-      return(array('allow-clear' => false, 'clear-every-publish' => false, 'inherit-parent' => false, 
-         'mode' => 'disable', 'period' => 86400, 'schedule' => array('00:00:00'), 'size' => 0, 'updated' => self::DATE_ALPHA, 
-         'valid_until' => self::DATE_ALPHA, 'dynamics' => false, 'html' => ''));
+      return([ 'allow-clear' => false, 'clear-every-publish' => false, 'inherit-parent' => false, 
+         'mode' => 'disable', 'period' => 86400, 'schedule' => [ '00:00:00' ], 'size' => 0, 'updated' => self::DATE_ALPHA, 
+         'valid_until' => self::DATE_ALPHA, 'dynamics' => false, 'html' => '' ]);
    } // validate();
 
 } // Class USI_Page_Cache;

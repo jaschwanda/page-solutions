@@ -17,7 +17,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout {
 
-   const VERSION = '1.6.0 (2021-06-12)';
+   const VERSION = '1.7.0 (2022-08-09)';
 
    private $options = null;
    private $page_id = 0;
@@ -122,7 +122,7 @@ class USI_Page_Solutions_Layout {
       } else if (!wp_verify_nonce($_POST['usi-page-solutions-layout-nonce'], basename(__FILE__))) {
       } else {
 
-         $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $page_id);
+         $meta_value = USI_Page_Solutions::meta_value_get($page_id);
          $collection_count = (int)(isset($_POST['usi-page-solutions-layout-enhanced-count']) ? $_POST['usi-page-solutions-layout-enhanced-count'] : 0);
          $widgets = array();
 
@@ -148,17 +148,17 @@ class USI_Page_Solutions_Layout {
          $meta_value['options']['widgets_inherit']    = !empty($_POST['usi-page-solutions-layout-widgets-inherit']);
          $meta_value['widgets'] = $widgets;
 
-         self::update_recursively(__METHOD__, null, $meta_value);
+         self::update_recursively(null, $meta_value);
 
       }
    } // action_save_post();
 
-   static function update_recursively($method, $parent_meta_value, $meta_value) {
+   static function update_recursively($parent_meta_value, $meta_value) {
 
       if (!$parent_meta_value) {
          $parent_id = wp_get_post_parent_id($meta_value['post_id']);
          if ($parent_id) {
-            $parent_meta_value = USI_Page_Solutions::meta_value_get($method, $parent_id);
+            $parent_meta_value = USI_Page_Solutions::meta_value_get($parent_id);
          }
       }
 
@@ -220,7 +220,7 @@ class USI_Page_Solutions_Layout {
 
       }
 
-      USI_Page_Solutions::meta_value_put($method, $meta_value);
+      USI_Page_Solutions::meta_value_put($meta_value);
 
       // Get array of children, if any;
       global $wpdb;
@@ -232,13 +232,12 @@ class USI_Page_Solutions_Layout {
       // Load this page's value into children and propagate down to all descendants;
       if (!empty($children)) {
          for ($ith = 0; $ith < count($children); $ith++) {
-            $child_meta_value = USI_Page_Solutions::meta_value_get($method, $children[$ith]['ID']);
-            self::update_recursively($method, $meta_value, $child_meta_value);
+            $child_meta_value = USI_Page_Solutions::meta_value_get($children[$ith]['ID']);
+            self::update_recursively($meta_value, $child_meta_value);
          }
       }
 
    } // update_recursively();
-
 
    function action_widgets_init() {
       $this->option_name = $this->section_id = 'usi-page-solutions-options-dummy-' . get_current_user_id();
@@ -261,7 +260,7 @@ class USI_Page_Solutions_Layout {
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=styles&page_id='  . $post->ID . '">Style</a> &nbsp; ' .
          '</p>' : '';
 
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $post->ID);
+      $meta_value = USI_Page_Solutions::meta_value_get($post->ID);
 
       $codes_foot_inherit = $meta_value['options']['codes_foot_inherit'];
       $codes_head_inherit = $meta_value['options']['codes_head_inherit'];

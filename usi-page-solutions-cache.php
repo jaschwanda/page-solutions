@@ -19,7 +19,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Cache {
 
-   const VERSION = '1.6.0 (2021-06-12)';
+   const VERSION = '1.7.0 (2022-08-09)';
 
    private static $current_time = null;
    private static $valid_until = USI_Page_Cache::DATE_OMEGA;
@@ -86,7 +86,7 @@ class USI_Page_Solutions_Cache {
 
    private function action_save_post_recursive($page_id, $parent_meta_value = null) {
 
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $page_id);
+      $meta_value = USI_Page_Solutions::meta_value_get($page_id);
 
       if ($parent_meta_value) { // IF copying parent parameters to this page;
 
@@ -180,7 +180,7 @@ class USI_Page_Solutions_Cache {
       }
 
       // Save this page's parameters;
-      USI_Page_Solutions::meta_value_put(__METHOD__, $meta_value);
+      USI_Page_Solutions::meta_value_put($meta_value);
 
       if ($clear_cache) {
          // Since index.php does the updates, just call curl and discard the data.
@@ -211,7 +211,7 @@ class USI_Page_Solutions_Cache {
 
       wp_nonce_field(basename(__FILE__), 'usi-page-solutions-cache-nonce');
 
-      $meta_value = USI_Page_Solutions::meta_value_get(__METHOD__, $post->ID);
+      $meta_value = USI_Page_Solutions::meta_value_get($post->ID);
 
       $cache = $meta_value['cache'];
 
