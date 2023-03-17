@@ -17,7 +17,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
 
-   const VERSION = '1.7.0 (2022-08-09)';
+   const VERSION = '1.7.2 (2023-03-16)';
 
    protected $is_tabbed = true;
 
@@ -191,7 +191,7 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
       if ('code' == $this->active_tab) {
          $meta_value['layout']['codes_foot'] = $input['code']['codes_foot'];
          $meta_value['layout']['codes_head'] = $input['code']['codes_head'];
-      } else if ('css' == $this->active_tab) {
+      } else if ('page-css' == $this->active_tab) {
          $meta_value['layout']['css'] = $input['page-css']['css'];
       } else if ('scripts' == $this->active_tab) {
          unset($meta_value['layout']['scripts']);

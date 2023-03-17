@@ -17,7 +17,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout {
 
-   const VERSION = '1.7.0 (2022-08-09)';
+   const VERSION = '1.7.2 (2023-03-16)';
 
    private $options = null;
    private $page_id = 0;
@@ -255,7 +255,7 @@ class USI_Page_Solutions_Layout {
       $html = !empty(USI_Page_Solutions::$options['preferences']['enable-layout']) ?
          '<p>' .
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=code&page_id='    . $post->ID . '">Code</a> &nbsp; ' .
-           '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=css&page_id='     . $post->ID . '">CSS</a> &nbsp; ' .
+           '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=page-css&page_id='     . $post->ID . '">CSS</a> &nbsp; ' .
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=scripts&page_id=' . $post->ID . '">Script</a> &nbsp; ' .
            '<a class="button button-secondary" href="options-general.php?page=usi-page-solutions-layout-settings&tab=styles&page_id='  . $post->ID . '">Style</a> &nbsp; ' .
          '</p>' : '';

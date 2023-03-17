@@ -15,7 +15,7 @@ Requires at least: 5.0
 Requires PHP:      5.6.25
 Tested up to:      7.4.19
 Text Domain:       usi-page-solutions
-Version:           1.7.1
+Version:           1.7.2
 */
 
 /*
@@ -35,7 +35,7 @@ require_once('usi-page-cache.php');
 
 final class USI_Page_Solutions {
 
-   const VERSION = '1.7.1 (2023-01-25)';
+   const VERSION = '1.7.2 (2023-03-16)';
 
    const DEBUG_OFF   = 0x00000000;
    const DEBUG_CACHE = 0x13000001;
