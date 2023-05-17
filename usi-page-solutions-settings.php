@@ -26,75 +26,20 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
    protected $is_tabbed = true;
 
-   private static $cache_config_status  = null;
-   private static $cache_config_warning = null;
-
    function __construct() {
 
-      $good = __('Good', USI_Page_Solutions::TEXTDOMAIN);
-      $root_status = !empty(USI_Page_Solutions::$options['cache']['root-status']) ? USI_Page_Solutions::$options['cache']['root-status'] : null;
-      if ($root_status == $good) {
-         $pages = get_pages(array('sort_column' => 'ID', 'number' => 1, 'post_type' => 'page', 'post_status' => 'publish'));
-         if (!empty($pages)) {
-            $url = get_home_url(null, $pages[0]->post_name . '/?' . USI_Page_Cache::TEST_DATA);
-            $ch = curl_init(); 
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            $content = curl_exec($ch);
-            curl_close($ch);
-            if ($content == USI_Page_Cache::TEST_DATA) {
-               self::$cache_config_status  = __('Data base connect error', USI_Page_Solutions::TEXTDOMAIN);
-               self::$cache_config_warning = __('The Page-Solutions caching system cannot connect to the WordPress database, go to the <a href="' . get_bloginfo('wpurl') . '/wp-admin/options-general.php?page=usi-page-settings&tab=cache">Cache Options</a> tab on the Page-Solutions Settings page and check your configuration parameters.', USI_Page_Solutions::TEXTDOMAIN);
-               add_action('admin_notices', array(__CLASS__, 'action_admin_notices_page'));
-            }
-         }
-      } else if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
-         $root = !empty(USI_Page_Solutions::$options['cache']['root-location']) ? USI_Page_Solutions::$options['cache']['root-location'] : null;
-         if (!$root) {
-            self::$cache_config_status  = __('Unknown', USI_Page_Solutions::TEXTDOMAIN);
-            self::$cache_config_warning = __('The <b>index.php</b> file location is unknown. Access any WordPress page in the site from another browser that is not running in administrator mode, then go to the <a href="' . get_bloginfo('wpurl') . '/wp-admin/options-general.php?page=usi-page-settings&tab=cache">Cache Options</a> tab on the Page-Solutions Settings page and click the <b>Save Cache Options</b> button.', USI_Page_Solutions::TEXTDOMAIN);
-            add_action('admin_notices', array(__CLASS__, 'action_admin_notices_page'));
-         } else {
-            $root_folder  = substr($root, 0, -9);
-            $plugin_path  = plugin_dir_path(__FILE__);
-            $include_path = str_replace('\\', '/', substr($plugin_path, strlen($root_folder)));
-            $include_file = $include_path . 'usi-page-cache.php';
-            $modification = "<?php /* USI-PAGE-SOLUTIONS */ @ include('$include_file'); ?>";
-            if (is_file($root) && is_readable($root)) {
-               if ($root_stream = fopen($root, 'r')) {
-                  $first_line =  trim(fgets($root_stream), PHP_EOL);
-                  fclose($root_stream);
-                  if ($modification == $first_line) {
-                     self::$cache_config_status  = $good;
-                  } else {
-                     self::$cache_config_status  = __('Pending Modification', USI_Page_Solutions::TEXTDOMAIN);
-                     self::$cache_config_warning ='The <b>index.php</b> file has has not been modified to support caching. Go to the <a href="' . get_bloginfo('wpurl') . '/wp-admin/options-general.php?page=usi-page-settings&tab=cache">Cache Options</a> tab on the Page-Solutions Settings page and click the <b>Save Cache Options</b> button.';
-                     add_action('admin_notices', array(__CLASS__, 'action_admin_notices_page'));
-                  }
-               }
-            }
-         }
-      }
-      USI_Page_Solutions::$options['cache']['root-status'] = self::$cache_config_status;
-
       parent::__construct(
-         array(
+         [
             'name' => USI_Page_Solutions::NAME, 
             'prefix' => USI_Page_Solutions::PREFIX, 
             'text_domain' => USI_Page_Solutions::TEXTDOMAIN,
             'options' => USI_Page_Solutions::$options,
             'capabilities' => USI_Page_Solutions::$capabilities,
             'file' => str_replace('-settings', '', __FILE__), // Plugin main file, this initializes capabilities on plugin activation;
-         )
+         ]
       );
 
    } // __construct();
-
-   static function action_admin_notices_page() {
-      echo '<div class="notice notice-warning"><p>' . self::$cache_config_warning . '</p></div>';
-   } // action_admin_notices_page();
 
    function action_admin_init() {
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
@@ -201,7 +146,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
    } // cache_file_generate();
 
    function config_section_header_cache() {
-      echo '<p>' . __('The Page-Solutions caching functionality stores content in the WordPress database for quick access which improves performance by eliminating the overhead of loading and running WordPress for pages that have not changed recently. ', USI_Page_Solutions::TEXTDOMAIN) . '</p>' . PHP_EOL;
+      echo '<p style="text-align:justify;">' . __('The Page-Solutions caching functionality stores content in the WordPress database for quick access which improves performance by eliminating the overhead of loading and running WordPress for pages that have not changed recently. ', USI_Page_Solutions::TEXTDOMAIN) . '</p>' . PHP_EOL;
    } // config_section_header_cache();
 
    function config_section_header_collections() {
@@ -236,9 +181,13 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
             }
          }
       } else if ('cache' == $this->active_tab) {
-         $root = $input['cache']['root-location'];
-         if (!empty($root)) {
-            $root_folder  = substr($root, 0, -9);
+         if (!empty($input['cache']['clear-all-cache'])) {
+            self::cache_all_clear();
+            unset($input['cache']['clear-all-cache']);
+         }
+         if (!empty($input['cache']['update-cache-config']) && !empty($input['cache']['root-location'])) {
+            $root_folder  = rtrim(rtrim($input['cache']['root-location'], '/'), '\\');
+            $root         = $root_folder . '/index.php';
             $plugin_path  = plugin_dir_path(__FILE__);
             $include_path = str_replace('\\', '/', substr($plugin_path, strlen($root_folder)));
             $include_file = $include_path . 'usi-page-cache.php';
@@ -250,10 +199,8 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                   if ($modification != $first_line) $this->index_file_modify();
                }
             }
-         }
-         if (!empty($input['cache']['clear-all-cache'])) {
-            self::cache_all_clear();
-            unset($input['cache']['clear-all-cache']);
+            $input['cache']['root-location'] = $root_folder;
+            unset($input['cache']['update-cache-config']);
          }
          if (!empty($input['diagnostics']['DEBUG_CACHE']) && !empty($input['diagnostics']['session']) && !empty($input['diagnostics']['DEBUG_CACHE'])) {
             $input['cache']['session'] = $input['diagnostics']['session'];
@@ -285,7 +232,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
    } // filter_plugin_row_meta();
 
    function index_file_modify() {
-      $root = USI_Page_Solutions::$options['cache']['root-location'];
+      $root = USI_Page_Solutions::$options['cache']['root-location'] . '/index.php';
       if (!empty($root)) {
          if (is_file($root)) {
             if ($root_stream = fopen($root, 'r')) {
@@ -429,15 +376,14 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                'root-location' => array(
                   'f-class' => 'large-text', 
                   'type' => 'text', 
-                  'label' => 'index.php location',
-                  'notes' => 'You can manually set the location of the root <b>index.php</b> file by entering the location above and clicking the <b>Save Cache Options</b> button. To force WordPress to scan for the actual location, clear the above field and click the <b>Save Cache Options</b> button, then access any page from another browser not in administrator mode.',
+                  'label' => 'Location of index.php',
+                  'notes' => 'Location of the root <b>index.php</b> file.',
                ),
-               'root-status' => array(
-                  'type' => 'text', 
-                  'label' => 'index.php status',
-                  'notes' => self::$cache_config_warning,
-                  'readonly' => true,
-               ),
+               'update-cache-config' => [
+                  'type' => 'checkbox', 
+                  'label' => 'Update cache configuration',
+                  'notes' => 'Check this box whenever the above parameters are modified.',
+               ],
                'track-times' => array(
                   'type' => 'checkbox', 
                   'label' => 'Prepend cache times',

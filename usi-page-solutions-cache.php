@@ -164,15 +164,13 @@ class USI_Page_Solutions_Cache {
             date_default_timezone_set($WordPress_BUG_current_timezone);
          }
 
-         // Clear cache in case there was a cache before and now it is disabled;
-         if ('disable' == $mode) $clear_cache = true;
-
          // Clear cache if clear on next publish;
          if (!empty($_POST['usi-page-solutions-cache-clear-next-publish'])) $clear_cache = true;
 
       } // ENDIF not copying parent parameters to this page;
 
-      if ($clear_cache) {
+       // Clear cache in case there was a cache before and now it is disabled;
+      if ($clear_cache || ('disable' == $mode)) {
          $meta_value['cache']['updated'] = 
          $meta_value['cache']['valid_until'] = USI_Page_Cache::DATE_ALPHA;
          $meta_value['cache']['html'] = '';

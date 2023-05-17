@@ -30,6 +30,95 @@ https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
 
 Copyright (c) 2020 by Jim Schwanda.
 */
+if (!class_exists('USI')) { final class USI {
+
+   const VERSION = '2.14.1 (2022-08-10)';
+
+   private static $info   = null;
+   private static $mysqli = null;
+   private static $mysqli_stmt = null;
+   private static $offset = 0;
+   private static $user   = 0;
+
+   private function __construct() {
+   } // __construct();
+
+   public static function log() {
+      $info = null;
+      try {
+         $trace = debug_backtrace();
+         if (!empty($trace[self::$offset+0])) {
+            if (empty($trace[self::$offset+1])) {
+               $info .= $trace[self::$offset+0]['file'];
+            } else {
+               $info .= !empty($trace[self::$offset+1]['class']) ? $trace[self::$offset+1]['class'] . ':' : $trace[self::$offset+0]['file'];
+               if (!empty($trace[self::$offset+1]['function'])) {
+                  switch ($trace[self::$offset+1]['function']) {
+                  case 'include':
+                  case 'include_once':
+                  case 'require':
+                  case 'require_once':
+                     break;
+                  default:
+                     $info .= ':' . $trace[self::$offset+1]['function'] . '()';
+                  }
+               }
+            }
+            if (!empty($trace[self::$offset+0]['line'])) $info .= '~' . $trace[self::$offset+0]['line'] . ':';
+         }
+         if (isset($trace[self::$offset/2+0]['args'])) {
+            $args = $trace[self::$offset/2+0]['args'];
+            foreach ($args as $arg) {
+               if (is_array($arg) || is_object($arg)) {
+                  $info .= print_r($arg, true);
+               } else if (is_string($arg)) {
+                  $first = substr($arg, 0, 1);
+                  if ('\\' == $first) {
+                     $second = substr($arg, 1, 1);
+                     if ('!' == $second) {
+                        $info = substr($arg, 1);
+                     } else if ('n' == $second) {
+                        $info .= PHP_EOL . substr($arg, 2);
+                     } else if ('%' == $second) {
+                        $info .= PHP_EOL . 'backtrace=' . print_r($trace, true) . PHP_EOL;
+                     } else if ('2n' == substr($arg, 1, 2)) {
+                        $info .= PHP_EOL . PHP_EOL . substr($arg, 3);
+                     }
+                  } else {
+                     $info .= $arg;
+                  }
+               } else {
+                  $info .= $arg;
+               }
+            }
+         }
+      } catch (Exception $e) {
+         $info .= PHP_EOL . 'exception=' . $e->GetMessage();
+      }
+
+      if (!self::$mysqli) {
+         if (method_exists('USI_Page_Cache', 'dbs_connect')) {
+            self::$mysqli = USI_Page_Cache::dbs_connect();
+         } else {
+            self::$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+         }
+         self::$mysqli_stmt = new mysqli_stmt(self::$mysqli);
+         self::$mysqli_stmt->prepare('INSERT INTO `' . DB_WP_PREFIX . 'USI_log` (`user_id`, `action`) VALUES (?, ?)');     
+         self::$mysqli_stmt->bind_param('is', self::$user, self::$info);
+      }
+      self::$info = substr($info, 0, 16777215); // If `action` field is MEDIUMTEXT;
+      self::$user = function_exists('get_current_user_id') ? get_current_user_id() : 0;
+      self::$mysqli_stmt->execute();
+
+   } // log();
+
+   public static function log2() { // call usi::log2('method()~'.__LINE__.':label='... or usi::log2('method():label='...
+      self::$offset = 2;
+      self::log();
+      self::$offset = 0;
+   } // log2();
+
+} } // Class USI;
 
 require_once('usi-page-cache.php');
 
@@ -57,6 +146,7 @@ final class USI_Page_Solutions {
 
    private static $debug = self::DEBUG_OFF;
    private static $info  = null;
+   private static $theme = null;
 
    public static $meta_value = null; // Page/post postmeta data;
    public static $option_name_base = null;
@@ -209,6 +299,18 @@ final class USI_Page_Solutions {
 
    } // filter_dynamic_sidebar_params();
 
+   static function filter_pre_option_stylesheet() { 
+
+      return(self::load_theme(1)); 
+
+   } // filter_pre_option_stylesheet();
+
+   static function filter_pre_option_template() { 
+
+      return(self::load_theme(0)); 
+
+   } // filter_pre_option_template();
+
    static function filter_sidebars_widgets($sidebars_widgets) {
    
       static $mapped_widgets = null;
@@ -245,7 +347,6 @@ final class USI_Page_Solutions {
       if (empty(USI_Page_Solutions::$options)) {
          $defaults['cache']['config-location'] =
          $defaults['cache']['root-location']   =
-         $defaults['cache']['root-status']     =
          $defaults['cache']['debug-ip']        = '';
          $defaults['cache']['track-times']     =
          $defaults['cache']['debug-meta-data'] = 
@@ -281,7 +382,17 @@ final class USI_Page_Solutions {
          add_action('wp_body_open', array(__CLASS__, 'action_wp_body_open'));
       }
 
+      if (!empty(USI_Page_Cache::$theme) && ('default' != USI_Page_Cache::$theme)) {
+         self::$theme = explode(':', USI_Page_Cache::$theme);
+         add_filter('pre_option_stylesheet', [__CLASS__, 'filter_pre_option_stylesheet']);
+         add_filter('pre_option_template',   [__CLASS__, 'filter_pre_option_template']);
+      }
+
    } // init();
+
+   static public function load_theme($index) {
+      return(self::$theme[$index] ?? '');
+   } // load_theme();
 
    static function meta_value_get($post_id, $debug = false) {
 

@@ -37,6 +37,7 @@ class USI_Page_Solutions_Virtual {
 
    function action_admin_head($css = null) {
       USI_WordPress_Solutions_Static::action_admin_head(
+         'p.description{text-align:justify;}' . PHP_EOL .
          '.usi-page-solutions-virtual-notes{font-style:italic; padding-bottom:10px;}' . PHP_EOL .
          '.usi-page-solutions-virtual-notes-code{font-family:courier; font-style:normal!important; font-weight:bold;}' . PHP_EOL
       );

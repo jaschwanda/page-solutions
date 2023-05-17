@@ -12,28 +12,30 @@ https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
 
 Copyright (c) 2020 by Jim Schwanda.
 */
-
 /* USI-PAGE-SOLUTIONS-1 external-config-location or null; */
 require_once('usi-page-dbs-mysqli.php');
 
 final class USI_Page_Cache {
 
-   const VERSION = '1.7.0 (2022-08-09)';
+   const VERSION = '1.6.0 (2021-06-12)';
 
    const DATE_ALPHA = '0000-00-00 00:00:00';
    const DATE_OMEGA = '9999-12-31 23:59:59';
    const DATE_WRITE = '/* USI-PAGE-SOLUTIONS-2 */';
 
+   const DEBUG_DEFAULTS   = 0x01;
+   const DEBUG_META_DATA  = 0x02;
+   const DEBUG_SQL        = 0x04;
+
    const POST_META = '_usi-page-solutions';
+   const TEST_DATA = 'usi-page-solutions=database-fail';
 
-   public static $theme = 'default';
-
-   private static $fetch = false;
+   private static $capture = false;
    private static $current_time = null;
    private static $dbs = null;
-   private static $debug = false;
-   private static $info = [ 'valid_until' => self::DATE_OMEGA ];
-   private static $mail = [];
+   private static $debug = 0;
+   private static $info = array('valid_until' => self::DATE_OMEGA);
+   private static $mail = array();
    private static $meta_id = 0;
    private static $meta_value = null;
    private static $post_id = 0;
@@ -44,69 +46,86 @@ final class USI_Page_Cache {
    private function __construct() {
    } // __construct();
 
-   public static function cache($times = false, $session = null) { 
+   public static function cache($times = false, $ip = null, $debug = self::DEBUG_DEFAULTS) { 
+
+      self::$times = $times;
+
+      if ($ip == $_SERVER['REMOTE_ADDR']) self::$debug = $debug;
+
+      self::$current_time = date('Y-m-d H:i:s');
 
       try {
 
-         self::$times = $times;
+         foreach ($_COOKIE as $key => $value) if (substr($key, 0, 20) == 'wordpress_logged_in_') throw new USI_Page_Exception(__METHOD__.':status:wordpress');
 
-         self::$current_time = date('Y-m-d H:i:s');
+         $path = $_SERVER['REQUEST_URI'];
+         if (self::$debug) usi::log('$path=', $path);
+         if (($offset = strpos($path, '/?')) !== false) $path = substr($path, 0, $offset);
+         $path = rtrim($path, '/') . '/';
 
-         // Set up debugging;
-         if ($session && (('all' == $session) || (session_start() && (session_id() == $session)))) self::$debug = true;
+         $path_args    = self::POST_META . '*' . $path;
+         $path_no_args = self::POST_META . '!' . $path;
 
-         // ESCAPE if user logged into WordPress;
-         foreach ($_COOKIE as $key => $value) if (substr($key, 0, 20) == 'wordpress_logged_in_') throw new USI_Page_Status('wordpress');
-
-         // Get requested page's cache infromation from database;
          self::dbs_connect();
-
-         $request_uri = $_SERVER['REQUEST_URI'];
-         if (($offset = strpos($request_uri, '/?')) !== false) $request_uri = substr($request_uri, 0, $offset);
-         $request_uri = rtrim($request_uri, '/');
-
-         $request_uri_args    = self::POST_META . '*' . $request_uri . '/';
-         $request_uri_no_args = self::POST_META . '!' . $request_uri . '/';
 
          $query = self::$dbs->prepare_x(
             'SELECT `meta_id`, `post_id`, `meta_key`, `meta_value` FROM `/* USI-PAGE-SOLUTIONS-7 */postmeta` ' .
             "WHERE (`meta_key` <> '" . self::POST_META . "') AND ((`meta_key` = ?) OR (? LIKE CONCAT(`meta_key`, '%'))) " .
             'ORDER BY `meta_key` DESC LIMIT 1', // SQL;
-            [ 'ss', & $request_uri_no_args, & $request_uri_args ], // Input parameters;
-            [ & self::$meta_id, & self::$post_id, & $meta_key, & $meta_value ] // Output variables;
+            array('ss', & $path_no_args, & $path_args), // Input parameters;
+            array(& self::$meta_id, & self::$post_id, & $meta_key, & $meta_value) // Output variables;
          );
-         if (self::$debug) usi::log($query->get_status());
-         if (!($query->num_rows && $query->fetch())) throw new USI_Page_Status('missing:' . $request_uri);
+         if (self::DEBUG_SQL & self::$debug) usi::log('$num_rows=', $query->num_rows, ' get_status()=', $query->get_status());
+         if (!($query->num_rows && $query->fetch())) throw new USI_Page_Exception(__METHOD__.":status:not_in_cache:$path");
          $query = null; // Close query;
 
-         // Check if cached html is valid;
-         self::$meta_value = unserialize(base64_decode($meta_value));
-         self::$theme      = self::$meta_value['options']['theme'];
-         if (self::$debug) usi::log('$meta_value:', self::$meta_value);
+         self::$query_string = trim(substr($path, strlen(substr($meta_key, 20))), '/');
+         if ($length = strlen(self::$query_string)) {
+            if (self::$debug) usi::log('$query_string=', self::$query_string);
+            $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_URI'], 0, -$length);
+         }
 
-         switch ($mode = self::$meta_value['cache']['mode'] ?? 'disabled') {
-         default:        throw new USI_Page_Status('invalid:' . $mode);
-         case 'disable': throw new USI_Page_Status('disabled');
+         self::$meta_value = unserialize(base64_decode($meta_value));
+
+         if (self::DEBUG_META_DATA & self::$debug) usi::log('$meta_value:', self::$meta_value);
+         switch ($mode = isset(self::$meta_value['cache']['mode']) ? self::$meta_value['cache']['mode'] : 'disabled') {
+         default:        throw new USI_Page_Exception(__METHOD__.":status:bad cache mode ($mode)");
+         case 'disable': throw new USI_Page_Exception(__METHOD__.':status:cache disabled');
          case 'manual': case 'period': case 'schedule': break;
          }
 
-         if (empty(self::$meta_value['cache']['html'])) {
-            self::$fetch = true;
-            throw new USI_Page_Status('empty');
+         if (empty(self::$meta_value['cache']['html']) || (self::$current_time > self::$meta_value['cache']['valid_until'])) {
+            self::$capture = true;
+            ob_start(
+               array(__CLASS__, 'capture') // Output callback, calls USI_PageCache::capture() with output when output is flushed;
+            );
+            throw new USI_Page_Exception(__METHOD__.':status:capture');
+         } 
+
+         if (self::$debug) usi::log('status:fetched');
+
+         $output = self::times();
+
+         if (empty(self::$meta_value['cache']['dynamics'])) {
+            $output .= self::$meta_value['cache']['html'];
+         } else {
+            $dynamics = self::$meta_value['cache']['dynamics'];
+            for ($ith = $offset = 0; $ith < count($dynamics); $ith++) {
+               $output .= substr(self::$meta_value['cache']['html'], $offset, $dynamics[$ith]['begin'] - $offset);
+               $offset = $dynamics[$ith]['end'];
+               @ include_once($dynamics[$ith]['file']);
+               if (is_callable(array($dynamics[$ith]['class'], 'widget'))) {
+                  $class = new $dynamics[$ith]['class']();
+                  ob_start();
+                  $class->widget($dynamics[$ith]['args'], $dynamics[$ith]['instance']);
+                  $output .= ob_get_contents();
+                  ob_end_clean();
+               }
+            }
+            $output .= substr(self::$meta_value['cache']['html'], $offset);
          }
-         if (self::$current_time > self::$meta_value['cache']['valid_until']) {
-            self::$fetch = true;
-            throw new USI_Page_Status('expired');
-         }
-
-         $output = self::times() . self::$meta_value['cache']['html'];
-
-         $length = strlen($output);
-
-         if (self::$debug) usi::log('cache=emit:' . $length . ' bytes');
-
          header('connection:close');
-         header('content-length:' . $length);
+         header('content-length:' . strlen($output));
          echo $output;
          ob_end_flush();
          flush();
@@ -114,29 +133,20 @@ final class USI_Page_Cache {
 
       } catch(USI_Page_Dbs_Exception $e) {
 
-         if (self::$debug) usi::log('exception:dbs=', $e->GetMessage(), '\ntrace=', $e->GetTraceAsString());
-
-      } catch(USI_Page_Status $e) {
-
-         if (self::$debug) usi::log('cache=', $e->GetMessage());
-
-         if (self::$fetch) {
-            ob_start(
-               [__CLASS__, 'fetch'] // Output callback, calls USI_PageCache::fetch() with output when output is flushed;
-            );
+         if (self::$debug) {
+            usi::log('status:dbs:exception=', $e->GetMessage(), '\ntrace=', $e->GetTraceAsString());
+            if (self::TEST_DATA == $_SERVER['QUERY_STRING']) die(self::TEST_DATA);
          }
+
+      } catch(USI_Page_Exception $e) {
+
+         if (self::$debug && !self::$capture) usi::log('status:page:exception=', $e->GetMessage());
 
       }
 
    } // cache();
 
-   public static function dbs_connect() {
-      if (!self::$dbs) self::$dbs = new USI_Page_Dbs(array('hash' => /* USI-PAGE-SOLUTIONS-3 */, 'host' => /* USI-PAGE-SOLUTIONS-4 */, 'name' => /* USI-PAGE-SOLUTIONS-5 */, 'user' => /* USI-PAGE-SOLUTIONS-6 */));
-      return(self::$dbs);
-   } // dbs_connect();
-
-   private static function fetch($buffer) {
-
+   private static function capture($buffer) {
       unset(self::$meta_value['cache']['html']);
       $cache = self::validate(self::$meta_value['cache']);
       $info['valid_until'] = self::$valid_until;
@@ -173,21 +183,25 @@ final class USI_Page_Cache {
       self::$meta_value['cache']['valid_until'] = self::$valid_until;
 
       $meta_value = base64_encode(serialize(self::$meta_value));
-      $query      = null;
+      $query = null;
       try {
-         $query   = self::$dbs->prepare_x(
+         $query = self::$dbs->prepare_x(
             'UPDATE `/* USI-PAGE-SOLUTIONS-7 */postmeta` SET `meta_value` = ? WHERE (`meta_id` = ?)', // SQL;
             array('si', & $meta_value, & self::$meta_id) // Input parameters;
          );
-         if (self::$debug) usi::log($query->get_status());
+         if (self::DEBUG_SQL & self::$debug) usi::log('get_status()=', $query->get_status());
       } catch(USI_Page_Dbs_Exception $e) {
-         if (self::$debug) usi::log($query->get_status());
+         if (self::DEBUG_SQL & self::$debug) usi::log('get_status()=', $query->get_status());
          if (self::$debug) usi::log('status:page:exception=', $e->GetMessage(), '\ntrace=', $e->GetTraceAsString());
       }
       $query = null; // Close query;
-      return($times . $buffer);
+      return($buffer . self::times());
+   } // capture();
 
-   } // fetch();
+   public static function dbs_connect() {
+      if (!self::$dbs) self::$dbs = new USI_Page_Dbs(array('hash' => /* USI-PAGE-SOLUTIONS-3 */, 'host' => /* USI-PAGE-SOLUTIONS-4 */, 'name' => /* USI-PAGE-SOLUTIONS-5 */, 'user' => /* USI-PAGE-SOLUTIONS-6 */));
+      return(self::$dbs);
+   } // dbs_connect();
 
    public static function que($info) {
       self::$info['dynamics'][] = $info;
@@ -233,17 +247,17 @@ final class USI_Page_Cache {
          $updated  = $valid_until = self::DATE_ALPHA;
       }
       $size = strlen($html);
-      return(['allow-clear' => $allow_clear, 'clear-every-publish' => $clear_every_publish, 'inherit-parent' => $inherit_parent, 
+      return(array('allow-clear' => $allow_clear, 'clear-every-publish' => $clear_every_publish, 'inherit-parent' => $inherit_parent, 
          'mode' => $mode, 'period' => $period, 'schedule' => $safe_schedule, 'size' => $size, 'updated' => $updated, 
-         'valid_until' => $valid_until, 'dynamics' => $dynamics, 'html' => $html]);
+         'valid_until' => $valid_until, 'dynamics' => $dynamics, 'html' => $html));
    } // validate();
 
 } // Class USI_Page_Cache;
 
-final class USI_Page_Status extends Exception { } // Class USI_Page_Status;
+class USI_Page_Exception extends Exception { } // Class USI_Page_Exception;
 
 if (!function_exists('is_admin')) {
-define('DB_WP_PREFIX', '/* USI-PAGE-SOLUTIONS-7 */');
+
 require_once('/* USI-PAGE-SOLUTIONS-8 */');
 /* USI-PAGE-SOLUTIONS-9 USI_Page_Cache::cache() or null; */
 }

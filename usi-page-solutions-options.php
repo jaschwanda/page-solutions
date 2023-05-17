@@ -88,7 +88,7 @@ class USI_Page_Solutions_Options {
 
       $disabled   = USI_Page_Solutions::number_of_offspring($post->ID) ? ' disabled' : null;
 
-      $theme      = $meta_value['options']['theme'];
+      $theme      = $meta_value['options']['theme'] ?? 'default';
 
       $themes     = wp_get_themes();
 
@@ -96,7 +96,8 @@ class USI_Page_Solutions_Options {
 
       $select = '<option value="default"' . ($theme == 'default' ? ' selected' : '') . '>default</option>';
       foreach ($themes as $theme_obj) {
-         $select .= '<option value="' . $theme_obj->name . '"' . ($theme_obj->name == $theme ? ' selected' : '') . '>' . $theme_obj->name . '</option>';
+         $theme_id = $theme_obj->template . ':' . $theme_obj->stylesheet;
+         $select  .= '<option value="' . $theme_id . '"' . ($theme_id == $theme ? ' selected' : '') . '>' . $theme_obj->name . '</option>';
       }
 ?>
 <div>
