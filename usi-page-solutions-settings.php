@@ -17,7 +17,6 @@ defined('ABSPATH') or die('Accesss not allowed.');
 
 require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-capabilities.php');
 require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-settings.php');
-require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-updates.php');
 require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-versions.php');
 
 class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
@@ -356,8 +355,6 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                ),
             )
          ),
-
-         'updates' => new USI_WordPress_Solutions_Updates($this)
 
       );
 
