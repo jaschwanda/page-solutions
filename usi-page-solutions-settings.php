@@ -47,12 +47,12 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          foreach ($wp_registered_sidebars as $id => $sidebar) {
             // Skip virtual widget areas created by Page-Solutions;
             if ($id == USI_Page_Solutions::$options_virtual[0]['id']) break;
-            $this->sections['widgets']['settings'][$id] = array(
+            $this->sections['widgets']['settings'][$id] = [
                'type' => 'checkbox', 
                'disabled' => $disabled, 
                'label' => $sidebar['name'], 
                'notes' => !empty($sidebar['description']) ? ' (<i>' . $sidebar['description'] . '</i>)' : ''
-            );
+            ];
          }
       }
       parent::action_admin_init();
@@ -83,7 +83,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
       }
    } // cache_all_clear();
 
-   static function cache_file_generate($cache = null) {
+   static function cache_file_generate($root_folder, $cache = null) {
       global $wpdb;
       if (empty($cache['config-location'])) {
          $config_location = null;
@@ -126,18 +126,19 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
             [
             /* 1 */ $config_location,
             /* 2 */ current_time('mysql'),
-            /* 3 */ $db_pass,
-            /* 4 */ $db_host,
-            /* 5 */ $db_name,
-            /* 6 */ $db_user,
+            /* 3 */ null,
+            /* 4 */ null,
+            /* 5 */ null,
+            /* 6 */ null,
             /* 7 */ $wpdb->prefix,
-            /* 8 */ plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-log.php',
+            /* 8 */ WPMU_PLUGIN_DIR . '/usi.php',
             /* 9 */ $instantiate_class,
             ], 
             fread($template_stream, filesize($template))
          );
          fclose($template_stream);
-         $usi_page_cache = fopen(dirname(__FILE__) . '/usi-page-cache.php', 'w');
+         // $usi_page_cache = fopen(dirname(__FILE__) . '/usi-page-cache.php', 'w');
+         $usi_page_cache = fopen($root_folder . '/index-cache.php', 'w');
          fwrite($usi_page_cache, $template_content);
          fclose($usi_page_cache);
       }
@@ -171,12 +172,17 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
     } // config_section_header_widgets();
 
    function fields_sanitize($input) {
-      $input = parent::fields_sanitize($input);
+      $input       = parent::fields_sanitize($input);
+      $root_folder = empty($input['cache']['root-location']) ? $_SERVER['DOCUMENT_ROOT'] : rtrim(rtrim($input['cache']['root-location'], '/'), '\\');
+      $root_index  = $root_folder . DIRECTORY_SEPARATOR . 'index.php';
+      $root_cache  = $root_folder . DIRECTORY_SEPARATOR . 'index-cache.php';
+      $log         = (USI_Page_Solutions::DEBUG_SANITZ == (USI_Page_Solutions::DEBUG_SANITZ & USI_WordPress_Solutions_Diagnostics::get_log(USI_Page_Solutions::$options)));
+      if ($log) usi::log('$this->active_tab=', $this->active_tab, ' $root_folder=', $root_folder, ' $root_index=', $root_index, ' $root_cache=', $root_cache, '\2n$input=', $input);
       if ('preferences' == $this->active_tab) {
          if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
             if (empty($input['preferences']['enable-cache'])) {
-               self::index_file_restore();
-               self::cache_file_generate();
+               self::index_file_restore($root_index, $log);
+               self::cache_file_generate($root_folder);
             }
          }
       } else if ('cache' == $this->active_tab) {
@@ -184,18 +190,14 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
             self::cache_all_clear();
             unset($input['cache']['clear-all-cache']);
          }
-         if (!empty($input['cache']['update-cache-config']) && !empty($input['cache']['root-location'])) {
-            $root_folder  = rtrim(rtrim($input['cache']['root-location'], '/'), '\\');
+         if (!empty($input['cache']['update-cache-config'])) {
             $root         = $root_folder . '/index.php';
-            $plugin_path  = plugin_dir_path(__FILE__);
-            $include_path = str_replace('\\', '/', substr($plugin_path, strlen($root_folder)));
-            $include_file = $include_path . 'usi-page-cache.php';
-            $modification = "<?php /* USI-PAGE-SOLUTIONS */ @ include('$include_file'); ?>";
+            $modification = "<?php /* USI-PAGE-SOLUTIONS */ @ include('index-cache.php'); ?>";
             if (is_file($root) && is_readable($root)) {
                if ($root_stream = fopen($root, 'r')) {
                   $first_line =  trim(fgets($root_stream), PHP_EOL);
                   fclose($root_stream);
-                  if ($modification != $first_line) $this->index_file_modify();
+                  if ($modification != $first_line) $this->index_file_modify($root_index, $log);
                }
             }
             $input['cache']['root-location'] = $root_folder;
@@ -204,9 +206,9 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          if (!empty($input['diagnostics']['DEBUG_CACHE']) && !empty($input['diagnostics']['session']) && !empty($input['diagnostics']['DEBUG_CACHE'])) {
             $input['cache']['session'] = $input['diagnostics']['session'];
          }
-         self::cache_file_generate($input['cache']);
+         self::cache_file_generate($root_folder, $input['cache']);
       } else if ('widgets' == $this->active_tab) {
-         $options = array();
+         $options = [];
          foreach ($input['widgets'] as $name => & $value) {
             $options[$name] = $value;
          }
@@ -230,43 +232,41 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
       return($links);
    } // filter_plugin_row_meta();
 
-   function index_file_modify() {
-      $root = USI_Page_Solutions::$options['cache']['root-location'] . '/index.php';
-      if (!empty($root)) {
-         if (is_file($root)) {
-            if ($root_stream = fopen($root, 'r')) {
-               $root_content = fread($root_stream, filesize($root));
+   function index_file_modify($root_index, $log = false) {
+usi::log('bail!');return;
+      if (!is_file($root_index)) {
+         if ($log) usi::log('not a file:', $root_index);
+      } else {
+         if ($root_stream = fopen($root_index, 'r')) {
+            $root_content = fread($root_stream, filesize($root_index));
+            fclose($root_stream);
+            if ('<?php /* USI-PAGE-SOLUTIONS */' != substr($root_content, 0, 30)) {
+               $root_folder  = substr($root, 0, -9);
+               $modification = "<?php /* USI-PAGE-SOLUTIONS */ @ include('index-cache.php'); ?>";
+               $root_stream  = fopen($root_index, 'w');
+               $bytes        = fwrite($root_stream, $modification . PHP_EOL . $root_content);
+               if ($log) usi::log('file=', $root_index, ' $bytes=', ($bytes ? $bytes : 'failed'));
                fclose($root_stream);
-               if ('<?php /* USI-PAGE-SOLUTIONS */' != substr($root_content, 0, 30)) {
-                  $root_folder  = substr($root, 0, -9);
-                  $plugin_path  = plugin_dir_path(__FILE__);
-                  $include_path = str_replace('\\', '/', substr($plugin_path, strlen($root_folder)));
-                  $include_file = $include_path . 'usi-page-cache.php';
-                  $modification = "<?php /* USI-PAGE-SOLUTIONS */ @ include('$include_file'); ?>";
-                  $root_stream = fopen($root, 'w');
-                  fwrite($root_stream, $modification . PHP_EOL . $root_content);
-                  fclose($root_stream);
-               }
             }
          }
       }
    } // index_file_modify();
 
-   static function index_file_restore() {
-      $root = !empty(USI_Page_Solutions::$options['cache']['root-location']) ? USI_Page_Solutions::$options['cache']['root-location'] : null;
-      if ($root) {
-         if (is_file($root)) {
-            if ($root_stream = fopen($root, 'r')) {
-               $root_content = fread($root_stream, filesize($root));
-               fclose($root_stream);
-               if ('<?php /* USI-PAGE-SOLUTIONS */' == substr($root_content, 0, 30)) {
-                  $length = strlen($root_content);
-                  if (false !== ($offset = strpos($root_content, PHP_EOL))) {
-                     $restored_content = substr($root_content, $offset + strlen(PHP_EOL));
-                     $root_stream = fopen($root, 'w');
-                     fwrite($root_stream, $restored_content);
-                     fclose($root_stream);
-                  }
+   static function index_file_restore($root_index, $log) {
+usi::log('bail!');return;
+      if (!is_file($root_index)) {
+         if ($log) usi::log('not a file:', $root_index);
+      } else {
+         if ($root_stream = fopen($root_index, 'r')) {
+            $root_content = fread($root_stream, filesize($root_index));
+            fclose($root_stream);
+            if ('<?php /* USI-PAGE-SOLUTIONS */' == substr($root_content, 0, 30)) {
+               if (false !== ($offset = strpos($root_content, PHP_EOL))) {
+                  $restored_content = substr($root_content, $offset + strlen(PHP_EOL));
+                  $root_stream      = fopen($root_index, 'w');
+                  $bytes            = fwrite($root_stream, $restored_content);
+                  if ($log) usi::log('file=', $root_index, ' $bytes=', ($bytes ? $bytes : 'failed'));
+                  fclose($root_stream);
                }
             }
          }
@@ -275,7 +275,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
    function page_render($options = null) {
 
-      $options = array();
+      $options = [];
 
       if ('collections' == $this->active_tab) {
          if (USI_Page_Solutions_Admin::$virtual_add) {
@@ -293,123 +293,127 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
       global $wpdb;
 
-      $sections = array(
-         'preferences' => array(
-            'header_callback' => array($this, 'config_section_header_preferences'),
+      $sections = [
+         'preferences' => [
+            'header_callback' => [$this, 'config_section_header_preferences'],
             'label' => 'Preferences',
             'localize_labels' => 'yes',
             'localize_notes' => 3, // <p class="description">__()</p>;
-            'settings' => array(
-               'page-mru-max' => array(
+            'settings' => [
+               'page-mru-max' => [
                   'f-class' => 'small-text', 
                   'type' => 'number', 
                   'label' => 'Page MRU size',
                   'min' => 0,
                   'max' => 12,
                   'notes' => 'Maximum number of entries in the most recently used (MRU) page list. Enter 1 through 12 inclusive or 0 to disable the list. Defaults to <b>4</b> enties.',
-               ),
-               'post-mru-max' => array(
+               ],
+               'post-mru-max' => [
                   'f-class' => 'small-text', 
                   'type' => 'number', 
                   'label' => 'Post MRU size',
                   'min' => 0,
                   'max' => 12,
                   'notes' => 'Maximum number of entries in the most recently used (MRU) post list. Enter 1 through 12 inclusive or 0 to disable the list. Defaults to <b>4</b> enties.',
-               ),
-               'enable-cache' => array(
+               ],
+               'enable-cache' => [
                   'type' => 'checkbox', 
                   'label' => 'Page cache',
                   'notes' => 'Enables page caching functionality. Another tab appears at the top of the page if this option is checked.',
-               ),
-               'enable-enhanced-areas' => array(
+               ],
+               'enable-enhanced-areas' => [
                   'type' => 'checkbox', 
                   'label' => 'Enhanced widget areas',
                   'notes' => 'Enables enhanced widget area functionality. Two tabs appear at the top of the page if this option is checked.',
-               ),
-               'enable-layout' => array(
+               ],
+               'enable-layout' => [
                   'type' => 'checkbox', 
                   'label' => 'Enable layout enhancements',
-                  'notes' => 'Enables layout enhancements.',
-               ),
-               'global-header' => array(
+                  'notes' => 'Enables addition of custom code, CSS, styles and scripts.',
+               ],
+               'global-header' => [
                   'f-class' => 'large-text', 
                   'label' => 'Global Header Content',
                   'rows' => 5,
                   'type' => 'textarea', 
                   'notes' => 'The above content, if given, is emitted after the <i>&lt;body&gt;</i> tag.',
-               ),
-            ),
-         ), // preferences;
+               ],
+            ],
+         ], // preferences;
 
          'capabilities' => new USI_WordPress_Solutions_Capabilities($this),
 
          'diagnostics' => new USI_WordPress_Solutions_Diagnostics($this, 
-            array(
-               'DEBUG_CACHE' => array(
+            [
+               'DEBUG_CACHE' => [
                   'value' => USI_Page_Solutions::DEBUG_CACHE,
                   'notes' => 'Log USI_Page_Cache::cache() method. <b>Note</b> - you must resave the Cached Options tab to use this feature.',
-               ),
-               'DEBUG_HTML' => array(
+               ],
+               'DEBUG_HTML' => [
                   'value' => USI_Page_Solutions::DEBUG_HTML,
                   'notes' => 'Log meta_value_[get|put]() methods.',
-               ),
-            )
+               ],
+               'DEBUG_SANITZ' => [
+                  'value' => USI_Page_Solutions::DEBUG_SANITZ,
+                  'notes' => 'Log USI_Page_Solutions::fields_sanitize() method.',
+               ],
+            ]
          ),
 
-      );
+      ];
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
 
-         $sections['cache'] = array(
-            'header_callback' => array($this, 'config_section_header_cache'),
+         $sections['cache'] = [
+            'header_callback' => [$this, 'config_section_header_cache'],
             'label' => 'Cache Options',
-            'settings' => array(
-               'config-location' => array(
+            'settings' => [
+               'config-location' => [
                   'f-class' => 'large-text', 
                   'type' => 'text', 
                   'label' => 'External configuration',
                   'notes' => 'Most WordPress installations store the database connection parameters in the <b>wp-config.php</b> file. To increase security, some experts recommend that you store theses parameters in a different file outside of your root folder and include this file in your <b>wp-config.php</b> file. If you follow this recommendation, please enter this file location path in the above field.',
-               ),
-               'root-location' => array(
+               ],
+               'root-location' => [
                   'f-class' => 'large-text', 
                   'type' => 'text', 
                   'label' => 'Location of index.php',
-                  'notes' => 'Location of the root <b>index.php</b> file.',
-               ),
+                  'notes' => 'Location of the the WordPress root <b>index.php</b> file, defaults to <b>' . $_SERVER['DOCUMENT_ROOT'] . '</b> .',
+               ],
                'update-cache-config' => [
                   'type' => 'checkbox', 
                   'label' => 'Update cache configuration',
                   'notes' => 'Check this box whenever the above parameters are modified.',
                ],
-               'track-times' => array(
+               'track-times' => [
                   'type' => 'checkbox', 
                   'label' => 'Prepend cache times',
                   'notes' => 'Formats the page cache creation time, call-up time, expiration time and the Page-Solutions version as an HTML comment and prepends it to the top of the page. It is recommended to use this feature as it uses negligible resources and gives valuable cache usage information.',
-               ),
-               'clear-all-cache' => array(
+               ],
+               'clear-all-cache' => [
                   'type' => 'checkbox', 
                   'label' => 'Clear all page cache information',
                   'notes' => 'If checked, all page cache information will be cleared. This is useful when a change is made that globally effects the site, like a menu change or template modification.',
-               ),
-             ),
-         ); // cache;
+               ],
+            ],
+         ]; // cache;
 
       }
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
 
-         $sections['widgets'] = array(
-            'header_callback' => array($this, 'config_section_header_widgets'),
+         $sections['widgets'] = [
+            'header_callback' => [$this, 'config_section_header_widgets'],
             'label' => 'Enhanced Widget Areas',
-            'settings' => array(),
-         ); // widgets;
+            'settings' => [],
+         ]; // widgets;
 
-         $sections['collections'] = array(
-            'header_callback' => array($this, 'config_section_header_collections'),
+         $sections['collections'] = [
+            'header_callback' => [$this, 'config_section_header_collections'],
             'label' => 'Virtual Widget Collections',
-            'settings' => array(),
+            'settings' => [],
             'submit' => '',
-         ); // collections;
+         ]; // collections;
 
       }
 

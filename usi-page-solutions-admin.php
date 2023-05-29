@@ -26,9 +26,9 @@ final class USI_Page_Solutions_Admin {
    public static $virtual_delete = false;
 
    function __construct() {
-      add_action('admin_menu', array($this,'action_admin_menu'));
-      add_action('before_delete_post', array($this, 'action_before_delete_post'));
-      add_action('load-post.php', array(__CLASS__, 'action_load_post_php'));
+      add_action('admin_menu', [$this,'action_admin_menu']);
+      add_action('before_delete_post', [$this, 'action_before_delete_post']);
+      add_action('load-post.php', [__CLASS__, 'action_load_post_php']);
    } // __construct();
 
    function action_before_delete_post($post_id) {
@@ -50,17 +50,17 @@ final class USI_Page_Solutions_Admin {
       }
    } // action_before_delete_post();
 
-   static function action_load_post_php() {                         
+   static function action_load_post_php() {
       if (!isset($_GET['post'])) return;
       $post = get_post($_GET['post']);
-      $get = $put = 0;
-      $new = array();
+      $get  = $put = 0;
+      $new  = [];
       if ('page' == $post->post_type) {
          $page_mru_max = (int)USI_Page_Solutions::$options['preferences']['page-mru-max'];
          if ($page_mru_max++) {
             $old = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-page');
-            $new[$put++] = array('page_id' => $post->ID, 'title' => $post->post_title);
-            while (($put < $page_mru_max) && ($get < count($old))) {
+            $new[$put++] = ['page_id' => $post->ID, 'title' => $post->post_title];
+            while (($put < $page_mru_max) && ($get < count($old ?? []))) {
                if ($new[0] == $old[$get]) {
                   $get++;
                } else {
@@ -73,7 +73,7 @@ final class USI_Page_Solutions_Admin {
          $post_mru_max = (int)USI_Page_Solutions::$options['preferences']['post-mru-max'];
          if ($post_mru_max++) {
             $old = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-post');
-            $new[$put++] = array('page_id' => $post->ID, 'title' => $post->post_title);
+            $new[$put++] = ['page_id' => $post->ID, 'title' => $post->post_title];
             while (($put < $post_mru_max) && ($get < count($old))) {
                if ($new[0] == $old[$get]) {
                   $get++;

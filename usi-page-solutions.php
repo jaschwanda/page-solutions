@@ -30,109 +30,44 @@ https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
 
 Copyright (c) 2020 by Jim Schwanda.
 */
-if (!class_exists('USI')) { final class USI {
 
-   const VERSION = '2.14.1 (2022-08-10)';
+//require_once('usi-page-cache.php');
 
-   private static $info   = null;
-   private static $mysqli = null;
-   private static $mysqli_stmt = null;
-   private static $offset = 0;
-   private static $user   = 0;
+require_once('usi-page-dbs-mysqli.php');
+
+if (!class_exists('USI_Page_Cache')) { final class USI_Page_Cache {
+
+   const VERSION = '1.7.0 (2022-08-09)';
+
+   const DATE_ALPHA = '0000-00-00 00:00:00';
+   const DATE_OMEGA = '9999-12-31 23:59:59';
+
+   const POST_META = '_usi-page-solutions';
+   const TEST_DATA = 'usi-page-solutions=database-fail';
 
    private function __construct() {
    } // __construct();
 
-   public static function log() {
-      $info = null;
-      try {
-         $trace = debug_backtrace();
-         if (!empty($trace[self::$offset+0])) {
-            if (empty($trace[self::$offset+1])) {
-               $info .= $trace[self::$offset+0]['file'];
-            } else {
-               $info .= !empty($trace[self::$offset+1]['class']) ? $trace[self::$offset+1]['class'] . ':' : $trace[self::$offset+0]['file'];
-               if (!empty($trace[self::$offset+1]['function'])) {
-                  switch ($trace[self::$offset+1]['function']) {
-                  case 'include':
-                  case 'include_once':
-                  case 'require':
-                  case 'require_once':
-                     break;
-                  default:
-                     $info .= ':' . $trace[self::$offset+1]['function'] . '()';
-                  }
-               }
-            }
-            if (!empty($trace[self::$offset+0]['line'])) $info .= '~' . $trace[self::$offset+0]['line'] . ':';
-         }
-         if (isset($trace[self::$offset/2+0]['args'])) {
-            $args = $trace[self::$offset/2+0]['args'];
-            foreach ($args as $arg) {
-               if (is_array($arg) || is_object($arg)) {
-                  $info .= print_r($arg, true);
-               } else if (is_string($arg)) {
-                  $first = substr($arg, 0, 1);
-                  if ('\\' == $first) {
-                     $second = substr($arg, 1, 1);
-                     if ('!' == $second) {
-                        $info = substr($arg, 1);
-                     } else if ('n' == $second) {
-                        $info .= PHP_EOL . substr($arg, 2);
-                     } else if ('%' == $second) {
-                        $info .= PHP_EOL . 'backtrace=' . print_r($trace, true) . PHP_EOL;
-                     } else if ('2n' == substr($arg, 1, 2)) {
-                        $info .= PHP_EOL . PHP_EOL . substr($arg, 3);
-                     }
-                  } else {
-                     $info .= $arg;
-                  }
-               } else {
-                  $info .= $arg;
-               }
-            }
-         }
-      } catch (Exception $e) {
-         $info .= PHP_EOL . 'exception=' . $e->GetMessage();
-      }
+   public static function validate($cache) {
+      return([ 'allow-clear' => false, 'clear-every-publish' => false, 'inherit-parent' => false, 
+         'mode' => 'disable', 'period' => 86400, 'schedule' => [ '00:00:00' ], 'size' => 0, 'updated' => self::DATE_ALPHA, 
+         'valid_until' => self::DATE_ALPHA, 'dynamics' => false, 'html' => '' ]);
+   } // validate();
 
-      if (!self::$mysqli) {
-         if (method_exists('USI_Page_Cache', 'dbs_connect')) {
-            self::$mysqli = USI_Page_Cache::dbs_connect();
-         } else {
-            self::$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-         }
-         self::$mysqli_stmt = new mysqli_stmt(self::$mysqli);
-         self::$mysqli_stmt->prepare('INSERT INTO `' . DB_WP_PREFIX . 'USI_log` (`user_id`, `action`) VALUES (?, ?)');     
-         self::$mysqli_stmt->bind_param('is', self::$user, self::$info);
-      }
-      self::$info = substr($info, 0, 16777215); // If `action` field is MEDIUMTEXT;
-      self::$user = function_exists('get_current_user_id') ? get_current_user_id() : 0;
-      self::$mysqli_stmt->execute();
-
-   } // log();
-
-   public static function log2() { // call usi::log2('method()~'.__LINE__.':label='... or usi::log2('method():label='...
-      self::$offset = 2;
-      self::log();
-      self::$offset = 0;
-   } // log2();
-
-} } // Class USI;
-
-require_once('usi-page-cache.php');
+} } // Class USI_Page_Cache;
 
 final class USI_Page_Solutions {
 
    const VERSION = '1.7.2 (2023-03-16)';
 
-   const DEBUG_OFF   = 0x00000000;
-   const DEBUG_CACHE = 0x13000001;
-   const DEBUG_HTML  = 0x13000002;
+   const DEBUG_OFF    = 0x00000000;
+   const DEBUG_CACHE  = 0x13000001;
+   const DEBUG_HTML   = 0x13000002;
+   const DEBUG_SANITZ = 0x13000004;
 
-   const NAME        = 'Page-Solutions';
-   const PREFIX      = 'usi-page';
-   const TEXTDOMAIN  = 'usi-page-solutions';
+   const NAME         = 'Page-Solutions';
+   const PREFIX       = 'usi-page';
+   const TEXTDOMAIN   = 'usi-page-solutions';
 
    const WIDGETS_INIT_PRIORITY = 100;
 
@@ -367,15 +302,17 @@ final class USI_Page_Solutions {
          }
       }
 
-      add_action('widgets_init', array(__CLASS__, 'action_widgets_init'), self::WIDGETS_INIT_PRIORITY);
-      add_action('wp_enqueue_scripts', array(__CLASS__, 'action_wp_enqueue_scripts'), 20);
-      add_action('wp_footer', array(__CLASS__, 'action_wp_footer'), 9999);
-      add_action('wp_head', array(__CLASS__, 'action_wp_head'), 100);
-
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
+         add_action('widgets_init', array(__CLASS__, 'action_widgets_init'), self::WIDGETS_INIT_PRIORITY);
          add_filter('dynamic_sidebar_params', array(__CLASS__, 'filter_dynamic_sidebar_params'));
          add_filter('sidebars_widgets', array(__CLASS__, 'filter_sidebars_widgets'));
          add_filter('widget_display_callback', array(__CLASS__, 'filter_widget_display_callback'), 10, 3);
+      }
+
+      if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout'])) {
+         add_action('wp_enqueue_scripts', array(__CLASS__, 'action_wp_enqueue_scripts'), 20);
+        add_action('wp_footer', array(__CLASS__, 'action_wp_footer'), 9999);
+        add_action('wp_head', array(__CLASS__, 'action_wp_head'), 100);
       }
 
       if (!empty(USI_Page_Solutions::$options['preferences']['global-header'])) {
@@ -398,7 +335,7 @@ final class USI_Page_Solutions {
 
       try {
          global $wpdb;
-         $dbs = new USI_Page_Dbs(array('hash' => DB_PASSWORD, 'host' => DB_HOST, 'name' => DB_NAME, 'user' => DB_USER));
+         $dbs = new USI_Page_Dbs(array('hash' => 'db', 'host' => 'ddev-nbrc-db', 'name' => 'db', 'user' => 'db'));
          $query = $dbs->prepare_x(
             'SELECT `meta_key`, `meta_value` FROM `' . $wpdb->prefix . 'postmeta` ' .
             "WHERE (`post_id` = ?) AND (`meta_key` LIKE '" . USI_Page_Cache::POST_META . "%') " .
