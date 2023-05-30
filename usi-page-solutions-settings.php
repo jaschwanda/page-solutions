@@ -113,7 +113,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          $template_stream  = fopen($template, 'r');
          $template_content = str_replace(
             [
-               '/* USI-PAGE-SOLUTIONS-1 external-config-location or null; */',
+               '/* USI-PAGE-SOLUTIONS-1 */',
                '/* USI-PAGE-SOLUTIONS-2 */',
                '/* USI-PAGE-SOLUTIONS-3 */',
                '/* USI-PAGE-SOLUTIONS-4 */',
@@ -124,7 +124,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                '/* USI-PAGE-SOLUTIONS-9 USI_Page_Cache::cache() or null; */',
             ],
             [
-            /* 1 */ $config_location,
+            /* 1 */ null,
             /* 2 */ current_time('mysql'),
             /* 3 */ null,
             /* 4 */ null,

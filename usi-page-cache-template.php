@@ -1,5 +1,7 @@
 <?php // --- file generated from usi-page-cache-template.php -------------------------------------------------------------------- //
 
+defined('USI_WP_CONFIG') or die('Accesss not allowed.');
+
 /*
 Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
 License as published by the Free Software Foundation, either version 3 of the License, or any later version.
@@ -8,17 +10,13 @@ Page-Solutions is distributed in the hope that it will be useful, but WITHOUT AN
 warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  
 You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
+https://github.com/jaschwanda/page-solutions/blob/master/LICENSE.md
 
 Copyright (c) 2020 by Jim Schwanda.
 */
 
-/* USI-PAGE-SOLUTIONS-1 external-config-location or null; */
-require_once('.admin/wp-config.php');
-
-if (!function_exists('is_admin')) {
-@ include_once('/* USI-PAGE-SOLUTIONS-8 */');
-}
+require_once(USI_WP_CONFIG);
+require_once('/* USI-PAGE-SOLUTIONS-8 */');
 
 final class USI_Page_Cache {
 
@@ -49,6 +47,8 @@ final class USI_Page_Cache {
 
       try {
 
+         global $table_prefix;
+
          self::$times = $times;
 
          self::$current_time = date('Y-m-d H:i:s');
@@ -70,7 +70,7 @@ final class USI_Page_Cache {
          $request_uri_no_args = self::POST_META . '!' . $request_uri . '/';
 
          $results = self::$dbs->query($sql = 
-           'SELECT `meta_id`, `post_id`, `meta_key`, `meta_value` FROM `nbrc_postmeta` ' .
+           'SELECT `meta_id`, `post_id`, `meta_key`, `meta_value` FROM `' . $table_prefix . 'postmeta` ' .
            "WHERE (`meta_key` <> '" . self::POST_META . "') AND ((`meta_key` = '" . $request_uri_no_args 
           . "') OR ('" . $request_uri_args . "' LIKE CONCAT(`meta_key`, '%'))) " .
            'ORDER BY `meta_key` DESC LIMIT 1'
@@ -179,7 +179,7 @@ final class USI_Page_Cache {
 //            $sql  = 'UPDATE `/* USI-PAGE-SOLUTIONS-7 */postmeta` SET `meta_value` = "' . $meta_value . '" WHERE (`meta_id` = ' . self::$meta_id . ')'
 //         );
 usi::log('$results=', $results, '\2nsql=', $sql, '\2nself::$meta_value=', self::$meta_value);
-//           'SELECT `meta_id`, `post_id`, `meta_key`, `meta_value` FROM `nbrc_postmeta` ' .
+//           'SELECT `meta_id`, `post_id`, `meta_key`, `meta_value` FROM `' . $table_prefix . 'postmeta` ' .
 //           "WHERE (`meta_key` <> '" . self::POST_META . "') AND ((`meta_key` = '" . $request_uri_no_args 
 //          . "') OR ('" . $request_uri_args . "' LIKE CONCAT(`meta_key`, '%'))) " .
 //           'ORDER BY `meta_key` DESC LIMIT 1'
