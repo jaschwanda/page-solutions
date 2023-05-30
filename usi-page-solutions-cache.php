@@ -22,7 +22,7 @@ class USI_Page_Solutions_Cache {
    const VERSION = '1.7.0 (2022-08-09)';
 
    private static $current_time = null;
-   private static $valid_until = USI_Page_Cache::DATE_OMEGA;
+   private static $valid_until = USI_Page_Solutions::DATE_OMEGA;
 
    function __construct() {
       self::$current_time = current_time('mysql');
@@ -128,7 +128,7 @@ class USI_Page_Solutions_Cache {
             // Address WordPress bug and set time zone back to bug value;
             date_default_timezone_set($WordPress_BUG_current_timezone);
          }
-      
+
          $schedule_items = (int)(isset($_POST['usi-page-solutions-cache-schedule-count']) ? $_POST['usi-page-solutions-cache-schedule-count'] : '0');
          $SAFE_schedule = array();
          for ($ith = 0; $ith < $schedule_items; $ith++) {
@@ -172,7 +172,7 @@ class USI_Page_Solutions_Cache {
        // Clear cache in case there was a cache before and now it is disabled;
       if ($clear_cache || ('disable' == $mode)) {
          $meta_value['cache']['updated'] = 
-         $meta_value['cache']['valid_until'] = USI_Page_Cache::DATE_ALPHA;
+         $meta_value['cache']['valid_until'] = USI_Page_Solutions::DATE_ALPHA;
          $meta_value['cache']['html'] = '';
          $meta_value['cache']['size'] = 0;
       }
@@ -211,9 +211,9 @@ class USI_Page_Solutions_Cache {
 
       $meta_value = USI_Page_Solutions::meta_value_get($post->ID);
 
-      $cache = $meta_value['cache'];
+      $cache      = $meta_value['cache'];
 
-      $disabled = (($post->post_parent && $cache['inherit-parent']) ? ' disabled' : '');
+      $disabled  = (($post->post_parent && $cache['inherit-parent']) ? ' disabled' : '');
 
 ?>
    <table style="width:100%;">

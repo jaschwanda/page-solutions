@@ -31,34 +31,17 @@ https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
 Copyright (c) 2020 by Jim Schwanda.
 */
 
-//require_once('usi-page-cache.php');
-
-require_once('usi-page-dbs-mysqli.php');
-
-if (!class_exists('USI_Page_Cache')) { final class USI_Page_Cache {
-
-   const VERSION = '1.7.0 (2022-08-09)';
-
-   const DATE_ALPHA = '0000-00-00 00:00:00';
-   const DATE_OMEGA = '9999-12-31 23:59:59';
-
-   const POST_META = '_usi-page-solutions';
-   const TEST_DATA = 'usi-page-solutions=database-fail';
-
-   private function __construct() {
-   } // __construct();
-
-   public static function validate($cache) {
-      return([ 'allow-clear' => false, 'clear-every-publish' => false, 'inherit-parent' => false, 
-         'mode' => 'disable', 'period' => 86400, 'schedule' => [ '00:00:00' ], 'size' => 0, 'updated' => self::DATE_ALPHA, 
-         'valid_until' => self::DATE_ALPHA, 'dynamics' => false, 'html' => '' ]);
-   } // validate();
-
-} } // Class USI_Page_Cache;
+// remove validate() from this file and use template or index-cache.php
+// change debug to use logging functions;
+// handle table_prefix in wp-config.php-external;
+// make sure changing parent pages options aren't propagated down on childeren not inheriting;
 
 final class USI_Page_Solutions {
 
    const VERSION = '1.7.2 (2023-03-16)';
+
+   const DATE_ALPHA   = '0000-00-00 00:00:00'; // remove with validate();
+   const DATE_OMEGA   = '9999-12-31 23:59:59'; // put in template;
 
    const DEBUG_OFF    = 0x00000000;
    const DEBUG_CACHE  = 0x13000001;
@@ -66,6 +49,7 @@ final class USI_Page_Solutions {
    const DEBUG_SANITZ = 0x13000004;
 
    const NAME         = 'Page-Solutions';
+   const POST_META    = '_usi-page-solutions';
    const PREFIX       = 'usi-page';
    const TEXTDOMAIN   = 'usi-page-solutions';
 
@@ -318,13 +302,13 @@ final class USI_Page_Solutions {
       if (!empty(USI_Page_Solutions::$options['preferences']['global-header'])) {
          add_action('wp_body_open', array(__CLASS__, 'action_wp_body_open'));
       }
-
+/*
       if (!empty(USI_Page_Cache::$theme) && ('default' != USI_Page_Cache::$theme)) {
          self::$theme = explode(':', USI_Page_Cache::$theme);
          add_filter('pre_option_stylesheet', [__CLASS__, 'filter_pre_option_stylesheet']);
          add_filter('pre_option_template',   [__CLASS__, 'filter_pre_option_template']);
       }
-
+*/
    } // init();
 
    static public function load_theme($index) {
@@ -333,28 +317,15 @@ final class USI_Page_Solutions {
 
    static function meta_value_get($post_id, $debug = false) {
 
-      try {
-         global $wpdb;
-         $dbs = new USI_Page_Dbs(array('hash' => 'db', 'host' => 'ddev-nbrc-db', 'name' => 'db', 'user' => 'db'));
-         $query = $dbs->prepare_x(
-            'SELECT `meta_key`, `meta_value` FROM `' . $wpdb->prefix . 'postmeta` ' .
-            "WHERE (`post_id` = ?) AND (`meta_key` LIKE '" . USI_Page_Cache::POST_META . "%') " .
-            'LIMIT 1', // SQL;
-            array('i', & $post_id), // Input parameters;
-            array(& $meta_key, & $meta_value) // Output variables;
-         );
-         $data = array();
-         if (1 == $query->num_rows) {
-            $query->fetch();
-            try {
-               $data = unserialize(base64_decode($meta_value));
-            } catch(exception $e) {
+      $data = [];
+      if ($post_id) {
+         $results = get_post_meta($post_id);
+         if (!empty($results)) {
+            foreach ($results as $index => $value) {
+               if (str_starts_with( $index, self::POST_META)) {
+                  $data = unserialize(base64_decode($value[0]));
+               }
             }
-         }
-         $query = null; // Close query;
-      } catch(USI_Page_Dbs_Exception $e) {
-         if (self::$debug || $debug) {
-            usi::log('message=', $e->GetMessage(), '\ntrace=', $e->GetTraceAsString());
          }
       }
 
@@ -382,19 +353,19 @@ final class USI_Page_Solutions {
 
       $url      = rtrim(get_permalink($post_id), '/') . '/';
       $path     = str_replace(array($_SERVER['SERVER_NAME'], 'https://', 'http://'), '', $url);
-      $meta_key = USI_Page_Cache::POST_META . ($options['arguments'] ? '*' : '!') . $path;
+      $meta_key = self::POST_META . ($options['arguments'] ? '*' : '!') . $path;
 
-      $value = array(
+      $value = [
          'key'     => $meta_key, 
          'post_id' => $post_id, 
          'cache'   => null, 
          'layout'  => $layout, 
          'options' => $options, 
          'widgets' => $widgets
-      );
+      ];
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
-         $value['cache'] = USI_Page_Cache::validate(!empty($data['cache']) ? $data['cache'] : null);
+         $value['cache'] = self::validate(!empty($data['cache']) ? $data['cache'] : null);
       }
 
       if (self::$debug || $debug) {
@@ -404,7 +375,7 @@ final class USI_Page_Solutions {
             $value['cache']['html'] = '~~~'; 
          }
 
-         usi::log2('meta_value_get():meta_value=', $value);
+         usi::log2(__METHOD__.'()~'.__LINE__.':$value=', $value);
 
          if (!(self::$debug & self::DEBUG_HTML)) {
             $value['cache']['html'] = $html;
@@ -425,7 +396,7 @@ final class USI_Page_Solutions {
             $value['cache']['html'] = '~~~'; 
          }
 
-         usi::log2('meta_value_put():meta_value=', $value);
+         usi::log2(__METHOD__.'()~'.__LINE__.':$value=', $value);
 
          if (!(self::$debug & self::DEBUG_HTML)) {
             $value['cache']['html'] = $html;
@@ -445,6 +416,40 @@ final class USI_Page_Solutions {
       );
       return($children);
    } // number_of_offspring
+
+   // remove DATE_ALPHA
+   private static function validate($cache) { 
+      $allow_clear = !empty($cache['allow-clear']);
+      $clear_every_publish = !empty($cache['clear-every-publish']);
+      $inherit_parent = !empty($cache['inherit-parent']);
+      $dynamics = isset($cache['dynamics']) ? $cache['dynamics'] : [];
+      switch ($mode = isset($cache['mode']) ? $cache['mode'] : 'disable') {
+      default: $mode = 'disable'; case 'manual': case 'period': case 'schedule': break;
+      }
+      switch ($period = (int)(isset($cache['period']) ? $cache['period'] : 86400)) {
+      default: $period = 86400;
+      case 300:   case 600:   case 900:   case 1200:  case 1800:  case 3600:  case 7200:  
+      case 10800: case 14400: case 21600: case 28800: case 43200: break;
+      }
+      $schedule = isset($cache['schedule']) ? $cache['schedule'] : ['00:00:00'];
+      $safe_schedule = [];
+      foreach ($schedule as $time) {
+         if (preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $time)) $safe_schedule[] = $time;
+      }
+      if (empty($safe_schedule)) { $safe_schedule = ['00:00:00']; } else { sort($safe_schedule); }
+      $updated     = isset($cache['updated']) && preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $cache['updated']) ? $cache['updated'] : self::DATE_ALPHA;
+      $valid_until = isset($cache['valid_until']) &&  preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $cache['valid_until']) ? $cache['valid_until'] : self::DATE_ALPHA;
+      if (isset($cache['html'])) {
+         $html     = $cache['html'];
+      } else {
+         $html     = '';
+         $updated  = $valid_until = self::DATE_ALPHA;
+      }
+      $size = strlen($html);
+      return(['allow-clear' => $allow_clear, 'clear-every-publish' => $clear_every_publish, 'inherit-parent' => $inherit_parent, 
+         'mode' => $mode, 'period' => $period, 'schedule' => $safe_schedule, 'size' => $size, 'updated' => $updated, 
+         'valid_until' => $valid_until, 'dynamics' => $dynamics, 'html' => $html]);
+   } // validate();
 
 } // Class USI_Page_Solutions;
 
