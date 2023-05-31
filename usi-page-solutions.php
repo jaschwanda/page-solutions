@@ -33,7 +33,6 @@ Copyright (c) 2020 by Jim Schwanda.
 
 // remove validate() from this file and use template or index-cache.php
 // change debug to use logging functions;
-// handle table_prefix in wp-config.php-external;
 // make sure changing parent pages options aren't propagated down on childeren not inheriting;
 
 final class USI_Page_Solutions {

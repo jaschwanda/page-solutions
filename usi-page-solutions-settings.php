@@ -105,8 +105,6 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
       }
       if ('false' == $option) $option = null;
 
-      $instantiate_class = 'USI_Page_Cache::cache(' . $option . ');';
-
       $template = dirname(__FILE__) . '/usi-page-cache-template.php';
 
       if (is_file($template) && is_readable($template)) {
@@ -116,23 +114,11 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
                '/* USI-PAGE-SOLUTIONS-1 */',
                '/* USI-PAGE-SOLUTIONS-2 */',
                '/* USI-PAGE-SOLUTIONS-3 */',
-               '/* USI-PAGE-SOLUTIONS-4 */',
-               '/* USI-PAGE-SOLUTIONS-5 */',
-               '/* USI-PAGE-SOLUTIONS-6 */',
-               '/* USI-PAGE-SOLUTIONS-7 */',
-               '/* USI-PAGE-SOLUTIONS-8 */',
-               '/* USI-PAGE-SOLUTIONS-9 USI_Page_Cache::cache() or null; */',
             ],
             [
-            /* 1 */ null,
+            /* 1 */ WPMU_PLUGIN_DIR . '/usi.php',
             /* 2 */ current_time('mysql'),
-            /* 3 */ null,
-            /* 4 */ null,
-            /* 5 */ null,
-            /* 6 */ null,
-            /* 7 */ $wpdb->prefix,
-            /* 8 */ WPMU_PLUGIN_DIR . '/usi.php',
-            /* 9 */ $instantiate_class,
+            /* 3 */ $option,
             ], 
             fread($template_stream, filesize($template))
          );

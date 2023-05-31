@@ -16,7 +16,7 @@ Copyright (c) 2020 by Jim Schwanda.
 */
 
 require_once(USI_WP_CONFIG);
-require_once('/* USI-PAGE-SOLUTIONS-8 */');
+require_once('/* USI-PAGE-SOLUTIONS-1 */');
 
 final class USI_Page_Cache {
 
@@ -175,8 +175,10 @@ final class USI_Page_Cache {
       $query      = null;
       try {
 
+         global $table_prefix;
+
 //         $results = self::$dbs->query(
-//            $sql  = 'UPDATE `/* USI-PAGE-SOLUTIONS-7 */postmeta` SET `meta_value` = "' . $meta_value . '" WHERE (`meta_id` = ' . self::$meta_id . ')'
+//            $sql  = 'UPDATE `' . $table_prefix . 'postmeta` SET `meta_value` = "' . $meta_value . '" WHERE (`meta_id` = ' . self::$meta_id . ')'
 //         );
 usi::log('$results=', $results, '\2nsql=', $sql, '\2nself::$meta_value=', self::$meta_value);
 //           'SELECT `meta_id`, `post_id`, `meta_key`, `meta_value` FROM `' . $table_prefix . 'postmeta` ' .
@@ -191,7 +193,7 @@ usi::log('$results=', $results, '\2nsql=', $sql, '\2nself::$meta_value=', self::
 
 
 //         $query   = self::$dbs->prepare_x(
-//            'UPDATE `/* USI-PAGE-SOLUTIONS-7 */postmeta` SET `meta_value` = ? WHERE (`meta_id` = ?)', // SQL;
+//            'UPDATE `' . $table_prefix . 'postmeta` SET `meta_value` = ? WHERE (`meta_id` = ?)', // SQL;
 //            array('si', & $meta_value, & self::$meta_id) // Input parameters;
 //         );
 //         if (self::$debug) usi::log($query->get_status());
@@ -253,8 +255,6 @@ usi::log('$results=', $results, '\2nsql=', $sql, '\2nself::$meta_value=', self::
 
 final class USI_Page_Status extends Exception { } // Class USI_Page_Status;
 
-if (!function_exists('is_admin')) {
-/* USI-PAGE-SOLUTIONS-9 USI_Page_Cache::cache() or null; */
-}
+USI_Page_Cache::cache(/* USI-PAGE-SOLUTIONS-3 */);
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>
