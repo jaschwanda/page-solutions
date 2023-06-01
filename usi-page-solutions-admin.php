@@ -74,7 +74,7 @@ final class USI_Page_Solutions_Admin {
          if ($post_mru_max++) {
             $old = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-post');
             $new[$put++] = ['page_id' => $post->ID, 'title' => $post->post_title];
-            while (($put < $post_mru_max) && ($get < count($old))) {
+            while (($put < $post_mru_max) && ($get < count($old ?? []))) {
                if ($new[0] == $old[$get]) {
                   $get++;
                } else {

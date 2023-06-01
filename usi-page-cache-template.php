@@ -43,7 +43,7 @@ final class USI_Page_Cache {
    private function __construct() {
    } // __construct();
 
-   public static function cache($times = false, $session = 'all') { 
+   public static function cache($times = false, $session = '') { 
 
       try {
 
