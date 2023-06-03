@@ -294,8 +294,8 @@ final class USI_Page_Solutions {
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout'])) {
          add_action('wp_enqueue_scripts', array(__CLASS__, 'action_wp_enqueue_scripts'), 20);
-        add_action('wp_footer', array(__CLASS__, 'action_wp_footer'), 9999);
-        add_action('wp_head', array(__CLASS__, 'action_wp_head'), 100);
+         add_action('wp_footer', array(__CLASS__, 'action_wp_footer'), 9999);
+         add_action('wp_head', array(__CLASS__, 'action_wp_head'), 100);
       }
 
       if (!empty(USI_Page_Solutions::$options['preferences']['global-header'])) {
