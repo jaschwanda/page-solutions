@@ -5,6 +5,7 @@ defined('ABSPATH') or die('Accesss not allowed.');
 /* 
 Author:            Jim Schwanda
 Author URI:        https://www.usi2solve.com/leader
+Copyright:         2023 by Jim Schwanda.
 Description:       The Page-Solutions plugin provides custom CSS and JavaScript modifications, virtual widget mapping and page caching functionality on a page by page basis. This efficient and powerful plugin is well suited for page-intensive and non-blog WordPress applications. The Page-Solutions plugin is developed and maintained by Universal Solutions.
 Donate link:       https://www.usi2solve.com/donate/wordpress-solutions
 License:           GPL-3.0
@@ -16,19 +17,7 @@ Requires PHP:      5.6.25
 Tested up to:      7.4.19
 Text Domain:       usi-page-solutions
 Version:           1.7.2
-*/
-
-/*
-Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
-License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
-Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
-Copyright (c) 2020 by Jim Schwanda.
+Warranty:          This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
 // remove validate() from this file and use template or index-cache.php
@@ -466,10 +455,6 @@ if (is_admin() && !defined('WP_UNINSTALL_PLUGIN')) {
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
          require_once('usi-page-solutions-cache.php');
          require_once('usi-page-solutions-options.php');
-      }
-      if (!empty(USI_Page_Solutions::$options['updates']['git-update'])) {
-         require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-update.php');
-         new USI_WordPress_Solutions_Update_GitHub(__FILE__, 'jaschwanda', 'page-solutions');
       }
    } else {
       add_action('admin_notices', array('USI_Page_Solutions', 'action_admin_notices'));

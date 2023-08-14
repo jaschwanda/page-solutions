@@ -2,6 +2,9 @@
 
 Page-Solutions plugin changes are logged here using <a href="http://semver.org/">Semantic Versioning</a>.
 
+## 1.7.3 (2023-08-13) ##
+* Removed GitHub update functionality.
+
 ## 1.7.2 (2023-03-16) ##
 * Fixed CSS page layout edit feature.
 
