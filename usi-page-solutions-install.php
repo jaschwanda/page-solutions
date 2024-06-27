@@ -1,21 +1,6 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
-/*
-Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
-License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
-Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
-Copyright (c) 2020 by Jim Schwanda.
-*/
-
 defined('ABSPATH') or die('Accesss not allowed.');
-
-require_once('usi-page-solutions-settings.php');
 
 final class USI_Page_Solutions_Install {
 
@@ -26,8 +11,8 @@ final class USI_Page_Solutions_Install {
 
    static function init() {
       $file = str_replace('-install', '', __FILE__);
-      register_activation_hook($file, array(__CLASS__, 'hook_activation'));
-      register_deactivation_hook($file, array(__CLASS__, 'hook_deactivation'));
+      register_activation_hook($file, [__CLASS__, 'hook_activation']);
+      register_deactivation_hook($file, [__CLASS__, 'hook_deactivation']);
    } // init();
 
    static function hook_activation() {
@@ -57,7 +42,5 @@ final class USI_Page_Solutions_Install {
    } // hook_deactivation();
 
 } // Class USI_Page_Solutions_Install;
-
-USI_Page_Solutions_Install::init();
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>

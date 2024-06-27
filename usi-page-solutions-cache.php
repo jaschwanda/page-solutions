@@ -1,21 +1,6 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
-/*
-Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
-License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
-Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
-Copyright (c) 2020 by Jim Schwanda.
-*/
-
 defined('ABSPATH') or die('Accesss not allowed.');
-
-// 2do add action prefix;
 
 class USI_Page_Solutions_Cache {
 
@@ -26,16 +11,16 @@ class USI_Page_Solutions_Cache {
 
    function __construct() {
       self::$current_time = current_time('mysql');
-      add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
-      add_action('admin_head', array($this, 'action_admin_head'));
-      add_action('save_post', array($this, 'action_save_post'));
+      add_action('add_meta_boxes', [$this, 'action_add_meta_boxes']);
+      add_action('admin_head', [$this, 'action_admin_head']);
+      add_action('save_post', [$this, 'action_save_post']);
    } // __construct();
 
    function action_add_meta_boxes() {
       add_meta_box(
          'usi-page-solutions-cache-meta-box', // Meta box id;
          __('Page-Solutions Cache', USI_Page_Solutions::TEXTDOMAIN), // Title;
-         array($this, 'render_meta_box'), // Render meta box callback;
+         [$this, 'render_meta_box'], // Render meta box callback;
          'page', // Screen type;
          'side', // Location on page;
          'low' // Priority;
@@ -48,7 +33,7 @@ class USI_Page_Solutions_Cache {
 
       if (('page' != $screen->id) || ('page' != $screen->post_type)) return;
 
-      $screen->add_help_tab(array(
+      $screen->add_help_tab([
          'title' => __('Page-Solutions Cache', USI_Page_Solutions::TEXTDOMAIN),
          'id' => 'usi-page-solutions-cache',
          'content'  => 
@@ -67,7 +52,7 @@ class USI_Page_Solutions_Cache {
 '<li><b>' . __('Clear cache everyday at', USI_Page_Solutions::TEXTDOMAIN) . '</b> - ' . __('The cache is cleared based on the given schedule. Select this option if page content is changed by a widget(s) and you want to ensure that changes are show at specific times of the day. List the times when the cache should be cleared under this option.', USI_Page_Solutions::TEXTDOMAIN) . '</li>' .
 '</ul>' .
 '<p>' . __('The Page-Solutions cache features and options are configured on a page by page basis.', USI_Page_Solutions::TEXTDOMAIN) . '</p>'
-      ));
+      ]);
 
    } // action_admin_head();
 
@@ -130,14 +115,14 @@ class USI_Page_Solutions_Cache {
          }
 
          $schedule_items = (int)(isset($_POST['usi-page-solutions-cache-schedule-count']) ? $_POST['usi-page-solutions-cache-schedule-count'] : '0');
-         $SAFE_schedule = array();
+         $SAFE_schedule = [];
          for ($ith = 0; $ith < $schedule_items; $ith++) {
             $name = 'usi-page-solutions-cache-schedule-' . $ith;
             if (isset($_POST[$name])) {
                if (preg_match('/([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])/', $_POST[$name])) $SAFE_schedule[] = $_POST[$name];
             }
          }
-         if (empty($SAFE_schedule)) { $SAFE_schedule = array('00:00:00'); } else { sort($SAFE_schedule); }
+         if (empty($SAFE_schedule)) { $SAFE_schedule = ['00:00:00']; } else { sort($SAFE_schedule); }
          $meta_value['cache']['schedule'] = $SAFE_schedule;
          
          if ('schedule' == $mode) {
@@ -310,7 +295,5 @@ class USI_Page_Solutions_Cache {
    } // render_meta_box();
       
 } // USI_Page_Solutions_Cache;
-
-new USI_Page_Solutions_Cache();
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>

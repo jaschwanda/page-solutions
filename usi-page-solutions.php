@@ -2,19 +2,15 @@
 
 defined('ABSPATH') or die('Accesss not allowed.');
 
-/* 
+/*
 Author:            Jim Schwanda
 Author URI:        https://www.usi2solve.com/leader
-Copyright:         2023 by Jim Schwanda.
 Description:       The Page-Solutions plugin provides custom CSS and JavaScript modifications, virtual widget mapping and page caching functionality on a page by page basis. This efficient and powerful plugin is well suited for page-intensive and non-blog WordPress applications. The Page-Solutions plugin is developed and maintained by Universal Solutions.
-Donate link:       https://www.usi2solve.com/donate/wordpress-solutions
+Donate link:       https://www.usi2solve.com/donate/page-solutions
 License:           GPL-3.0
-License URI:       https://github.com/jaschwanda/wordpress-solutions/blob/master/LICENSE.md
+License URI:       https://github.com/jaschwanda/page-solutions/blob/master/LICENSE.md
 Plugin Name:       Page-Solutions
 Plugin URI:        https://github.com/jaschwanda/page-solutions
-Requires at least: 5.0
-Requires PHP:      5.6.25
-Tested up to:      7.4.19
 Text Domain:       usi-page-solutions
 Version:           1.7.2
 Warranty:          This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -23,6 +19,8 @@ Warranty:          This software is distributed in the hope that it will be usef
 // remove validate() from this file and use template or index-cache.php
 // change debug to use logging functions;
 // make sure changing parent pages options aren't propagated down on childeren not inheriting;
+
+if (!class_exists('USI')) goto END_OF_FILE;
 
 final class USI_Page_Solutions {
 
@@ -43,13 +41,13 @@ final class USI_Page_Solutions {
 
    const WIDGETS_INIT_PRIORITY = 100;
 
-   public static $capabilities = array(
+   public static $capabilities = [
       'enhanced-edit'  => 'Select enhanced widget areas|administrator',
       'virtual-add'    => 'Add virtual widget collections|administrator',
       'virtual-edit'   => 'Edit virtual widget collections|administrator',
       'virtual-delete' => 'Delete virtual widget collections|administrator',
       'settings-view'  => 'View settings page|administrator',
-   );
+   ];
 
    private static $debug = self::DEBUG_OFF;
    private static $info  = null;
@@ -58,7 +56,7 @@ final class USI_Page_Solutions {
    public static $meta_value = null; // Page/post postmeta data;
    public static $option_name_base = null;
    public static $option_name_virtual = null;
-   public static $options = array();
+   public static $options = [];
    public static $options_virtual = null; // Virtual widget array for current theme;
    public static $theme_name = null; // Slugified name of current theme;
    public static $virtual_source = null; // Virtual source widget to map in enhanced widget area;
@@ -104,12 +102,12 @@ final class USI_Page_Solutions {
 
       self::$meta_value = self::meta_value_get($post_id);
 
-      $what2do = array(
-         array('key' => 'styles_parent',  'inherit' => 'styles_inherit',  'funtction' => 'wp_enqueue_style',  'default' => null),
-         array('key' => 'styles',         'inherit' => false,             'funtction' => 'wp_enqueue_style',  'default' => null),
-         array('key' => 'scripts_parent', 'inherit' => 'scripts_inherit', 'funtction' => 'wp_enqueue_script', 'default' => false),
-         array('key' => 'scripts',        'inherit' => false,             'funtction' => 'wp_enqueue_script', 'default' => false),
-      );
+      $what2do = [
+         ['key' => 'styles_parent',  'inherit' => 'styles_inherit',  'funtction' => 'wp_enqueue_style',  'default' => null],
+         ['key' => 'styles',         'inherit' => false,             'funtction' => 'wp_enqueue_style',  'default' => null],
+         ['key' => 'scripts_parent', 'inherit' => 'scripts_inherit', 'funtction' => 'wp_enqueue_script', 'default' => false],
+         ['key' => 'scripts',        'inherit' => false,             'funtction' => 'wp_enqueue_script', 'default' => false],
+      ];
 
       foreach ($what2do as $do) {
          if (!$do['inherit'] || !empty(self::$meta_value['options'][$do['inherit']])) {
@@ -149,7 +147,7 @@ final class USI_Page_Solutions {
     
       global $wp_registered_widgets;
 
-      self::$info = array();
+      self::$info = [];
 
       $original_params = func_get_args();
       $widget_id = $original_params[0]['widget_id'];   
@@ -194,27 +192,27 @@ final class USI_Page_Solutions {
       
       // This filter intercepts the widget() calls so that the widget output can be buffered and
       // the dynamics can be saved, not required when caching is disabled as everything must run;
-      if (is_admin() || ('disable' == self::$meta_value['cache']['mode'])) return($sidebar_params);
+      if (is_admin() || ('disable' == self::$meta_value['cache']['mode'])) return $sidebar_params;
 
       global $wp_registered_widgets;
 
       $widget_id = $sidebar_params[0]['widget_id'];
  
       $wp_registered_widgets[$widget_id]['original_callback'] = $wp_registered_widgets[$widget_id]['callback'];
-      $wp_registered_widgets[$widget_id]['callback'] = array(__CLASS__, 'callback');
-      return($sidebar_params);
+      $wp_registered_widgets[$widget_id]['callback'] = [__CLASS__, 'callback'];
+      return $sidebar_params;
 
    } // filter_dynamic_sidebar_params();
 
    static function filter_pre_option_stylesheet() { 
 
-      return(self::load_theme(1)); 
+      return self::load_theme(1);
 
    } // filter_pre_option_stylesheet();
 
    static function filter_pre_option_template() { 
 
-      return(self::load_theme(0)); 
+      return self::load_theme(0);
 
    } // filter_pre_option_template();
 
@@ -224,7 +222,7 @@ final class USI_Page_Solutions {
    
       if (is_page()) {
    
-         if ($mapped_widgets) return($mapped_widgets);
+         if ($mapped_widgets) return $mapped_widgets;
 
          if (!empty(self::$meta_value['widgets'])) {
             foreach (self::$meta_value['widgets'] as $target_id => $enhanced_widget_areas) {
@@ -240,13 +238,13 @@ final class USI_Page_Solutions {
          $mapped_widgets = $sidebars_widgets;
       }
 
-      return($sidebars_widgets);
+      return $sidebars_widgets;
    
    } // filter_sidebars_widgets();
 
    static function filter_widget_display_callback($instance, $that, $args) {
       self::$info['args'] = $args;
-      return(self::$info['instance'] = $instance);
+      return self::$info['instance'] = $instance;
    } // filter_widget_display_callback();
 
    static function init() {
@@ -275,20 +273,20 @@ final class USI_Page_Solutions {
       }
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
-         add_action('widgets_init', array(__CLASS__, 'action_widgets_init'), self::WIDGETS_INIT_PRIORITY);
-         add_filter('dynamic_sidebar_params', array(__CLASS__, 'filter_dynamic_sidebar_params'));
-         add_filter('sidebars_widgets', array(__CLASS__, 'filter_sidebars_widgets'));
-         add_filter('widget_display_callback', array(__CLASS__, 'filter_widget_display_callback'), 10, 3);
+         add_action('widgets_init', [__CLASS__, 'action_widgets_init'], self::WIDGETS_INIT_PRIORITY);
+         add_filter('dynamic_sidebar_params', [__CLASS__, 'filter_dynamic_sidebar_params']);
+         add_filter('sidebars_widgets', [__CLASS__, 'filter_sidebars_widgets']);
+         add_filter('widget_display_callback', [__CLASS__, 'filter_widget_display_callback'], 10, 3);
       }
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout'])) {
-         add_action('wp_enqueue_scripts', array(__CLASS__, 'action_wp_enqueue_scripts'), 20);
-         add_action('wp_footer', array(__CLASS__, 'action_wp_footer'), 9999);
-         add_action('wp_head', array(__CLASS__, 'action_wp_head'), 100);
+         add_action('wp_enqueue_scripts', [__CLASS__, 'action_wp_enqueue_scripts'], 20);
+         add_action('wp_footer', [__CLASS__, 'action_wp_footer'], 9999);
+         add_action('wp_head', [__CLASS__, 'action_wp_head'], 100);
       }
 
       if (!empty(USI_Page_Solutions::$options['preferences']['global-header'])) {
-         add_action('wp_body_open', array(__CLASS__, 'action_wp_body_open'));
+         add_action('wp_body_open', [__CLASS__, 'action_wp_body_open']);
       }
 /*
       if (!empty(USI_Page_Cache::$theme) && ('default' != USI_Page_Cache::$theme)) {
@@ -300,7 +298,7 @@ final class USI_Page_Solutions {
    } // init();
 
    static public function load_theme($index) {
-      return(self::$theme[$index] ?? '');
+      return self::$theme[$index] ?? '';
    } // load_theme();
 
    static function meta_value_get($post_id, $debug = false) {
@@ -340,7 +338,7 @@ final class USI_Page_Solutions {
       $widgets = $data['widgets'] ?? null;
 
       $url      = rtrim(get_permalink($post_id), '/') . '/';
-      $path     = str_replace(array($_SERVER['SERVER_NAME'], 'https://', 'http://'), '', $url);
+      $path     = str_replace([$_SERVER['SERVER_NAME'], 'https://', 'http://'], '', $url);
       $meta_key = self::POST_META . ($options['arguments'] ? '*' : '!') . $path;
 
       $value = [
@@ -371,7 +369,7 @@ final class USI_Page_Solutions {
 
       }
 
-      return($value);
+      return $value;
 
    } // meta_value_get();
 
@@ -402,7 +400,7 @@ final class USI_Page_Solutions {
       $children = (int)$wpdb->get_var(
          $wpdb->prepare("SELECT count(`ID`) FROM `$SAFE_table_name` WHERE (`post_parent` = %d) AND (`post_type` = 'page')", $page_id)
       );
-      return($children);
+      return $children;
    } // number_of_offspring
 
    // remove DATE_ALPHA
@@ -434,9 +432,9 @@ final class USI_Page_Solutions {
          $updated  = $valid_until = self::DATE_ALPHA;
       }
       $size = strlen($html);
-      return(['allow-clear' => $allow_clear, 'clear-every-publish' => $clear_every_publish, 'inherit-parent' => $inherit_parent, 
+      return ['allow-clear' => $allow_clear, 'clear-every-publish' => $clear_every_publish, 'inherit-parent' => $inherit_parent, 
          'mode' => $mode, 'period' => $period, 'schedule' => $safe_schedule, 'size' => $size, 'updated' => $updated, 
-         'valid_until' => $valid_until, 'dynamics' => $dynamics, 'html' => $html]);
+         'valid_until' => $valid_until, 'dynamics' => $dynamics, 'html' => $html];
    } // validate();
 
 } // Class USI_Page_Solutions;
@@ -444,21 +442,17 @@ final class USI_Page_Solutions {
 USI_Page_Solutions::init();
 
 if (is_admin() && !defined('WP_UNINSTALL_PLUGIN')) {
-   if (is_dir(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions')) {
-      require_once('usi-page-solutions-admin.php');
-      require_once('usi-page-solutions-install.php');
-      require_once('usi-page-solutions-layout.php');
-      require_once('usi-page-solutions-layout-edit.php');
-      require_once('usi-page-solutions-settings.php');
-      require_once('usi-page-solutions-virtual.php');
-      require_once('usi-page-solutions-virtual-list.php');
-      if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
-         require_once('usi-page-solutions-cache.php');
-         require_once('usi-page-solutions-options.php');
-      }
-   } else {
-      add_action('admin_notices', array('USI_Page_Solutions', 'action_admin_notices'));
+   USI_Page_Solutions_Install::init();
+   new USI_Page_Solutions_Admin();
+   new USI_Page_Solutions_Layout();
+   new USI_Page_Solutions_Layout_Edit();
+   new USI_Page_Solutions_Settings();
+   new USI_Page_Solutions_Virtual();
+   add_filter('set-screen-option', 'USI_Page_Solutions_Virtual_List::screen_options_set', 10, 3);
+   if (!empty(USI_Page_Solutions::$options['preferences']['enable-cache'])) {
+      new USI_Page_Solutions_Cache();
+      new USI_Page_Solutions_Options();
    }
 }
 
-// --------------------------------------------------------------------------------------------------------------------------- // ?>
+END_OF_FILE: // -------------------------------------------------------------------------------------------------------------- // ?>

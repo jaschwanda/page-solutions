@@ -1,18 +1,5 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
-/*
-Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
-License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
-Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
-Copyright (c) 2020 by Jim Schwanda.
-*/
-
 defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
@@ -357,7 +344,5 @@ class USI_Page_Solutions_Layout_Edit extends USI_WordPress_Solutions_Settings {
    } // sections();
 
 } // Class USI_Page_Solutions_Layout_Edit;
-
-new USI_Page_Solutions_Layout_Edit();
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>

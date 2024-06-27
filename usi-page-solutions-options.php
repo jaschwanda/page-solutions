@@ -1,18 +1,5 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
-/*
-Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
-License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
-Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
-Copyright (c) 2020 by Jim Schwanda.
-*/
-
 defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Options {
@@ -20,16 +7,16 @@ class USI_Page_Solutions_Options {
    const VERSION = '1.7.0 (2022-08-09)';
 
    function __construct() {
-      add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
-      add_action('admin_head', array($this, 'action_admin_head'));
-      add_action('save_post', array($this, 'action_save_post'));
+      add_action('add_meta_boxes', [$this, 'action_add_meta_boxes']);
+      add_action('admin_head', [$this, 'action_admin_head']);
+      add_action('save_post', [$this, 'action_save_post']);
    } // __construct();
 
    function action_add_meta_boxes() {
       add_meta_box(
          'usi-page-solutions-options-meta-box', // Meta box id;
          __('Page-Solutions Options', USI_Page_Solutions::TEXTDOMAIN), // Title;
-         array($this, 'render_meta_box'), // Render meta box callback;
+         [$this, 'render_meta_box'], // Render meta box callback;
          'page', // Screen type;
          'side', // Location on page;
          'low' // Priority;
@@ -42,7 +29,7 @@ class USI_Page_Solutions_Options {
 
       if (('page' != $screen->id) || ('page' != $screen->post_type)) return;
 
-      $screen->add_help_tab(array(
+      $screen->add_help_tab([
          'title' => __('Page-Solutions Options', USI_Page_Solutions::TEXTDOMAIN),
          'id' => 'usi-page-solutions-options',
          'content'  => 
@@ -51,7 +38,7 @@ class USI_Page_Solutions_Options {
 '<li><b>' . __('Accepts arguments', USI_Page_Solutions::TEXTDOMAIN) . '</b> - ' . __('The page can be called with an argument string that follows the page URL. This argument string can be used to pass information into widgets that have been designed to use this feature. This option is disabled if this page is a parent page.', USI_Page_Solutions::TEXTDOMAIN) . '</li>' .
 '</ul>' .
 '<p>' . __('The Page-Solutions plugin options are configured on a page by page basis.', USI_Page_Solutions::TEXTDOMAIN) . '</p>'
-      ));
+      ]);
 
    } // action_admin_head();
 
@@ -113,7 +100,5 @@ class USI_Page_Solutions_Options {
    } // render_meta_box();
       
 } // USI_Page_Solutions_Options;
-
-new USI_Page_Solutions_Options();
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>

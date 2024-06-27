@@ -1,18 +1,5 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
-/*
-Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
-License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
-Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
-Copyright (c) 2020 by Jim Schwanda.
-*/
-
 defined('ABSPATH') or die('Accesss not allowed.');
 
 if (!class_exists('WP_List_Table')) {
@@ -27,11 +14,13 @@ class USI_Page_Solutions_Virtual_List extends WP_List_Table {
    private $edit_virtual = false;
 
    function __construct($delete_virtual, $edit_virtual) {
-      parent::__construct(array(
-         'singular' => 'Virtual Widget Collection',
-         'plural' => 'Virtual Widget Collections',
-         'ajax' => false,
-      ));
+      parent::__construct(
+         [
+            'singular' => 'Virtual Widget Collection',
+            'plural' => 'Virtual Widget Collections',
+            'ajax' => false,
+         ]
+      );
 
       $this->delete_virtual = $delete_virtual;
       $this->edit_virtual = $edit_virtual;
@@ -43,7 +32,7 @@ class USI_Page_Solutions_Virtual_List extends WP_List_Table {
    } // __construct();
 
    function column_id($item) {
-      $actions = array();
+      $actions = [];
       if ($this->edit_virtual) $actions['edit'] = '<a href="?page=usi-page-solutions-virtual&action=edit&id=' . $item['id'] . '">Edit</a>';
       if ($this->delete_virtual) $actions['delete'] = '<a href="options-general.php?page=usi-page-solutions-settings&tab=virtual&action=delete&id=' . 
          $item['id'] . '" onclick=\'return(confirm("Are you sure you want to delete virtual widget collection \"' . $item['id'] . 
@@ -68,27 +57,31 @@ class USI_Page_Solutions_Virtual_List extends WP_List_Table {
    } // column_default();
 
    function get_columns(){
-      return(array(
-         'id' => 'Id',
-         'name' => 'Name',
-         'description' => 'Description',
-         'before_widget' => 'Before Widget',
-         'after_widget' => 'After Widget',
-         'before_title' => 'Before Title',
-         'after_title' => 'After Title',
-        ));
+      return
+         [
+            'id' => 'Id',
+            'name' => 'Name',
+            'description' => 'Description',
+            'before_widget' => 'Before Widget',
+            'after_widget' => 'After Widget',
+            'before_title' => 'Before Title',
+            'after_title' => 'After Title',
+         ]
+      ;
    } // get_columns();
 
    function get_sortable_columns() {
-      return(array(
-         'after_title' => array('after_title', false),
-         'after_widget' => array('after_widget', false),
-         'before_title' => array('before_title', false),
-         'before_widget' => array('before_widget', false),
-         'description' => array('description', false),
-         'id' => array('id', false),
-         'name' => array('name', false),
-      ));
+      return
+         [
+            'after_title' => ['after_title', false],
+            'after_widget' => ['after_widget', false],
+            'before_title' => ['before_title', false],
+            'before_widget' => ['before_widget', false],
+            'description' => ['description', false],
+            'id' => ['id', false],
+            'name' => ['name', false],
+         ]
+      ;
    } // get_sortable_columns();
    
    function prepare_items() {
@@ -110,7 +103,7 @@ class USI_Page_Solutions_Virtual_List extends WP_List_Table {
       $per_page = (int)get_user_option('usi_ps_options_virtual_list_per_page', $user_id);
       if (0 == $per_page) $per_page = 10;
 
-      $this->_column_headers = array($this->get_columns(), array(), $this->get_sortable_columns());
+      $this->_column_headers = [$this->get_columns(), [], $this->get_sortable_columns()];
 
       $data = USI_Page_Solutions::$options_virtual;
 
@@ -127,11 +120,13 @@ class USI_Page_Solutions_Virtual_List extends WP_List_Table {
       if (!empty($data)) $data = array_slice($data, (($current_page - 1) * $per_page), $per_page);
       $this->items = $data;
 
-      $this->set_pagination_args(array(
-         'total_items' => $total_items, 
-         'per_page'    => $per_page,
-         'total_pages' => ceil($total_items / $per_page),
-      ));
+      $this->set_pagination_args(
+         [
+            'total_items' => $total_items, 
+            'per_page'    => $per_page,
+            'total_pages' => ceil($total_items / $per_page),
+         ]
+      );
 
    } // prepare_items();
 
@@ -141,11 +136,11 @@ class USI_Page_Solutions_Virtual_List extends WP_List_Table {
 
       if (!is_object($screen) || ($screen->id != 'settings_page_usi-page-solutions-settings')) return;
 
-      $args = array(
+      $args = [
          'label' => __('Number of virtual widgets per page', USI_Page_Solutions::TEXTDOMAIN),
          'default' => 10,
          'option' => 'usi_ps_options_virtual_list_per_page',
-      );
+      ];
 
       add_screen_option('per_page', $args);
 
@@ -157,8 +152,5 @@ class USI_Page_Solutions_Virtual_List extends WP_List_Table {
    } // screen_options_set();
 
 } // Class USI_Page_Solutions_Virtual_List;
-
-// This filter fires early, doing it in the class is too late;
-add_filter('set-screen-option', 'USI_Page_Solutions_Virtual_List::screen_options_set', 10, 3);
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>

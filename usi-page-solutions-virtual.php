@@ -1,21 +1,6 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
-/*
-Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
-License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
-Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
-Copyright (c) 2020 by Jim Schwanda.
-*/
-
 defined('ABSPATH') or die('Accesss not allowed.');
-
-require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-static.php');
 
 class USI_Page_Solutions_Virtual {
 
@@ -28,10 +13,10 @@ class USI_Page_Solutions_Virtual {
 
    function __construct() {
 
-      add_action('admin_head', array($this, 'action_admin_head'));
-      add_action('admin_init', array($this, 'action_admin_init_settings'));
-      add_action('admin_menu', array($this, 'action_admin_menu'));
-      add_action('widgets_init', array($this, 'action_widgets_init'), USI_Page_Solutions::WIDGETS_INIT_PRIORITY);
+      add_action('admin_head', [$this, 'action_admin_head']);
+      add_action('admin_init', [$this, 'action_admin_init_settings']);
+      add_action('admin_menu', [$this, 'action_admin_menu']);
+      add_action('widgets_init', [$this, 'action_widgets_init'], USI_Page_Solutions::WIDGETS_INIT_PRIORITY);
 
    } // __construct();
 
@@ -55,113 +40,113 @@ class USI_Page_Solutions_Virtual {
       add_settings_field(
          $this->option_name . '[' . ($id = 'name') . ']', // Option name;
          __('Name', USI_Page_Solutions::TEXTDOMAIN), // Field title;
-         array($this, 'settings_fields_render'), // Render field callback;
+         [$this, 'settings_fields_render'], // Render field callback;
          $this->page_slug, // Settings page menu slug;
          $this->section_id, // Section id;
-         array(
+         [
             'id' => $id, 
             'type' => 'text', 
             'notes' => '<div class="usi-page-solutions-virtual-notes">Widget collection name.</div>',
-         )
+         ]
       );
 
       add_settings_field(
          $this->option_name . '[' . ($id = 'id') . ']', // Option name;
          __('Id', USI_Page_Solutions::TEXTDOMAIN), // Field title;
-         array($this, 'settings_fields_render'), // Render field callback;
+         [$this, 'settings_fields_render'], // Render field callback;
          $this->page_slug, // Settings page menu slug;
          $this->section_id, // Section id;
-         array(
+         [
             'id' => $id, 
             'type' => 'text', 
             'readonly' => (isset($_GET['action']) && ('edit' == $_GET['action']) ? ' readonly ' : null), 
             'notes' => '<div class="usi-page-solutions-virtual-notes">Widgert collection ID, ' .
                        'must be all in lowercase with no spaces, default is slugified widget collection name.</div>',
-         )
+         ]
       );
 
       add_settings_field(
          $this->option_name . '[' . ($id = 'description') . ']', // Option name;
          __('Description', USI_Page_Solutions::TEXTDOMAIN), // Field title;
-         array($this, 'settings_fields_render'), // Render field callback;
+         [$this, 'settings_fields_render'], // Render field callback;
          $this->page_slug, // Settings page menu slug;
          $this->section_id, // Section id;
-         array(
+         [
             'id' => $id, 
             'type' => 'text', 
             'notes' => '<div class="usi-page-solutions-virtual-notes">Widget collection description, ' .
                        'shown on widget management screen.</div>',
-         )
+         ]
       );
 
       add_settings_field(
          $this->option_name . '[' . ($id = 'before_widget') . ']', // Option name;
          __('Before Widget', USI_Page_Solutions::TEXTDOMAIN), // Field title;
-         array($this, 'settings_fields_render'), // Render field callback;
+         [$this, 'settings_fields_render'], // Render field callback;
          $this->page_slug, // Settings page menu slug;
          $this->section_id, // Section id;
-         array(
+         [
             'id' => $id, 
             'type' => 'text', 
             'html_id' => 'usi-page-solutions-virtual-before-widget',
             'notes' => '<div class="usi-page-solutions-virtual-notes">HTML to place before every widget, default is ' .
                        '<span class="usi-page-solutions-virtual-notes-code">&lt;li id="%1$s" class="widget %2$s"&gt;</span></div>',
             'style' => 'font-family:courier;',
-         )
+         ]
       );
 
       add_settings_field(
          $this->option_name . '[' . ($id = 'after_widget') . ']', // Option name;
          __('After Widget', USI_Page_Solutions::TEXTDOMAIN), // Field title;
-         array($this, 'settings_fields_render'), // Render field callback;
+         [$this, 'settings_fields_render'], // Render field callback;
          $this->page_slug, // Settings page menu slug;
          $this->section_id, // Section id;
-         array(
+         [
             'id' => $id, 
             'type' => 'text', 
             'html_id' => 'usi-page-solutions-virtual-after-widget',
             'notes' => '<div class="usi-page-solutions-virtual-notes">HTML to place after every widget, default is ' .
                        '<span class="usi-page-solutions-virtual-notes-code">&lt;/li&gt;</span></div>',
             'style' => 'font-family:courier;',
-         )
+         ]
       );
 
       add_settings_field(
          $this->option_name . '[' . ($id = 'before_title') . ']', // Option name;
          __('Before Title', USI_Page_Solutions::TEXTDOMAIN), // Field title;
-         array($this, 'settings_fields_render'), // Render field callback;
+         [$this, 'settings_fields_render'], // Render field callback;
          $this->page_slug, // Settings page menu slug;
          $this->section_id, // Section id;
-         array(
+         [
             'id' => $id, 
             'type' => 'text', 
             'html_id' => 'usi-page-solutions-virtual-before-title',
             'notes' => '<div class="usi-page-solutions-virtual-notes">HTML to place before every title, default is ' .
                        '<span class="usi-page-solutions-virtual-notes-code">&lt;h2 class="widgettitle"&gt;</span></div>',
             'style' => 'font-family:courier;',
-         )
+         ]
       );
 
       add_settings_field(
          $this->option_name . '[' . ($id = 'after_title') . ']', // Option name;
          __('After Title', USI_Page_Solutions::TEXTDOMAIN), // Field title;
-         array($this, 'settings_fields_render'), // Render field callback;
+         [$this, 'settings_fields_render'], // Render field callback;
          $this->page_slug, // Settings page menu slug;
          $this->section_id, // Section id;
-         array(
+         [
             'id' => $id, 
             'type' => 'text', 
             'html_id' => 'usi-page-solutions-virtual-after-title',
             'notes' => '<div class="usi-page-solutions-virtual-notes">HTML to place after every title, default is ' .
                        '<span class="usi-page-solutions-virtual-notes-code">&lt;h2&gt;</span></div>',
             'style' => 'font-family:courier;',
-         )
+         ]
       );
 
       register_setting(
          $this->section_id, // Settings group name, must match the group name in settings_fields();
          $this->option_name, // Option name;
-         array($this, 'settings_fields_sanitize') // Sanitize field callback;
+         [$this, 'settings_fields_sanitize'] // Sanitize field callback;
       );
    
    } // action_admin_init_settings();
@@ -175,7 +160,7 @@ class USI_Page_Solutions_Virtual {
          '<span id="usi-page-solutions-virtual-remove"></span>', // Sidebar menu text; 
          USI_Page_Solutions::NAME .'-Virtual-Add', // Capability required to enable page;
          $this->page_slug, // Settings page menu slug;
-         array($this, 'settings_page_render') // Render page callback;
+         [$this, 'settings_page_render'] // Render page callback;
       );
       if (empty($_GET['page']) || ('usi-page-solutions-virtual' != $_GET['page'])) {
          remove_submenu_page('options-general.php', $this->page_slug);
@@ -290,7 +275,7 @@ class USI_Page_Solutions_Virtual {
          $type // Message type;
       );
 
-      return($input);
+      return $input;
    } // settings_fields_sanitize();
 
    function settings_page_render() {
@@ -361,28 +346,28 @@ jQuery(document).ready(function($) {
    $('#usi-page-solutions-virtual-remove').parent().parent().remove();
    $('#usi-page-solutions-virtual-back-to-list').click(function(){
       window.location.href = 'options-general.php?page=usi-page-settings&tab=collections';
-      return(false);
+      return false;
    });
    $('#usi-page-solutions-virtual-defaults-clear').click(function(){
       $('#usi-page-solutions-virtual-before-widget').val('');
       $('#usi-page-solutions-virtual-after-widget').val('');
       $('#usi-page-solutions-virtual-before-title').val('');
       $('#usi-page-solutions-virtual-after-title').val('');
-      return(false);
+      return false;
    });
    $('#usi-page-solutions-virtual-defaults-disable').click(function(){
       $('#usi-page-solutions-virtual-before-widget').val('disable');
       $('#usi-page-solutions-virtual-after-widget').val('disable');
       $('#usi-page-solutions-virtual-before-title').val('disable');
       $('#usi-page-solutions-virtual-after-title').val('disable');
-      return(false);
+      return false;
    });
    $('#usi-page-solutions-virtual-defaults-set').click(function(){
       $('#usi-page-solutions-virtual-before-widget').val('<li id="%1$s" class="widget %2$s">');
       $('#usi-page-solutions-virtual-after-widget').val('</li>');
       $('#usi-page-solutions-virtual-before-title').val('<h2 class="widgettitle">');
       $('#usi-page-solutions-virtual-after-title').val('</h2>');
-      return(false);
+      return false;
    });
 });
 </script>
@@ -390,7 +375,5 @@ jQuery(document).ready(function($) {
    } // settings_page_render();
 
 } // Class USI_Page_Solutions_Virtual;
-
-new USI_Page_Solutions_Virtual();
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>

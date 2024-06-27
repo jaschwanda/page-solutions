@@ -1,18 +1,5 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
-/*
-Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
-License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
-Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
-Copyright (c) 2020 by Jim Schwanda.
-*/
-
 defined('ABSPATH') or die('Accesss not allowed.');
 
 class USI_Page_Solutions_Layout {
@@ -30,15 +17,15 @@ class USI_Page_Solutions_Layout {
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout']) 
          || !empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) 
-         add_action('add_meta_boxes', array($this, 'action_add_meta_boxes'));
+         add_action('add_meta_boxes', [$this, 'action_add_meta_boxes']);
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-layout'])) {
-         add_action('admin_head', array($this, 'action_admin_head'));
+         add_action('admin_head', [$this, 'action_admin_head']);
       }
-      if ($this->page_id) add_action('admin_init', array($this, 'action_admin_init'));
-      add_action('admin_menu', array($this, 'action_admin_menu'));
-      add_action('save_post', array($this, 'action_save_post'));
-      add_action('widgets_init', array($this, 'action_widgets_init'), USI_Page_Solutions::WIDGETS_INIT_PRIORITY);
+      if ($this->page_id) add_action('admin_init', [$this, 'action_admin_init']);
+      add_action('admin_menu', [$this, 'action_admin_menu']);
+      add_action('save_post', [$this, 'action_save_post']);
+      add_action('widgets_init', [$this, 'action_widgets_init'], USI_Page_Solutions::WIDGETS_INIT_PRIORITY);
 
    } // __construct();
 
@@ -46,7 +33,7 @@ class USI_Page_Solutions_Layout {
       add_meta_box(
          'usi-page-solutions-layout-meta-box', // Meta box id;
          __('Page-Solutions Layout', USI_Page_Solutions::TEXTDOMAIN), // Title;
-         array($this, 'render_meta_box'), // Render meta box callback;
+         [$this, 'render_meta_box'], // Render meta box callback;
          'page', // Screen type;
          'side', // Location on page;
          'low' // Priority;
@@ -61,14 +48,14 @@ class USI_Page_Solutions_Layout {
 
          if (('page' != $screen->id) || ('page' != $screen->post_type)) return;
 
-         $screen->add_help_tab(array(
+         $screen->add_help_tab([
             'title' => __('Page-Solutions Layout', USI_Page_Solutions::TEXTDOMAIN),
             'id' => 'usi-page-solutions-layout',
             'content'  => 
 '<p>' . __('The Page-Solutions plugin adds the following features to the WordPress system:', USI_Page_Solutions::TEXTDOMAIN) . '</p>'.
 '<ul>' .
 '</ul>'
-         ));
+         ]);
       }
 
    } // action_admin_head();
@@ -124,14 +111,14 @@ class USI_Page_Solutions_Layout {
 
          $meta_value = USI_Page_Solutions::meta_value_get($page_id);
          $collection_count = (int)(isset($_POST['usi-page-solutions-layout-enhanced-count']) ? $_POST['usi-page-solutions-layout-enhanced-count'] : 0);
-         $widgets = array();
+         $widgets = [];
 
          for ($ith = 1; $ith <= $collection_count; $ith++) {
             $name = 'usi-page-solutions-layout-enhanced-' . $ith . '-id';
             $sidebar_id = isset($_POST[$name]) ? $_POST[$name] : null;
             $name = 'usi-page-solutions-layout-enhanced-' . $ith . '-count';
             $widget_count = (int)(isset($_POST[$name]) ? $_POST[$name] : 0);
-            $sidebar_widgets = array();
+            $sidebar_widgets = [];
             for ($jth = 1; $jth <= $widget_count; $jth++) {
                $name = 'usi-page-solutions-layout-enhanced-' . $ith . '-id-' . $jth;
                $virtual_id = (isset($_POST[$name]) ? $_POST[$name] : null);
@@ -361,7 +348,5 @@ class USI_Page_Solutions_Layout {
    } // render_meta_box();
       
 } // USI_Page_Solutions_Layout;
-
-new USI_Page_Solutions_Layout();
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>

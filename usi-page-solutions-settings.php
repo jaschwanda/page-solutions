@@ -1,23 +1,6 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
 
-/*
-Page-Solutions is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
-License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- 
-Page-Solutions is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License along with Page-Solutions. If not, see 
-https://github.com/jaschwanda/Page-solutions/blob/master/LICENSE.md
-
-Copyright (c) 2020 by Jim Schwanda.
-*/
-
 defined('ABSPATH') or die('Accesss not allowed.');
-
-require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-capabilities.php');
-require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-settings.php');
-require_once(plugin_dir_path(__DIR__) . 'usi-wordpress-solutions/usi-wordpress-solutions-versions.php');
 
 class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
@@ -92,7 +75,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          $db_name = "'" . DB_NAME . "'";
          $db_user = "'" . DB_USER . "'";
       } else {
-         $config_location = PHP_EOL . "@require_once('" . $cache['config-location'] . "');" . PHP_EOL;
+         $config_location = PHP_EOL . "@require_once '" . $cache['config-location'] . "';" . PHP_EOL;
          $db_pass = 'DB_PASSWORD';
          $db_host = 'DB_HOST';
          $db_name = 'DB_NAME';
@@ -108,25 +91,28 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
       $template = dirname(__FILE__) . '/usi-page-cache-template.php';
 
       if (is_file($template) && is_readable($template)) {
-         $template_stream  = fopen($template, 'r');
-         $template_content = str_replace(
-            [
-               '/* USI-PAGE-SOLUTIONS-1 */',
-               '/* USI-PAGE-SOLUTIONS-2 */',
-               '/* USI-PAGE-SOLUTIONS-3 */',
-            ],
-            [
-            /* 1 */ WPMU_PLUGIN_DIR . '/usi.php',
-            /* 2 */ current_time('mysql'),
-            /* 3 */ $option,
-            ], 
-            fread($template_stream, filesize($template))
-         );
-         fclose($template_stream);
-         // $usi_page_cache = fopen(dirname(__FILE__) . '/usi-page-cache.php', 'w');
-         $usi_page_cache = fopen($root_folder . '/index-cache.php', 'w');
-         fwrite($usi_page_cache, $template_content);
-         fclose($usi_page_cache);
+         try {
+            $template_stream  = fopen($template, 'r');
+            $template_content = str_replace(
+               [
+                  '/* USI-PAGE-SOLUTIONS-1 */',
+                  '/* USI-PAGE-SOLUTIONS-2 */',
+                  '/* USI-PAGE-SOLUTIONS-3 */',
+               ],
+               [
+               /* 1 */ WPMU_PLUGIN_DIR . '/usi.php',
+               /* 2 */ current_time('mysql'),
+               /* 3 */ $option,
+               ], 
+               fread($template_stream, filesize($template))
+            );
+            fclose($template_stream);
+            // $usi_page_cache = fopen(dirname(__FILE__) . '/usi-page-cache.php', 'w');
+            //$usi_page_cache = fopen($root_folder . '/index-cache.php', 'w');
+            //fwrite($usi_page_cache, $template_content);
+            //fclose($usi_page_cache);
+         } catch(Exception $e) {
+         }
       }
 
    } // cache_file_generate();
@@ -200,7 +186,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          }
          update_option(USI_Page_Solutions::$option_name_base . '-enhanced', $options);
       }
-      return($input);
+      return $input;
    } // fields_sanitize();
 
    function filter_plugin_row_meta($links, $file) {
@@ -215,7 +201,7 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
          $links[] = '<a href="https://www.usi2solve.com/donate/page-solutions" target="_blank">' . 
             __('Donate', USI_Page_Solutions::TEXTDOMAIN) . '</a>';
       }
-      return($links);
+      return $links;
    } // filter_plugin_row_meta();
 
    function index_file_modify($root_index, $log = false) {
@@ -403,12 +389,10 @@ usi::log('bail!');return;
 
       }
 
-      return($sections);
+      return $sections;
 
    } // sections();
 
 } // Class USI_Page_Solutions_Settings;
-
-new USI_Page_Solutions_Settings();
 
 // --------------------------------------------------------------------------------------------------------------------------- // ?>
