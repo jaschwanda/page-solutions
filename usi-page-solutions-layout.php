@@ -227,8 +227,8 @@ class USI_Page_Solutions_Layout {
    } // update_recursively();
 
    function action_widgets_init() {
-      $this->option_name = $this->section_id = 'usi-page-solutions-options-dummy-' . get_current_user_id();
-      $this->options = get_option($this->option_name);
+      $this->section_id = 'usi-page-solutions-options-dummy-' . get_current_user_id();
+      $this->options    = get_option($this->section_id);
    } // action_widgets_init();
 
    function render_meta_box($post) {
