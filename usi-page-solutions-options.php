@@ -53,7 +53,6 @@ class USI_Page_Solutions_Options {
          $new_arguments = !empty($_POST['usi-page-solutions-options-arguments']);
          $new_theme     = $_POST['usi-page-solutions-options-theme'] ?? 'default';
          $meta_value    = USI_Page_Solutions::meta_value_get($page_id);
-         // usi::log('$page_id=', $page_id, ' $meta_value=', $meta_value);
          if (($meta_value['options']['arguments'] != $new_arguments) || ($meta_value['options']['theme'] != $new_theme)) {
             delete_post_meta($page_id, $meta_value['key']); 
             $offset = strlen(USI_Page_cache::POST_META);

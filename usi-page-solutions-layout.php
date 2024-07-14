@@ -256,8 +256,6 @@ class USI_Page_Solutions_Layout {
       $styles_inherit     = $meta_value['options']['styles_inherit'];
       $widgets_inherit    = $meta_value['options']['widgets_inherit'];
 
-      // USI_Page_Debug::print_r(__METHOD__.':options=', USI_Page_Solutions::$option);
-
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
 
          $collection_index = 0;
@@ -269,7 +267,8 @@ class USI_Page_Solutions_Layout {
          $widgets = $meta_value['widgets'];
 
          foreach ($wp_registered_sidebars as $id => $sidebar) {
-            if ($id == $options_virtual[0]['id']) break;
+            // Skip virtual widget areas created by Page-Solutions;
+            if ($id == ($options_virtual[0]['id'] ?? null)) break;
             if (!empty($enhanced_widget_areas[$id])) {
                $order_by = 0;
                $html .= '<p>' . $sidebar['name'] . '<br />';

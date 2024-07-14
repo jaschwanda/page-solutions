@@ -23,7 +23,7 @@ final class USI_Page_Solutions_Install {
 
       $role = get_role('administrator');
       foreach (USI_Page_Solutions::$capabilities as $capability => $description) {
-         $role->add_cap(USI_Page_Solutions::NAME . '-' . $capability);
+         $role->add_cap(USI_WordPress_Solutions_Capabilities::capability_slug(USI_Page_Solutions::PREFIX, $capability));
       }
 
    } // hook_activation();

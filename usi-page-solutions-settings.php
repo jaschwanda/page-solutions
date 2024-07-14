@@ -23,24 +23,6 @@ class USI_Page_Solutions_Settings extends USI_WordPress_Solutions_Settings {
 
    } // __construct();
 
-   function action_admin_init() {
-      if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
-         global $wp_registered_sidebars;
-         $disabled = USI_Page_Solutions_Admin::$enhanced_edit ? null : 'disabled';
-         foreach ($wp_registered_sidebars as $id => $sidebar) {
-            // Skip virtual widget areas created by Page-Solutions;
-            if ($id == USI_Page_Solutions::$options_virtual[0]['id']) break;
-            $this->sections['widgets']['settings'][$id] = [
-               'type' => 'checkbox', 
-               'disabled' => $disabled, 
-               'label' => $sidebar['name'], 
-               'notes' => !empty($sidebar['description']) ? ' (<i>' . $sidebar['description'] . '</i>)' : ''
-            ];
-         }
-      }
-      parent::action_admin_init();
-   } // action_admin_init();
-
    static function cache_all_clear() {
       global $wpdb;
       $SAFE_table_name = $wpdb->prefix . 'posts';
@@ -374,11 +356,26 @@ usi::log('bail!');return;
 
       if (!empty(USI_Page_Solutions::$options['preferences']['enable-enhanced-areas'])) {
 
+         global $wp_registered_sidebars;
+
          $sections['widgets'] = [
             'header_callback' => [$this, 'config_section_header_widgets'],
             'label' => 'Enhanced Widget Areas',
             'settings' => [],
          ]; // widgets;
+
+         $disabled = USI_Page_Solutions_Admin::$enhanced_edit ? null : 'disabled';
+
+         foreach ($wp_registered_sidebars as $id => $sidebar) {
+            // Skip virtual widget areas created by Page-Solutions;
+            if ($id == (USI_Page_Solutions::$options_virtual[0]['id'] ?? null)) break;
+            $sections['widgets']['settings'][$id] = [
+               'type' => 'checkbox', 
+               'disabled' => $disabled, 
+               'label' => $sidebar['name'], 
+               'notes' => !empty($sidebar['description']) ? ' (<i>' . $sidebar['description'] . '</i>)' : ''
+            ];
+         }
 
          $sections['collections'] = [
             'header_callback' => [$this, 'config_section_header_collections'],
@@ -388,7 +385,6 @@ usi::log('bail!');return;
          ]; // collections;
 
       }
-
       return $sections;
 
    } // sections();

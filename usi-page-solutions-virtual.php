@@ -158,7 +158,7 @@ class USI_Page_Solutions_Virtual {
       add_options_page(
          __('Page-Solutions | Add Virtual Widget Collection', USI_Page_Solutions::TEXTDOMAIN), // Page <title/> text;
          '<span id="usi-page-solutions-virtual-remove"></span>', // Sidebar menu text; 
-         USI_Page_Solutions::NAME .'-Virtual-Add', // Capability required to enable page;
+         USI_WordPress_Solutions_Capabilities::capability_slug(USI_Page_Solutions::PREFIX, '-virtual-add'), // Capability required to enable page;
          $this->page_slug, // Settings page menu slug;
          [$this, 'settings_page_render'] // Render page callback;
       );

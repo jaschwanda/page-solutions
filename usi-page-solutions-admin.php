@@ -28,7 +28,7 @@ final class USI_Page_Solutions_Admin {
          }
       }
       $mru = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-post');
-      for ($ith = 0; $ith < count($mru); $ith++) {
+      if (!empty($mru)) for ($ith = 0; $ith < count($mru); $ith++) {
          if ($mru[$ith]['page_id'] == $post_id) {
             unset($mru[$ith]);
             update_user_option(get_current_user_id(), USI_Page_Solutions::PREFIX . '-options-mru-post', $mru);
@@ -47,11 +47,13 @@ final class USI_Page_Solutions_Admin {
          if ($page_mru_max++) {
             $old = get_user_option(USI_Page_Solutions::PREFIX . '-options-mru-page');
             $new[$put++] = ['page_id' => $post->ID, 'title' => $post->post_title];
-            while (($put < $page_mru_max) && ($get < count($old ?? []))) {
-               if ($new[0] == $old[$get]) {
-                  $get++;
-               } else {
-                  $new[$put++] = $old[$get++];
+            if (is_array($old)) {
+               while (($put < $page_mru_max) && ($get < count($old ?? []))) {
+                  if ($new[0] == $old[$get]) {
+                     $get++;
+                  } else {
+                     $new[$put++] = $old[$get++];
+                  }
                }
             }
             update_user_option(get_current_user_id(), USI_Page_Solutions::PREFIX . '-options-mru-page', $new);
@@ -74,11 +76,11 @@ final class USI_Page_Solutions_Admin {
    } // action_load_post_php();
 
    function action_admin_menu() {
-      self::$enhanced_edit  = current_user_can(USI_Page_Solutions::NAME .'-Enhanced-Edit');
-      self::$settings_view  = current_user_can(USI_Page_Solutions::NAME .'-Settings-View');
-      self::$virtual_add    = current_user_can(USI_Page_Solutions::NAME .'-Virtual-Add');
-      self::$virtual_edit   = current_user_can(USI_Page_Solutions::NAME .'-Virtual-Edit');
-      self::$virtual_delete = current_user_can(USI_Page_Solutions::NAME .'-Virtual-Delete');
+      self::$enhanced_edit  = USI_WordPress_Solutions_Capabilities::current_user_can(USI_Page_Solutions::PREFIX, 'enhanced-edit');
+      self::$settings_view  = USI_WordPress_Solutions_Capabilities::current_user_can(USI_Page_Solutions::PREFIX, 'settings-view');
+      self::$virtual_add    = USI_WordPress_Solutions_Capabilities::current_user_can(USI_Page_Solutions::PREFIX, 'virtual-add');
+      self::$virtual_edit   = USI_WordPress_Solutions_Capabilities::current_user_can(USI_Page_Solutions::PREFIX, 'virtual-edit');
+      self::$virtual_delete = USI_WordPress_Solutions_Capabilities::current_user_can(USI_Page_Solutions::PREFIX, 'virtual-delete');
    } // action_admin_menu();
 
 } // Class USI_Page_Solutions_Admin;

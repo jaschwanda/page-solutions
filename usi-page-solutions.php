@@ -1,4 +1,13 @@
 <?php // ------------------------------------------------------------------------------------------------------------------------ //
+/*
+
+this option must be set to right-sidebar => true
+usi-page-theme-solutions-stanton-holly-trail-enhanced
+
+usi-page-theme-solutions-stanton-holly-trail
+*/
+
+
 
 defined('ABSPATH') or die('Accesss not allowed.');
 
@@ -79,8 +88,7 @@ final class USI_Page_Solutions {
    static function action_widgets_init() {
       $theme = wp_get_theme();
       self::$theme_name = sanitize_title($theme->get('Name'));
-      // self::$option_name_base = 'usi-page-solutions-options-' . self::$theme_name; // This seems too f++king long;
-      self::$option_name_base = 'usi-page-' . self::$theme_name;
+      self::$option_name_base = self::PREFIX . '-' . self::$theme_name;
       self::$option_name_virtual = self::$option_name_base . '-virtual';
       self::$options_virtual = get_option(self::$option_name_virtual);
       if (!empty(self::$options_virtual)) {
@@ -192,7 +200,7 @@ final class USI_Page_Solutions {
       
       // This filter intercepts the widget() calls so that the widget output can be buffered and
       // the dynamics can be saved, not required when caching is disabled as everything must run;
-      if (is_admin() || ('disable' == self::$meta_value['cache']['mode'])) return $sidebar_params;
+      if (is_admin() || ('disable' == (self::$meta_value['cache']['mode'] ?? null))) return $sidebar_params;
 
       global $wp_registered_widgets;
 
